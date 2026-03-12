@@ -29,25 +29,13 @@ const { useState, useRef, useEffect, useCallback } = React;
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const PROXIES = [
-  "https://corsproxy.io/?url=",
-  "https://thingproxy.freeboard.io/fetch/",
-  "https://api.allorigins.win/raw?url=",
-];
+const WORKER_PROXY = "https://eclore-proxy.little-glitter-97a2.workers.dev/?url=";
 
 const fetchWithProxy = async (url, options = {}) => {
-  const errors = [];
-  for (const proxy of PROXIES) {
-    try {
-      const res = await fetch(proxy + encodeURIComponent(url), options);
-      return res;
-    } catch(e) {
-      errors.push(proxy.split("/")[2] + ": " + e.message);
-    }
-  }
-  throw new Error("Alla proxies misslyckades: " + errors.join(" | "));
+  const res = await fetch(WORKER_PROXY + encodeURIComponent(url), options);
+  return res;
 };
-const PROXY = PROXIES[0];
+const PROXY = WORKER_PROXY;
 
 const TABS = ["Produkt", "Bilder", "SEO & Meta", "FAQ", "Användning", "Ingredienser & Taggar"];
 
