@@ -490,7 +490,8 @@ function App() {
       imgs[idx] = { ...imgs[idx], altText: parsed.altText, suggestedFilename: parsed.suggestedFilename };
       setField("images", imgs);
     } catch(e) {
-      setApiError("Fel vid bildanalys: " + e.message);
+      // Log error but don't throw — let queue continue
+      setApiError("Fel vid bildanalys bild " + (idx+1) + ": " + e.message);
     }
     setGenerating(g => ({ ...g, ["img_" + idx]: false }));
   };
@@ -523,7 +524,12 @@ function App() {
     }
     if (formRef.current.images.length > 0) {
       setGenAllProgress("Analyserar bilder...");
-      await generateAllImgMeta();
+      try {
+        await generateAllImgMeta();
+      } catch(e) {
+        // Bildanalys misslyckades – fortsätter ändå
+        setApiError("Bildanalys misslyckades men övrig generering är klar: " + e.message);
+      }
     }
     setGenAllProgress("✓ Klart!");
     setTimeout(() => { setGeneratingAll(false); setGenAllProgress(""); }, 2000);
