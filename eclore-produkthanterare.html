@@ -30,24 +30,22 @@ const { useState, useRef, useEffect, useCallback } = React;
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const PROXIES = [
-  "https://corsproxy.io/?",
+  "https://corsproxy.io/?url=",
+  "https://thingproxy.freeboard.io/fetch/",
   "https://api.allorigins.win/raw?url=",
-  "https://corsproxy.org/?",
 ];
 
 const fetchWithProxy = async (url, options = {}) => {
-  let lastError = "";
+  const errors = [];
   for (const proxy of PROXIES) {
     try {
       const res = await fetch(proxy + encodeURIComponent(url), options);
-      // Any HTTP response (even errors) means proxy worked — return it
-      if (res.status !== 0) return res;
+      return res;
     } catch(e) {
-      lastError = e.message;
-      // Network error — try next proxy
+      errors.push(proxy.split("/")[2] + ": " + e.message);
     }
   }
-  throw new Error("Alla proxies misslyckades (" + lastError + ") – kontrollera din internetanslutning.");
+  throw new Error("Alla proxies misslyckades: " + errors.join(" | "));
 };
 const PROXY = PROXIES[0];
 
