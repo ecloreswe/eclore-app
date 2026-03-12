@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>éclore Produkthanterare</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0a0a0a; color: #f0ede8; font-family: 'DM Sans', sans-serif; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 1s linear infinite; display: inline-block; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #111; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+input, textarea, select, button { font-family: 'DM Sans', sans-serif; }
+details summary::-webkit-details-marker { display: none; }
+a { color: #8ab4f8; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+const { useState, useRef, useEffect, useCallback } = React;
+
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+const PROXIES = [
+  "https://corsproxy.io/?",
+  "https://api.allorigins.win/raw?url=",
+  "https://corsproxy.org/?",
+];
+
+const fetchWithProxy = async (url, options = {}) => {
+  let lastError = "";
+  for (const proxy of PROXIES) {
+    try {
+      const res = await fetch(proxy + encodeURIComponent(url), options);
+      // Any HTTP response (even errors) means proxy worked — return it
+      if (res.status !== 0) return res;
+    } catch(e) {
+      lastError = e.message;
+      // Network error — try next proxy
+    }
+  }
+  throw new Error("Alla proxies misslyckades (" + lastError + ") – kontrollera din internetanslutning.");
+};
+const PROXY = PROXIES[0];
+
+const TABS = ["Produkt", "Bilder", "SEO & Meta", "FAQ", "Användning", "Ingredienser & Taggar"];
+
+const BUTIKSPROFIL = `BUTIKSPROFIL – éclore
+
+Varumärke: éclore | Webbplats: eclore.se
+
+SORTIMENT: Ansiktsvård, hudvård, hårvård – naturliga ingredienser, tillverkat i Europa. Handgjorda sminkväskor och necessärer. Doftljus med naturliga ingredienser.
+
+KÄNSLA: Inte skandinaviskt minimalistiskt – hämtar sin själ från södra Europa. Känslan påminner om ett välsorterat apotek i Provence. Genuint, inte massindustri.
+
+MÅLGRUPP: Kvinnor 40–70 år. Omvärldsmedvetna, kvalitetsmedvetna. Lockas av historien bakom produkten.
+
+TONALITET: Professionell och varm. Undvik superlativ utan substans. Använd gärna: "hantverk", "naturliga ingredienser", "tillverkat i Europa", "genuint".
+
+SEO: Long-tail kombinationer: produkttyp + naturlig/ekologisk + användningsområde. Ex: "naturlig ansiktskräm mogen hud".`;
+
+const DEFAULT_FORM = {
+  productName: "",
+  productType: "",
+  description: "",
+  shortDescription: "",
+  bulletPoints: ["", "", ""],
+  images: [],
+  seoTitle: "",
+  handle: "",
+  seoDescription: "",
+  seoCluster: { primary: "", secondary: [], longTail: [] },
+  faq: [],
+  usage: { intro: "", steps: [""] },
+  inci: "",
+  keyIngredients: [{ name: "", benefit: "" }],
+  tags: [],
+  metafields: [],
+};
+
+const DEFAULT_SETTINGS = {
+  shopifyStore: "e3m0qu-sn.myshopify.com",
+  shopifyToken: "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",
+  productId: "",
+  anthropicKey: "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",
+};
+
+// ─── Small components ─────────────────────────────────────────────────────────
+
+function Spinner() {
+  return (
+    <svg className="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+    </svg>
+  );
+}
+
+function CopyBtn({ text }) {
+  const [ok, setOk] = useState(false);
+  return (
+    <button
+      onClick={() => { navigator.clipboard.writeText(text); setOk(true); setTimeout(() => setOk(false), 2000); }}
+      style={{ background: ok ? "rgba(52,168,83,0.15)" : "rgba(138,180,248,0.1)", border: "1px solid " + (ok ? "rgba(52,168,83,0.4)" : "rgba(138,180,248,0.25)"), borderRadius: "5px", padding: "3px 8px", color: ok ? "#34a853" : "#8ab4f8", fontSize: "10px", cursor: "pointer" }}
+    >{ok ? "✓ Kopierat" : "Kopiera"}</button>
+  );
+}
+
+function Tag({ label, onRemove }) {
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: "5px", background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "20px", padding: "4px 10px", fontSize: "12px", color: "#ccc" }}>
+      {label}
+      <button onClick={onRemove} style={{ background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: "13px", lineHeight: 1, padding: 0 }}>×</button>
+    </span>
+  );
+}
+
+function TagInput({ onAdd, placeholder }) {
+  const [val, setVal] = useState("");
+  return (
+    <input
+      value={val}
+      onChange={e => setVal(e.target.value)}
+      onKeyDown={e => { if (e.key === "Enter" && val.trim()) { onAdd(val.trim()); setVal(""); } }}
+      placeholder={placeholder || "Skriv och tryck Enter"}
+      style={{ width: "100%", background: "#111", border: "1px solid #2a2a2a", borderRadius: "8px", padding: "9px 12px", color: "#f0ede8", fontSize: "13px", outline: "none" }}
+    />
+  );
+}
+
+function Field({ label, hint, children, action }) {
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+        <label style={{ fontSize: "11px", letterSpacing: "0.1em", color: "#888", textTransform: "uppercase" }}>
+          {label} {hint && <span style={{ color: "#555", fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>{hint}</span>}
+        </label>
+        {action}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+// ─── Settings panel ───────────────────────────────────────────────────────────
+
+function SettingsPanel({ settings, onSave, onClose }) {
+  const [local, setLocal] = useState(settings);
+  const set = (k, v) => setLocal(s => ({ ...s, [k]: v }));
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.75)" }}>
+      <div style={{ background: "#0f0f0f", border: "1px solid #2a2a2a", borderRadius: "16px", width: "500px", maxWidth: "95vw", padding: "32px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+          <span style={{ fontFamily: "'Playfair Display',serif", fontSize: "20px" }}>Inställningar</span>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "#666", cursor: "pointer", fontSize: "22px" }}>×</button>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          {[
+            { label: "Shopify butikens domän", key: "shopifyStore", placeholder: "minbutik.myshopify.com" },
+            { label: "Shopify Admin API-token", key: "shopifyToken", placeholder: "shpat_...", type: "password" },
+            { label: "Produkt-ID", key: "productId", placeholder: "8123456789012" },
+            { label: "Anthropic API-nyckel (för AI-generering)", key: "anthropicKey", placeholder: "sk-ant-...", type: "password" },
+          ].map(f => (
+            <div key={f.key}>
+              <div style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#888", marginBottom: "6px", textTransform: "uppercase" }}>{f.label}</div>
+              <input
+                type={f.type || "text"}
+                value={local[f.key]}
+                onChange={e => set(f.key, e.target.value)}
+                placeholder={f.placeholder}
+                style={{ width: "100%", background: "#1a1a1a", border: "1px solid #333", borderRadius: "8px", padding: "10px 14px", color: "#f0ede8", fontSize: "14px", outline: "none" }}
+              />
+            </div>
+          ))}
+        </div>
+        <div style={{ display: "flex", gap: "10px", marginTop: "24px" }}>
+          <button onClick={onClose} style={{ flex: 1, padding: "12px", background: "none", border: "1px solid #333", borderRadius: "8px", color: "#888", cursor: "pointer" }}>Avbryt</button>
+          <button onClick={() => { onSave(local); onClose(); }} style={{ flex: 1, padding: "12px", background: "#c8a96e", border: "none", borderRadius: "8px", color: "#0f0f0f", cursor: "pointer", fontWeight: "600" }}>Spara</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main App ─────────────────────────────────────────────────────────────────
+
+function App() {
+
+  // All state at top
+  const [tab, setTab] = useState(0);
+  const [form, setForm] = useState(DEFAULT_FORM);
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const [aiContext, setAiContext] = useState(BUTIKSPROFIL);
+  const [showSettings, setShowSettings] = useState(false);
+  const [generating, setGenerating] = useState({});
+  const [generatingAll, setGeneratingAll] = useState(false);
+  const [genAllProgress, setGenAllProgress] = useState("");
+  const [publishing, setPublishing] = useState(false);
+  const [publishResult, setPublishResult] = useState(null);
+  const [fetchingProduct, setFetchingProduct] = useState(false);
+  const [fetchError, setFetchError] = useState(null);
+  const [productLoaded, setProductLoaded] = useState(false);
+  const [apiError, setApiError] = useState(null);
+  const [showQueue, setShowQueue] = useState(false);
+  const [queue, setQueue] = useState([]);
+  const [queueInput, setQueueInput] = useState("");
+  const [queueRunning, setQueueRunning] = useState(false);
+  const [queueLog, setQueueLog] = useState([]);
+  const [autoPublish, setAutoPublish] = useState(false);
+  const [queueIdx, setQueueIdx] = useState(null);
+
+  // Refs
+  const formRef = useRef(form);
+  const settingsRef = useRef(settings);
+  useEffect(() => { formRef.current = form; }, [form]);
+  useEffect(() => { settingsRef.current = settings; }, [settings]);
+
+  // ─── Helpers ───────────────────────────────────────────────────────────────
+
+  const setField = (key, val) => setForm(f => ({ ...f, [key]: val }));
+
+  const saveSettings = (s) => {
+    setSettings(s);
+    settingsRef.current = s;
+  };
+
+  const stripMd = (text) => {
+    return text
+      .replace(/\*\*([\s\S]+?)\*\*/g, "$1")
+      .replace(/\*([\s\S]+?)\*/g, "$1")
+      .replace(/^#{1,6}\s+/gm, "")
+      .replace(/`([^`]+)`/g, "$1")
+      .replace(/^```[a-z]*\n?/gim, "")
+      .replace(/\n?```\s*$/gim, "")
+      .trim();
+  };
+
+  // Parse inline HTML into Shopify rich text inline nodes
+  const parseInlineHtml = (html) => {
+    const nodes = [];
+    // Tokenize HTML into tags and text
+    const re = /<([a-z]+)([^>]*)>([\s\S]*?)<\/\1>|([^<]+)/gi;
+    let m;
+    while ((m = re.exec(html)) !== null) {
+      const tag = (m[1] || "").toLowerCase();
+      const attrs = m[2] || "";
+      const inner = m[3] || "";
+      const text = m[4];
+      if (text && text.trim()) {
+        nodes.push({ type: "text", value: text });
+      } else if (tag === "a") {
+        const hrefMatch = attrs.match(/href=["']([^"']*)["']/i);
+        const url = hrefMatch ? hrefMatch[1] : "";
+        const linkText = inner.replace(/<[^>]+>/g, "").trim();
+        if (url && linkText) nodes.push({ type: "link", url, children: [{ type: "text", value: linkText }] });
+        else if (linkText) nodes.push({ type: "text", value: linkText });
+      } else if (tag === "strong" || tag === "b") {
+        nodes.push({ type: "text", value: inner.replace(/<[^>]+>/g, ""), bold: true });
+      } else if (tag === "em" || tag === "i") {
+        nodes.push({ type: "text", value: inner.replace(/<[^>]+>/g, ""), italic: true });
+      } else if (inner.trim()) {
+        nodes.push({ type: "text", value: inner.replace(/<[^>]+>/g, "") });
+      }
+    }
+    return nodes.length ? nodes : [{ type: "text", value: html.replace(/<[^>]+>/g, "") }];
+  };
+
+  // Convert HTML or plain text to Shopify rich_text_field JSON
+  const toRichText = (input) => {
+    // Strip markdown bold/italic first
+    const text = input
+      .replace(/\*\*([\s\S]+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\*([\s\S]+?)\*/g, "<em>$1</em>")
+      .replace(/^#{1,6}\s+/gm, "");
+
+    // Split by block-level tags into paragraphs
+    const blocks = text
+      .replace(/<\/p>\s*/gi, "\n")
+      .replace(/<p[^>]*>/gi, "")
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<\/(li|div|h[1-6])>/gi, "\n")
+      .replace(/<(li|div|h[1-6])[^>]*>/gi, "")
+      .split(/\n+/)
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    return JSON.stringify({
+      type: "root",
+      children: blocks.map(block => ({
+        type: "paragraph",
+        children: parseInlineHtml(block)
+      }))
+    });
+  };
+
+  // ─── Claude API ────────────────────────────────────────────────────────────
+
+  const callClaude = async (messages, maxTokens = 2000) => {
+    const key = settingsRef.current.anthropicKey;
+    if (!key) throw new Error("Anthropic API-nyckel saknas – fyll i under ⚙ Inställningar");
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true",
+        "x-api-key": key,
+      },
+      body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: maxTokens, messages }),
+    });
+    if (!res.ok) {
+      const txt = await res.text();
+      let msg = "HTTP " + res.status;
+      try { const j = JSON.parse(txt); msg = j.error?.message || msg; } catch(e) {}
+      throw new Error(msg);
+    }
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    return data.content?.[0]?.text || "";
+  };
+
+  const ctx = () => {
+    const f = formRef.current;
+    const parts = [
+      aiContext,
+      f.productName ? "Produktnamn: " + f.productName : "",
+      f.description ? "Befintlig beskrivning:\n" + f.description.replace(/<[^>]+>/g, "") : "",
+      f.inci ? "INCI: " + f.inci : "",
+      f.seoCluster?.primary ? "Primärt sökord: " + f.seoCluster.primary : "",
+    ];
+    return parts.filter(Boolean).join("\n\n");
+  };
+
+  // ─── Generate single field ─────────────────────────────────────────────────
+
+  const generate = async (field) => {
+    setGenerating(g => ({ ...g, [field]: true }));
+    setApiError(null);
+    try {
+      const f = formRef.current;
+      const c = ctx();
+      const name = f.productName || "produkten";
+
+      const prompts = {
+        shortDescription:
+          `${c}\n\nSkriv en above the fold-text på svenska för: "${name}". Ca 80 ord. ` +
+          `Struktur: (1) vad produkten är + primärt sökord naturligt, (2) ursprung/ingrediens med effekt, (3) för vem och när. ` +
+          `Professionell och varm ton. Returnera bara texten, ingen HTML.`,
+
+        description: (() => {
+          const productType = (formRef.current.productType || "").toLowerCase();
+          const isVaska = productType.includes("sminkväskor");
+          const isDoftljus = productType.includes("doftljus");
+          const h2mid = isVaska ? "Material & hantverk" : isDoftljus ? "Doft & material" : "Ingredienser & effekter";
+          const h2result = isVaska ? "Funktion & detaljer" : isDoftljus ? "Varför välja vårt doftljus?" : "Resultat & fördelar";
+          const midContent = isVaska
+            ? "<p>Material, tillverkning, hållbarhet – namn i <strong>fetstil</strong>.</p>"
+            : isDoftljus
+            ? "<p>Doftnoter, vaxtyp, brinntid, tillverkningsland – namn i <strong>fetstil</strong>.</p>"
+            : "<p>3-4 ingredienser med effekt, namn i <strong>fetstil</strong>.</p>";
+          return `${c}\n\nSkriv en strukturerad produktbeskrivning på svenska för: "${name}". Max 350 ord. Returnera bara HTML.\n\n` +
+            `Exakt struktur:\n` +
+            `<h2>[Produktnamn] – [fras med primärt sökord]</h2>\n<p>2-3 meningar, sökord i mening 1.</p>\n` +
+            `<h2>${h2mid}</h2>\n${midContent}\n` +
+            `<h2>${h2result}</h2>\n<ul><li>Punkt 1</li><li>Punkt 2</li><li>Punkt 3</li></ul>\n` +
+            `<h2>För vem passar [produkttyp]?</h2>\n<p>Målgrupp + long-tail sökord naturligt.</p>`;
+        })(),
+
+        bulletPoints:
+          `${c}\n\nGenerera 5 korta USP:er på svenska för: "${name}". Max 10 ord per punkt. ` +
+          `Börja VARJE punkt med ✓ och mellanslag. Returnera BARA JSON-array: ["✓ ...","✓ ...","✓ ...","✓ ...","✓ ..."]`,
+
+        seoTitle:
+          `${c}\n\nSkriv en SEO-titel (max 60 tecken) för: "${name}". ` +
+          `Titeln ska vara en naturlig, läsbar mening – INTE lösa nyckelord. ` +
+          `Inkludera primärt sökord naturligt med bindeord som "för", "med", "i", "av". ` +
+          `Titeln MÅSTE sluta med " | éclore". ` +
+          `Bra exempel hudvård: "Ansiktskräm för torr och mogen hud | éclore". ` +
+          `Bra exempel väska: "Handgjord sminkväska i naturliga material | éclore". ` +
+          `Dåligt exempel: "sminkväska naturliga material set éclore". Returnera bara titeln.`,
+
+        handle:
+          `${c}\n\nGenerera en URL-slug på svenska för produkten: "${name}". ` +
+          `Regler: endast gemener, bindestreck mellan ord, inga svenska tecken (å→a, ä→a, ö→o), inga specialtecken. ` +
+          `Max 60 tecken. Inkludera produkttyp + nyckelord + ev hudtyp/material. ` +
+          `Exempel: "ansiktskram-for-torr-mogen-hud", "handgjord-sminkvaska-naturligt-material". ` +
+          `Returnera BARA slugen, inget annat.`,
+
+        seoDescription:
+          `${c}\n\nSkriv en SEO-metabeskrivning (max 155 tecken) för: "${name}". ` +
+          `Fokusera på: (1) specifik effekt eller fördel, (2) målgrupp/hudtyp/användningsområde, (3) ev. kort CTA. ` +
+          `Undvik: "Tillverkat i Europa", "genuint hantverk", vaga påståenden utan substans. ` +
+          `Exempel hudvård: "Djupt återfuktande ansiktskräm för torr och mogen hud. Naturliga ingredienser som stärker hudbarriären. Beställ idag." ` +
+          `Exempel doftljus: "Handgjort sojavaxljus med citrongräs – 40 timmars brinntid. Naturliga eteriska oljor för harmonisk atmosfär hemma." ` +
+          `Returnera bara texten.`,
+
+        seoCluster:
+          `${c}\n\nSEO-kluster för: "${name}". ` +
+          `Returnera BARA JSON: {"primary":"sökord","secondary":["ord1","ord2","ord3"],"longTail":["fras 1","fras 2","fras 3"]}`,
+
+        usage:
+          `${c}\n\nAnvändningsinstruktioner på svenska för: "${name}". ` +
+          `Returnera BARA JSON: {"intro":"2-3 meningar: när i rutinen, vilket steg, kompletterande produkttyp","steps":["Verbsteg 1","Verbsteg 2","Verbsteg 3"]}. ` +
+          `3-5 steg som börjar med verb (Applicera, Massera, Följ upp...).`,
+
+        faq:
+          `${c}\n\n5 FAQ-frågor och svar på svenska för: "${name}". ` +
+          `Täck: (1) ingredienser och effekt, (2) användning, (3) hudtyp, (4) ursprung/certifiering, (5) förvaring.\n` +
+          `Svar: 4-6 meningar HTML med <p>. Inkludera naturliga interna länkar till éclore-kategorier:\n` +
+          `Ansiktsvård: https://www.eclore.se/collections/ansiktsvard | Serum: https://www.eclore.se/collections/serum\n` +
+          `Anti-age: https://www.eclore.se/collections/anti-age | Hårvård: https://www.eclore.se/collections/hArvard\n` +
+          `Returnera BARA JSON: {"faq_fraga_1":"...","faq_a1":"<p>...</p>","faq_fraga_2":"...","faq_a2":"<p>...</p>","faq_fraga_3":"...","faq_a3":"<p>...</p>","faq_fraga_4":"...","faq_a4":"<p>...</p>","faq_fraga_5":"...","faq_a5":"<p>...</p>"}`,
+
+        keyIngredients:
+          `${c}\n\n4-5 nyckelingredienser och fördelar på svenska för: "${name}". ` +
+          `Returnera BARA JSON-array: [{"name":"Namn","benefit":"Vad den gör..."},...]`,
+
+        tags:
+          `${c}\n\nShopify-produkttaggar på svenska för: "${name}". ` +
+          `Täck produkttyp, hudtyp, effekt, ingredienser. Max 15 taggar, lowercase, bindestreck. ` +
+          `Returnera BARA JSON-array: ["tagg1","tagg2",...]`,
+      };
+
+      const raw = await callClaude([{ role: "user", content: prompts[field] }]);
+      const clean = raw.replace(/```json\n?|```\n?/g, "").trim();
+
+      if (field === "bulletPoints") {
+        const arr = JSON.parse(clean);
+        syncBulletPoints(arr);
+      } else if (field === "seoCluster") {
+        setField("seoCluster", JSON.parse(clean));
+      } else if (field === "usage") {
+        setField("usage", JSON.parse(clean));
+      } else if (field === "keyIngredients") {
+        setField("keyIngredients", JSON.parse(clean));
+      } else if (field === "tags") {
+        setField("tags", JSON.parse(clean));
+      } else if (field === "faq") {
+        const parsed = JSON.parse(clean);
+        const arr = [1,2,3,4,5].map(i => ({
+          q: stripMd(parsed["faq_fraga_" + i] || ""),
+          a: parsed["faq_a" + i] || "",
+        }));
+        setField("faq", arr);
+      } else {
+        // Strip markdown code fences and bold/italic markers
+        const stripped = stripMd(raw.trim().replace(/^```[a-z]*\n?/i, "").replace(/\n?```\s*$/i, "").trim());
+        setField(field, stripped);
+      }
+    } catch(e) {
+      setApiError("Fel vid generering av " + field + ": " + e.message);
+    }
+    setGenerating(g => ({ ...g, [field]: false }));
+  };
+
+  // ─── Generate image meta (with Vision) ────────────────────────────────────
+
+  const generateImgMeta = async (idx) => {
+    setGenerating(g => ({ ...g, ["img_" + idx]: true }));
+    setApiError(null);
+    try {
+      const f = formRef.current;
+      const img = f.images[idx];
+      if (!img?.url) throw new Error("Ingen bild-URL");
+
+      let imageContent;
+      try {
+        const proxyUrl = PROXIES[0] + encodeURIComponent(img.url);
+        const imgRes = await fetch(proxyUrl);
+        if (!imgRes.ok) throw new Error("Kunde inte hämta bild");
+        const blob = await imgRes.blob();
+        const base64 = await new Promise((res, rej) => {
+          const reader = new FileReader();
+          reader.onload = () => res(reader.result.split(",")[1]);
+          reader.onerror = rej;
+          reader.readAsDataURL(blob);
+        });
+        imageContent = { type: "image", source: { type: "base64", media_type: blob.type || "image/jpeg", data: base64 } };
+      } catch(e) {
+        imageContent = { type: "image", source: { type: "url", url: img.url } };
+      }
+
+      const textContent = {
+        type: "text",
+        text:
+          `Du skriver för éclore (eclore.se) – naturlig hudvård för kvinnor 40-70 år.\n\n` +
+          `Titta noga på bilden och generera för produkten "${f.productName || "okänd produkt"}":\n\n` +
+          `1. ALT-TEXT (max 125 tecken): Beskriv konkret VAD som syns – förpackning, färg, textur, form. Inkludera produktnamnet naturligt. Svenska.\n\n` +
+          `2. SEO-FILNAMN (max 60 tecken): Baserat på vad bilden visar. Lowercase, bindestreck, UTAN filändelse.\n` +
+          `Exempel: "naturlig-ansiktskram-50ml-vit-burk"\n\n` +
+          `Returnera BARA JSON: {"altText":"...","suggestedFilename":"..."}`,
+      };
+
+      const raw = await callClaude([{ role: "user", content: [imageContent, textContent] }], 300);
+      const parsed = JSON.parse(raw.replace(/```json\n?|```\n?/g, "").trim());
+      const imgs = [...formRef.current.images];
+      imgs[idx] = { ...imgs[idx], altText: parsed.altText, suggestedFilename: parsed.suggestedFilename };
+      setField("images", imgs);
+    } catch(e) {
+      setApiError("Fel vid bildanalys: " + e.message);
+    }
+    setGenerating(g => ({ ...g, ["img_" + idx]: false }));
+  };
+
+  const generateAllImgMeta = async () => {
+    for (let i = 0; i < formRef.current.images.length; i++) {
+      await generateImgMeta(i);
+    }
+  };
+
+  // ─── Generate all ──────────────────────────────────────────────────────────
+
+  const generateAll = async () => {
+    setGeneratingAll(true);
+    const steps = [
+      ["description", "Genererar beskrivning..."],
+      ["shortDescription", "Genererar ingress..."],
+      ["bulletPoints", "Genererar USP:er..."],
+      ["seoTitle", "Genererar SEO-titel..."],
+      ["seoDescription", "Genererar SEO-metabeskrivning..."],
+      ["seoCluster", "Bygger SEO-kluster..."],
+      ["faq", "Genererar FAQ..."],
+      ["usage", "Genererar användningsinstruktioner..."],
+      ["keyIngredients", "Genererar nyckelingredienser..."],
+      ["tags", "Genererar taggar..."],
+    ];
+    for (const [field, label] of steps) {
+      setGenAllProgress(label);
+      await generate(field);
+    }
+    if (formRef.current.images.length > 0) {
+      setGenAllProgress("Analyserar bilder...");
+      await generateAllImgMeta();
+    }
+    setGenAllProgress("✓ Klart!");
+    setTimeout(() => { setGeneratingAll(false); setGenAllProgress(""); }, 2000);
+  };
+
+  // ─── Bullet points sync ────────────────────────────────────────────────────
+
+  const syncBulletPoints = (points) => {
+    const val = points.filter(b => b.trim()).join("\n");
+    setForm(f => {
+      const mfs = [...f.metafields];
+      const i = mfs.findIndex(m => m.key === "bullet_points_1" && m.namespace === "custom");
+      if (i >= 0) mfs[i] = { ...mfs[i], value: val };
+      else if (val) mfs.push({ key: "bullet_points_1", value: val, namespace: "custom", type: "multi_line_text_field" });
+      return { ...f, bulletPoints: points, metafields: mfs };
+    });
+  };
+
+  // ─── Shopify fetch ─────────────────────────────────────────────────────────
+
+  const fetchProduct = async (overrideSettings) => {
+    const s = overrideSettings || settingsRef.current;
+    if (!s.shopifyStore || !s.shopifyToken || !s.productId) return;
+    setFetchingProduct(true);
+    setFetchError(null);
+    setProductLoaded(false);
+    try {
+      const headers = { "X-Shopify-Access-Token": s.shopifyToken };
+      const base = "https://" + s.shopifyStore + "/admin/api/2024-01";
+
+      // Product
+      const pRes = await fetchWithProxy(base + "/products/" + s.productId + ".json", { headers });
+      if (!pRes.ok) { const e = await pRes.json(); throw new Error(JSON.stringify(e.errors || e)); }
+      const pData = await pRes.json();
+      const p = pData.product;
+
+      // Reset entire form before loading new product so nothing bleeds over
+      setForm({
+        ...DEFAULT_FORM,
+        productName: p.title || "",
+        description: p.body_html || "",
+        tags: p.tags ? p.tags.split(", ").filter(Boolean) : [],
+        productType: p.product_type || "",
+        handle: p.handle || "",
+      });
+
+      // Metafields
+      const mfRes = await fetchWithProxy(base + "/products/" + s.productId + "/metafields.json", { headers });
+      if (mfRes.ok) {
+        const mfData = await mfRes.json();
+        const mfs = mfData.metafields || [];
+        const get = (key) => mfs.find(m => m.key === key && m.namespace === "custom")?.value || "";
+
+        const inci = get("ingredienser");
+        const kortBeskrivningRaw = get("beskrivning");
+        // Parse rich text JSON back to plain text if needed
+        let kortBeskrivning = "";
+        if (kortBeskrivningRaw) {
+          try {
+            const rt = JSON.parse(kortBeskrivningRaw);
+            kortBeskrivning = (rt.children || []).map(p =>
+              (p.children || []).map(t => t.value || "").join("")
+            ).join(" ").trim();
+          } catch(e) {
+            kortBeskrivning = kortBeskrivningRaw; // already plain text
+          }
+        }
+        const usageRawStored = get("usage_instructions");
+        // Parse rich text JSON back to plain text
+        let usageRaw = "";
+        if (usageRawStored) {
+          if (usageRawStored.trim().startsWith("{")) {
+            try {
+              const rt = JSON.parse(usageRawStored);
+              usageRaw = (rt.children || []).map(p =>
+                (p.children || []).map(t => t.value || "").join("")
+              ).filter(Boolean).join("\n");
+            } catch(e) { usageRaw = ""; }
+          } else {
+            usageRaw = usageRawStored;
+          }
+        }
+        const bpRaw = get("bullet_points_1");
+        const seoTitle = mfs.find(m => m.key === "title_tag")?.value || "";
+        const seoDesc = mfs.find(m => m.key === "description_tag")?.value || "";
+
+        let usageIntro = "", usageSteps = [""];
+        if (usageRaw) {
+          const parts = usageRaw.split(/\n\n/);
+          usageIntro = parts[0] || "";
+          if (parts[1]) usageSteps = parts[1].split("\n").map(s => s.replace(/^\d+\.\s*/, "")).filter(Boolean);
+        }
+
+        let bulletPoints = ["", "", ""];
+        if (bpRaw) bulletPoints = bpRaw.split("\n").filter(Boolean);
+
+        const parseRichToHtml = (val) => {
+          if (!val) return "";
+          // Handle double-encoded JSON (old buggy data)
+          let parsed = val;
+          try { parsed = JSON.parse(val); } catch(e) { return val; }
+          // If it parsed to a string, it was double-encoded — parse again
+          if (typeof parsed === "string") {
+            try { parsed = JSON.parse(parsed); } catch(e) { return parsed; }
+          }
+          const inlineToHtml = (node) => {
+            if (node.type === "link") {
+              const text = (node.children || []).map(t => t.value || "").join("");
+              return `<a href="${node.url}">${text}</a>`;
+            }
+            let text = node.value || (node.children || []).map(t => t.value || "").join("");
+            if (node.bold) text = `<strong>${text}</strong>`;
+            if (node.italic) text = `<em>${text}</em>`;
+            return text;
+          };
+          return (parsed.children || []).map(node => {
+            const inner = (node.children || []).map(inlineToHtml).join("");
+            if (node.type === "paragraph") return `<p>${inner}</p>`;
+            if (node.type === "unordered-list") {
+              return "<ul>" + (node.children || []).map(li => {
+                const liText = (li.children || []).flatMap(p => p.children || [p]).map(inlineToHtml).join("");
+                return `<li>${liText}</li>`;
+              }).join("") + "</ul>";
+            }
+            return inner;
+          }).join("");
+        };
+        const faq = [1,2,3,4,5].map(i => ({
+          q: get("faq_fraga_" + i),
+          a: parseRichToHtml(get("faq_a" + i)),
+        })).filter(item => item.q || item.a);
+
+        let keyIngredients = [{ name: "", benefit: "" }];
+        try { const ki = get("key_ingredients"); if (ki) keyIngredients = JSON.parse(ki); } catch(e) {}
+
+        const handled = ["ingredienser","beskrivning","usage_instructions","bullet_points_1","key_ingredients","title_tag","description_tag",
+          "faq_fraga_1","faq_fraga_2","faq_fraga_3","faq_fraga_4","faq_fraga_5",
+          "faq_a1","faq_a2","faq_a3","faq_a4","faq_a5"];
+        const customMfs = mfs
+          .filter(m => m.namespace === "custom" && !handled.includes(m.key))
+          .map(m => ({ key: m.key, value: m.value, namespace: "custom", type: m.type || "single_line_text_field" }));
+
+        setForm(f => ({
+          ...f,
+          inci: inci || f.inci,
+          shortDescription: kortBeskrivning || f.shortDescription,
+          seoTitle: seoTitle || f.seoTitle,
+          seoDescription: seoDesc || f.seoDescription,
+          bulletPoints: bulletPoints.length ? bulletPoints : f.bulletPoints,
+          faq: faq.length ? faq : f.faq,
+          keyIngredients: keyIngredients.length ? keyIngredients : f.keyIngredients,
+          metafields: customMfs.length ? customMfs : f.metafields,
+          usage: usageRaw ? { intro: usageIntro, steps: usageSteps.length ? usageSteps : [""] } : f.usage,
+        }));
+      }
+
+      // Images
+      const imgRes = await fetchWithProxy(base + "/products/" + s.productId + "/images.json", { headers });
+      if (imgRes.ok) {
+        const imgData = await imgRes.json();
+        const fetched = (imgData.images || []).map(img => ({
+          shopifyImageId: img.id,
+          url: img.src,
+          filename: img.src.split("/").pop().split("?")[0],
+          suggestedFilename: "",
+          altText: img.alt || "",
+        }));
+        if (fetched.length > 0) setField("images", fetched);
+      }
+
+      setProductLoaded(true);
+    } catch(e) {
+      setFetchError("Kunde inte hämta produkt: " + e.message);
+    }
+    setFetchingProduct(false);
+  };
+
+  // ─── Publish ───────────────────────────────────────────────────────────────
+
+  const publish = async () => {
+    const s = settingsRef.current;
+    if (!s.shopifyStore || !s.shopifyToken || !s.productId) {
+      setPublishResult({ ok: false, msg: "Fyll i Shopify-inställningarna (⚙)." });
+      return;
+    }
+    setPublishing(true);
+    setPublishResult(null);
+    const f = formRef.current;
+    try {
+      const allMfs = [
+        ...f.metafields.filter(m => m.key && m.value).map(m => ({
+          namespace: m.namespace || "custom",
+          key: m.key,
+          value: m.value,
+          type: m.type || "single_line_text_field",
+        })),
+        ...(f.inci.trim() ? [{ namespace: "custom", key: "ingredienser", value: f.inci.trim(), type: "multi_line_text_field" }] : []),
+        { namespace: "custom", key: "vanliga_fragor", value: "Vanliga frågor", type: "single_line_text_field" },
+        ...(f.shortDescription.trim() ? [{ namespace: "custom", key: "beskrivning", value: toRichText(f.shortDescription.trim()), type: "rich_text_field" }] : []),
+        ...(f.keyIngredients.filter(k => k.name && k.benefit).length > 0 ? [{
+          namespace: "custom", key: "key_ingredients",
+          value: JSON.stringify({
+            type: "root",
+            children: f.keyIngredients.filter(k => k.name && k.benefit).map(k => ({
+              type: "paragraph",
+              children: [
+                { type: "text", value: k.name, bold: true },
+                { type: "text", value: ": " + k.benefit }
+              ]
+            }))
+          }),
+          type: "rich_text_field",
+        }] : []),
+        ...(f.usage.intro || f.usage.steps.filter(s => s.trim()).length > 0 ? (() => {
+          const introText = (f.usage.intro || "").trim();
+          const stepsText = f.usage.steps.filter(s => s.trim()).map((s, i) => (i + 1) + ". " + s).join("\n");
+          const combined = (introText ? introText + "\n\n" : "") + stepsText;
+          // Guard: never double-encode if already JSON
+          const value = combined.trim().startsWith("{") ? combined : toRichText(combined);
+          return [{ namespace: "custom", key: "usage_instructions", value, type: "rich_text_field" }];
+        })() : []),
+        ...f.faq.flatMap((item, i) => [
+          item.q ? { namespace: "custom", key: "faq_fraga_" + (i+1), value: item.q, type: "single_line_text_field" } : null,
+          item.a ? { namespace: "custom", key: "faq_a" + (i+1), value: toRichText(item.a), type: "rich_text_field" } : null,
+        ]).filter(Boolean),
+      ];
+
+      const body = {
+        product: {
+          id: s.productId,
+          title: f.productName,
+          body_html: f.description,
+          ...(f.tags.length > 0 ? { tags: f.tags.join(", ") } : {}),
+          ...(f.seoTitle ? { metafields_global_title_tag: f.seoTitle } : {}),
+          ...(f.handle ? { handle: f.handle } : {}),
+          ...(f.seoDescription ? { metafields_global_description_tag: f.seoDescription } : {}),
+          ...(allMfs.length > 0 ? { metafields: allMfs } : {}),
+        }
+      };
+
+      const res = await fetchWithProxy("https://" + s.shopifyStore + "/admin/api/2024-01/products/" + s.productId + ".json",
+        { method: "PUT", headers: { "Content-Type": "application/json", "X-Shopify-Access-Token": s.shopifyToken }, body: JSON.stringify(body) }
+      );
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(JSON.stringify(err.errors || err));
+      }
+
+      // Update alt texts
+      const withAlt = f.images.filter(img => img.shopifyImageId && img.altText);
+      if (withAlt.length > 0) {
+        await Promise.all(withAlt.map(img =>
+          fetchWithProxy(
+            "https://" + s.shopifyStore + "/admin/api/2024-01/products/" + s.productId + "/images/" + img.shopifyImageId + ".json",
+            { method: "PUT", headers: { "Content-Type": "application/json", "X-Shopify-Access-Token": s.shopifyToken }, body: JSON.stringify({ image: { id: img.shopifyImageId, alt: img.altText } }) }
+          )
+        ));
+      }
+
+      setPublishResult({ ok: true, msg: "✓ Produkten uppdaterades i Shopify!" + (withAlt.length > 0 ? " Alt-texter sparade för " + withAlt.length + " bild(er)." : "") });
+    } catch(e) {
+      setPublishResult({ ok: false, msg: "Fel: " + e.message });
+    }
+    setPublishing(false);
+  };
+
+  // ─── Queue ─────────────────────────────────────────────────────────────────
+
+  const logQ = (msg, type = "info") => setQueueLog(l => [...l, { msg, type, time: new Date().toLocaleTimeString("sv-SE") }]);
+
+  const runQueue = async () => {
+    setQueueRunning(true);
+    setQueueLog([]);
+    for (let i = 0; i < queue.length; i++) {
+      if (queue[i].status === "klar") continue;
+      setQueueIdx(i);
+      setQueue(q => q.map((it, j) => j === i ? { ...it, status: "hämtar..." } : it));
+      logQ("Hämtar " + queue[i].id + "...");
+      const s = { ...settingsRef.current, productId: queue[i].id };
+      saveSettings(s);
+      try {
+        await fetchProduct(s);
+        setQueue(q => q.map((it, j) => j === i ? { ...it, status: "genererar..." } : it));
+        logQ("Genererar innehåll...");
+        await generateAll();
+        if (autoPublish) {
+          setQueue(q => q.map((it, j) => j === i ? { ...it, status: "publicerar..." } : it));
+          await publish();
+          setQueue(q => q.map((it, j) => j === i ? { ...it, status: "klar", productName: formRef.current.productName } : it));
+          logQ("✓ " + (formRef.current.productName || queue[i].id) + " klar!", "success");
+        } else {
+          setQueue(q => q.map((it, j) => j === i ? { ...it, status: "väntar granskning", productName: formRef.current.productName } : it));
+          logQ("⏸ Granska och godkänn", "warn");
+          setQueueRunning(false);
+          return;
+        }
+      } catch(e) {
+        setQueue(q => q.map((it, j) => j === i ? { ...it, status: "fel" } : it));
+        logQ("✗ " + e.message, "error");
+      }
+    }
+    setQueueIdx(null);
+    setQueueRunning(false);
+    logQ("✓ Kön är klar!", "success");
+  };
+
+  const approveNext = async () => {
+    if (queueIdx === null) return;
+    logQ("Publicerar...");
+    await publish();
+    setQueue(q => q.map((it, j) => j === queueIdx ? { ...it, status: "klar" } : it));
+    logQ("✓ " + formRef.current.productName + " publicerad!", "success");
+    const next = queue.findIndex((it, j) => j > queueIdx && it.status === "väntande");
+    if (next !== -1) { setQueueRunning(true); await runQueue(); }
+    else { setQueueIdx(null); logQ("✓ Alla klara!", "success"); }
+  };
+
+  // ─── AI Button ─────────────────────────────────────────────────────────────
+
+  const AiBtn = ({ field, label, imgIdx }) => {
+    const key = imgIdx !== undefined ? "img_" + imgIdx : field;
+    const loading = generating[key];
+    return (
+      <button
+        onClick={() => imgIdx !== undefined ? generateImgMeta(imgIdx) : generate(field)}
+        disabled={loading}
+        style={{ display: "inline-flex", alignItems: "center", gap: "5px", background: "rgba(200,169,110,0.12)", border: "1px solid rgba(200,169,110,0.3)", borderRadius: "6px", padding: "5px 10px", color: "#c8a96e", fontSize: "11px", letterSpacing: "0.06em", cursor: loading ? "not-allowed" : "pointer" }}
+      >
+        {loading ? <Spinner /> : "✦"} {label || "Generera"}
+      </button>
+    );
+  };
+
+  // ─── Input styles ──────────────────────────────────────────────────────────
+
+  const inp = { width: "100%", background: "#111", border: "1px solid #2a2a2a", borderRadius: "8px", padding: "10px 14px", color: "#f0ede8", fontSize: "14px", outline: "none" };
+  const ta = { ...inp, resize: "vertical", lineHeight: "1.6" };
+  const monoTa = { ...ta, fontFamily: "monospace", fontSize: "13px" };
+
+  // ─── Render ────────────────────────────────────────────────────────────────
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#0a0a0a" }}>
+
+      {/* Header */}
+      <div style={{ background: "#0f0f0f", borderBottom: "1px solid #1e1e1e", padding: "18px 28px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
+        <div>
+          <div style={{ fontFamily: "'Playfair Display',serif", fontSize: "21px" }}>
+            Shopify <span style={{ color: "#c8a96e", fontStyle: "italic" }}>Produkthanterare</span>
+          </div>
+          <div style={{ fontSize: "11px", color: "#444", marginTop: "2px", letterSpacing: "0.08em" }}>POWERED BY CLAUDE AI — éclore</div>
+        </div>
+        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+          <button
+            onClick={() => setShowSettings(true)}
+            style={{ display: "flex", alignItems: "center", gap: "6px", background: settings.anthropicKey ? "rgba(200,169,110,0.15)" : "rgba(232,124,90,0.1)", border: "1px solid " + (settings.anthropicKey ? "rgba(200,169,110,0.4)" : "rgba(232,124,90,0.4)"), borderRadius: "10px", padding: "9px 16px", color: settings.anthropicKey ? "#c8a96e" : "#e87c5a", cursor: "pointer", fontSize: "13px" }}
+          >
+            ⚙ {settings.anthropicKey ? "Inställningar" : "⚠ Konfigurera API-nyckel"}
+          </button>
+          <button
+            onClick={() => setShowQueue(q => !q)}
+            style={{ display: "flex", alignItems: "center", gap: "6px", background: showQueue ? "rgba(138,180,248,0.15)" : "#1a1a1a", border: "1px solid " + (showQueue ? "rgba(138,180,248,0.4)" : "#2a2a2a"), borderRadius: "10px", padding: "9px 16px", color: showQueue ? "#8ab4f8" : "#888", cursor: "pointer", fontSize: "13px" }}
+          >
+            ☰ Produktkö {queue.length > 0 && <span style={{ background: "rgba(138,180,248,0.2)", borderRadius: "10px", padding: "1px 7px", fontSize: "11px" }}>{queue.length}</span>}
+          </button>
+          <button
+            onClick={generateAll}
+            disabled={generatingAll || !form.productName}
+            style={{ display: "flex", alignItems: "center", gap: "6px", background: generatingAll ? "rgba(200,169,110,0.08)" : "linear-gradient(135deg,#c8a96e,#a87d3e)", border: generatingAll ? "1px solid rgba(200,169,110,0.3)" : "none", borderRadius: "10px", padding: "9px 18px", color: generatingAll ? "#c8a96e" : "#0f0f0f", cursor: (!form.productName || generatingAll) ? "not-allowed" : "pointer", fontSize: "13px", fontWeight: "600" }}
+          >
+            {generatingAll ? <><Spinner /> {genAllProgress || "Genererar..."}</> : "✦ Generera allt"}
+          </button>
+        </div>
+      </div>
+
+      <div style={{ maxWidth: "780px", margin: "0 auto", padding: "28px 20px" }}>
+
+        {/* AI Context */}
+        <div style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "12px", padding: "18px", marginBottom: "24px" }}>
+          <div style={{ fontSize: "11px", letterSpacing: "0.1em", color: "#c8a96e", marginBottom: "8px", textTransform: "uppercase" }}>✦ Butiksprofil + produktkontext (används av all AI)</div>
+          <textarea value={aiContext} onChange={e => setAiContext(e.target.value)} rows={3} style={{ width: "100%", background: "transparent", border: "none", color: "#ccc", fontSize: "13px", resize: "vertical", outline: "none", lineHeight: "1.6" }} />
+        </div>
+
+        {/* Queue */}
+        {showQueue && (
+          <div style={{ marginBottom: "20px", background: "#111", border: "1px solid #1e1e1e", borderRadius: "12px", padding: "20px", display: "flex", flexDirection: "column", gap: "14px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ fontSize: "14px", fontWeight: "500" }}>Produktkö</div>
+              <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "#888", cursor: "pointer" }}>
+                <input type="checkbox" checked={autoPublish} onChange={e => setAutoPublish(e.target.checked)} style={{ accentColor: "#c8a96e" }} />
+                Helautomatisk
+              </label>
+            </div>
+            <div style={{ display: "flex", gap: "10px" }}>
+              <textarea value={queueInput} onChange={e => setQueueInput(e.target.value)} placeholder={"Produkt-ID:n, ett per rad:\n8123456789\n8987654321"} rows={3} style={{ flex: 1, background: "#0a0a0a", border: "1px solid #2a2a2a", borderRadius: "8px", padding: "10px", color: "#f0ede8", fontSize: "12px", fontFamily: "monospace", resize: "vertical", outline: "none" }} />
+              <button onClick={() => { const ids = queueInput.split(/[,\n\s]+/).map(s => s.trim()).filter(Boolean); setQueue(q => [...q, ...ids.map(id => ({ id, status: "väntande", productName: "" }))]); setQueueInput(""); }} style={{ alignSelf: "flex-start", background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "8px", padding: "10px 14px", color: "#c8a96e", cursor: "pointer", fontSize: "12px", whiteSpace: "nowrap" }}>+ Lägg till</button>
+            </div>
+            {queue.length > 0 && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "5px", maxHeight: "180px", overflowY: "auto" }}>
+                {queue.map((item, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "7px 12px", background: "#0a0a0a", borderRadius: "7px", border: "1px solid " + (item.status === "klar" ? "rgba(52,168,83,0.3)" : item.status === "fel" ? "rgba(232,124,90,0.3)" : item.status === "väntar granskning" ? "rgba(200,169,110,0.3)" : "#1e1e1e") }}>
+                    <span style={{ fontFamily: "monospace", fontSize: "11px", color: "#555", flex: "0 0 110px" }}>{item.id}</span>
+                    <span style={{ fontSize: "12px", color: "#ccc", flex: 1 }}>{item.productName || "—"}</span>
+                    <span style={{ fontSize: "11px", color: item.status === "klar" ? "#34a853" : item.status === "fel" ? "#e87c5a" : item.status === "väntar granskning" ? "#c8a96e" : "#555" }}>{item.status}</span>
+                    <button onClick={() => setQueue(q => q.filter((_, j) => j !== i))} style={{ background: "none", border: "none", color: "#333", cursor: "pointer", fontSize: "14px", padding: 0 }}>×</button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div style={{ display: "flex", gap: "10px" }}>
+              {!queueRunning && queue.some(i => i.status === "väntande") && <button onClick={runQueue} style={{ background: "linear-gradient(135deg,#c8a96e,#a87d3e)", border: "none", borderRadius: "8px", padding: "10px 20px", color: "#0f0f0f", cursor: "pointer", fontSize: "13px", fontWeight: "600" }}>▶ Starta kö</button>}
+              {!autoPublish && queue.some(i => i.status === "väntar granskning") && <button onClick={approveNext} style={{ background: "rgba(52,168,83,0.15)", border: "1px solid rgba(52,168,83,0.4)", borderRadius: "8px", padding: "10px 20px", color: "#34a853", cursor: "pointer", fontSize: "13px", fontWeight: "600" }}>✓ Godkänn & nästa</button>}
+              {queue.length > 0 && !queueRunning && <button onClick={() => { setQueue([]); setQueueLog([]); setQueueIdx(null); }} style={{ background: "none", border: "1px solid #2a2a2a", borderRadius: "8px", padding: "10px 14px", color: "#555", cursor: "pointer", fontSize: "12px" }}>Rensa</button>}
+            </div>
+            {queueLog.length > 0 && (
+              <div style={{ background: "#0a0a0a", borderRadius: "8px", padding: "10px", maxHeight: "130px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "3px" }}>
+                {queueLog.map((l, i) => <div key={i} style={{ fontSize: "11px", fontFamily: "monospace", color: l.type === "success" ? "#34a853" : l.type === "error" ? "#e87c5a" : l.type === "warn" ? "#c8a96e" : "#555" }}><span style={{ color: "#333" }}>{l.time}</span> {l.msg}</div>)}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Status banners */}
+        {fetchingProduct && <div style={{ marginBottom: "14px", padding: "12px 16px", borderRadius: "10px", background: "rgba(138,180,248,0.08)", border: "1px solid rgba(138,180,248,0.2)", color: "#8ab4f8", fontSize: "13px", display: "flex", alignItems: "center", gap: "10px" }}><Spinner /> Hämtar produkt från Shopify...</div>}
+        {productLoaded && !fetchingProduct && <div style={{ marginBottom: "14px", padding: "12px 16px", borderRadius: "10px", background: "rgba(52,168,83,0.08)", border: "1px solid rgba(52,168,83,0.2)", color: "#34a853", fontSize: "13px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span>✓ Hämtad: {form.productName}</span>
+          <button onClick={() => fetchProduct()} style={{ background: "none", border: "1px solid rgba(52,168,83,0.3)", borderRadius: "6px", padding: "4px 10px", color: "#34a853", cursor: "pointer", fontSize: "11px" }}>Hämta igen</button>
+        </div>}
+        {fetchError && <div style={{ marginBottom: "14px", padding: "12px 16px", borderRadius: "10px", background: "rgba(232,124,90,0.08)", border: "1px solid rgba(232,124,90,0.3)", color: "#e87c5a", fontSize: "13px" }}>{fetchError}</div>}
+        {apiError && <div style={{ marginBottom: "14px", padding: "12px 16px", borderRadius: "10px", background: "rgba(232,124,90,0.08)", border: "1px solid rgba(232,124,90,0.3)", color: "#e87c5a", fontSize: "12px", display: "flex", justifyContent: "space-between", gap: "12px" }}>
+          <span>⚠ {apiError}</span>
+          <button onClick={() => setApiError(null)} style={{ background: "none", border: "none", color: "#e87c5a", cursor: "pointer", fontSize: "16px", flexShrink: 0 }}>×</button>
+        </div>}
+
+        {/* Product ID quick input */}
+        <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+          <input
+            value={settings.productId}
+            onChange={e => setSettings(s => ({ ...s, productId: e.target.value }))}
+            placeholder="Produkt-ID (ex: 8123456789012)"
+            style={{ flex: 1, background: "#111", border: "1px solid #2a2a2a", borderRadius: "8px", padding: "10px 14px", color: "#f0ede8", fontSize: "14px", outline: "none", fontFamily: "monospace" }}
+          />
+          <button
+            onClick={() => fetchProduct()}
+            disabled={fetchingProduct || !settings.productId}
+            style={{ background: "rgba(138,180,248,0.15)", border: "1px solid rgba(138,180,248,0.3)", borderRadius: "8px", padding: "10px 18px", color: "#8ab4f8", cursor: "pointer", fontSize: "13px", fontWeight: "500", whiteSpace: "nowrap" }}
+          >
+            {fetchingProduct ? <Spinner /> : "↓ Hämta produkt"}
+          </button>
+        </div>
+
+        {/* Tabs */}
+        <div style={{ display: "flex", gap: "3px", background: "#111", borderRadius: "12px", padding: "4px", marginBottom: "24px", overflowX: "auto" }}>
+          {TABS.map((t, i) => (
+            <button key={t} onClick={() => setTab(i)} style={{ flex: 1, minWidth: "80px", padding: "9px 6px", borderRadius: "9px", border: "none", background: tab === i ? "#1e1e1e" : "transparent", color: tab === i ? "#f0ede8" : "#555", fontSize: "12px", cursor: "pointer", fontWeight: tab === i ? "500" : "400", whiteSpace: "nowrap", transition: "all 0.15s" }}>{t}</button>
+          ))}
+        </div>
+
+        {/* ─── Tab: Produkt ─── */}
+        {tab === 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+            <Field label="Produktnamn">
+              <input value={form.productName} onChange={e => setField("productName", e.target.value)} placeholder="Ex: Vitamin C Serum 30ml" style={{ ...inp, fontSize: "15px" }} />
+            </Field>
+
+            <Field label="Above the fold-text" hint="~80 ord" action={<AiBtn field="shortDescription" label="Generera ingress" />}>
+              <textarea value={form.shortDescription} onChange={e => setField("shortDescription", e.target.value)} rows={4} placeholder="Ca 80 ord – primärt sökord i mening 1, ingrediens/effekt i mitten, för vem/när i slutet." style={ta} />
+              {(() => {
+                const n = form.shortDescription.trim() ? form.shortDescription.trim().split(/\s+/).length : 0;
+                const c = n === 0 ? "#444" : n < 60 ? "#e87c5a" : n <= 100 ? "#34a853" : "#e87c5a";
+                return <div style={{ marginTop: "5px", fontSize: "11px", color: c, textAlign: "right" }}>{n} ord {n >= 60 && n <= 100 ? "✓" : n > 0 ? "(sikta på 60–100)" : ""}</div>;
+              })()}
+            </Field>
+
+            <Field label="Bullet Points / USP:er" action={<AiBtn field="bulletPoints" label="Generera 5 USP:er" />}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "7px" }}>
+                {form.bulletPoints.map((bp, idx) => (
+                  <div key={idx} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{ color: "#34a853", flexShrink: 0 }}>✓</span>
+                    <input value={bp} onChange={e => { const pts = [...form.bulletPoints]; pts[idx] = e.target.value; syncBulletPoints(pts); }} placeholder={"USP " + (idx + 1)} style={{ ...inp, flex: 1, padding: "8px 12px" }} />
+                    <button onClick={() => syncBulletPoints(form.bulletPoints.filter((_, i) => i !== idx))} style={{ background: "none", border: "none", color: "#444", cursor: "pointer", fontSize: "16px", padding: "0 4px" }}>×</button>
+                  </div>
+                ))}
+                <button onClick={() => syncBulletPoints([...form.bulletPoints, ""])} style={{ alignSelf: "flex-start", background: "none", border: "1px dashed #333", borderRadius: "7px", padding: "6px 12px", color: "#555", cursor: "pointer", fontSize: "12px" }}>+ Lägg till</button>
+              </div>
+            </Field>
+
+            <Field label="Beskrivning (HTML)" action={<AiBtn field="description" label="Generera beskrivning" />}>
+              <textarea value={form.description} onChange={e => setField("description", e.target.value)} rows={9} placeholder="<p>Produktens fullständiga beskrivning...</p>" style={monoTa} />
+              {form.description && (
+                <details style={{ marginTop: "8px" }}>
+                  <summary style={{ fontSize: "11px", color: "#555", cursor: "pointer" }}>Förhandsgranskning HTML</summary>
+                  <div dangerouslySetInnerHTML={{ __html: form.description }} style={{ marginTop: "8px", background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "16px", fontSize: "14px", lineHeight: "1.7", color: "#ccc" }} />
+                </details>
+              )}
+            </Field>
+          </div>
+        )}
+
+        {/* ─── Tab: Bilder ─── */}
+        {tab === 1 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
+              <span style={{ fontSize: "13px", color: "#888" }}>{form.images.length} bild(er)</span>
+              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                <button onClick={() => fetchProduct()} style={{ display: "inline-flex", alignItems: "center", gap: "5px", background: "rgba(138,180,248,0.1)", border: "1px solid rgba(138,180,248,0.3)", borderRadius: "7px", padding: "7px 12px", color: "#8ab4f8", cursor: "pointer", fontSize: "12px" }}>↓ Hämta från Shopify</button>
+                {form.images.length > 0 && <button onClick={generateAllImgMeta} style={{ display: "inline-flex", alignItems: "center", gap: "5px", background: "rgba(200,169,110,0.1)", border: "1px solid rgba(200,169,110,0.25)", borderRadius: "7px", padding: "7px 12px", color: "#c8a96e", cursor: "pointer", fontSize: "12px" }}>✦ Analysera alla bilder</button>}
+                <button onClick={() => setField("images", [...form.images, { url: "", filename: "", altText: "", suggestedFilename: "" }])} style={{ background: "#1a1a1a", border: "1px solid #333", borderRadius: "7px", padding: "7px 12px", color: "#f0ede8", cursor: "pointer", fontSize: "12px" }}>+ Lägg till</button>
+              </div>
+            </div>
+            {form.images.length === 0 && <div style={{ textAlign: "center", padding: "48px", border: "1px dashed #2a2a2a", borderRadius: "12px", color: "#444" }}><div style={{ fontSize: "32px", marginBottom: "10px" }}>🖼</div>Inga bilder — hämta från Shopify eller lägg till manuellt</div>}
+            {form.images.map((img, idx) => (
+              <div key={idx} style={{ background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "12px", padding: "16px", display: "flex", flexDirection: "column", gap: "12px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: "12px", color: "#888", letterSpacing: "0.08em" }}>BILD {idx + 1}</span>
+                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                    <AiBtn imgIdx={idx} label="Analysera bild" />
+                    <button onClick={() => setField("images", form.images.filter((_, i) => i !== idx))} style={{ background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: "16px" }}>×</button>
+                  </div>
+                </div>
+                {img.url && <img src={img.url} alt={img.altText || ""} style={{ width: "100%", maxHeight: "200px", objectFit: "contain", borderRadius: "8px", background: "#111" }} onError={e => e.target.style.display = "none"} />}
+                <div>
+                  <div style={{ fontSize: "10px", color: "#666", marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.08em" }}>URL</div>
+                  <input value={img.url || ""} onChange={e => { const imgs = [...form.images]; imgs[idx] = { ...imgs[idx], url: e.target.value }; setField("images", imgs); }} placeholder="https://cdn.shopify.com/..." style={{ ...inp, fontSize: "12px", fontFamily: "monospace" }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: "10px", color: "#666", marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Nuvarande filnamn</div>
+                  <div style={{ background: "#0d0d0d", border: "1px solid #1e1e1e", borderRadius: "6px", padding: "8px 12px", color: "#555", fontSize: "12px", fontFamily: "monospace" }}>{img.filename || "–"}</div>
+                </div>
+                {img.suggestedFilename && (
+                  <div style={{ background: "rgba(138,180,248,0.05)", border: "1px solid rgba(138,180,248,0.2)", borderRadius: "8px", padding: "10px 12px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "5px" }}>
+                      <span style={{ fontSize: "10px", color: "#8ab4f8", textTransform: "uppercase", letterSpacing: "0.08em" }}>✦ SEO-filnamn (vid omladdning)</span>
+                      <CopyBtn text={img.suggestedFilename} />
+                    </div>
+                    <div style={{ color: "#8ab4f8", fontSize: "12px", fontFamily: "monospace", wordBreak: "break-all" }}>{img.suggestedFilename}</div>
+                  </div>
+                )}
+                <div>
+                  <div style={{ fontSize: "10px", color: "#666", marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Alt-text</div>
+                  <input value={img.altText || ""} onChange={e => { const imgs = [...form.images]; imgs[idx] = { ...imgs[idx], altText: e.target.value }; setField("images", imgs); }} placeholder="Beskriv vad som syns på bilden..." style={inp} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ─── Tab: SEO & Meta ─── */}
+        {tab === 2 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+            <Field label={"URL-slug / handle " + form.handle.length + "/60"} hint="→ eclore.se/products/[slug]" action={<AiBtn field="handle" label="Förslag på slug" />}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0", borderRadius: "8px", overflow: "hidden", border: "1px solid #2a2a2a" }}>
+                <span style={{ background: "#1a1a1a", padding: "10px 12px", color: "#555", fontSize: "12px", whiteSpace: "nowrap", borderRight: "1px solid #2a2a2a" }}>eclore.se/products/</span>
+                <input value={form.handle} onChange={e => setField("handle", e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-"))} placeholder="ansiktskram-for-torr-mogen-hud" style={{ flex: 1, background: "#111", border: "none", padding: "10px 12px", color: "#c8a96e", fontSize: "13px", outline: "none", fontFamily: "monospace" }} />
+              </div>
+              {form.handle && <div style={{ marginTop: "5px", fontSize: "11px", color: "#e87c5a" }}>⚠ Uppdatera URL manuellt i Shopify Admin och skapa omdirigering innan du byter slug.</div>}
+            </Field>
+
+            <Field label={"SEO-titel " + form.seoTitle.length + "/60"} action={<AiBtn field="seoTitle" label="Generera titel" />}>
+              <input value={form.seoTitle} onChange={e => setField("seoTitle", e.target.value)} placeholder="Naturlig ansiktskräm mogen hud | éclore" style={{ ...inp, border: "1px solid " + (form.seoTitle.length > 60 ? "#e87c5a" : "#2a2a2a") }} />
+            </Field>
+            <Field label={"SEO-metabeskrivning " + form.seoDescription.length + "/155"} action={<AiBtn field="seoDescription" label="Generera metabeskrivning" />}>
+              <textarea value={form.seoDescription} onChange={e => setField("seoDescription", e.target.value)} rows={3} placeholder="Beskrivande text för Google..." style={{ ...ta, border: "1px solid " + (form.seoDescription.length > 155 ? "#e87c5a" : "#2a2a2a") }} />
+            </Field>
+            {(form.seoTitle || form.seoDescription) && (
+              <div style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "12px", padding: "18px" }}>
+                <div style={{ fontSize: "10px", color: "#555", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Google-förhandsgranskning</div>
+                <div style={{ color: "#8ab4f8", fontSize: "17px", marginBottom: "3px" }}>{form.seoTitle || "Produkttitel"}</div>
+                <div style={{ color: "#34a853", fontSize: "12px", marginBottom: "4px" }}>eclore.se/products/...</div>
+                <div style={{ color: "#bdc1c6", fontSize: "13px", lineHeight: "1.5" }}>{form.seoDescription || "Metabeskrivning..."}</div>
+              </div>
+            )}
+            <Field label="SEO-kluster" action={<AiBtn field="seoCluster" label="Generera kluster" />}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                <div>
+                  <div style={{ fontSize: "10px", color: "#c8a96e", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.08em" }}>▸ Primärt sökord</div>
+                  <input value={form.seoCluster.primary} onChange={e => setField("seoCluster", { ...form.seoCluster, primary: e.target.value })} placeholder="t.ex. naturlig ansiktskräm mogen hud" style={{ ...inp, border: "1px solid rgba(200,169,110,0.3)" }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: "10px", color: "#888", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.08em" }}>▸ Sekundära sökord</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "7px", marginBottom: "8px" }}>
+                    {form.seoCluster.secondary.map((kw, i) => <Tag key={i} label={kw} onRemove={() => setField("seoCluster", { ...form.seoCluster, secondary: form.seoCluster.secondary.filter((_, j) => j !== i) })} />)}
+                  </div>
+                  <TagInput onAdd={v => setField("seoCluster", { ...form.seoCluster, secondary: [...form.seoCluster.secondary, v] })} />
+                </div>
+                <div>
+                  <div style={{ fontSize: "10px", color: "#888", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.08em" }}>▸ Long-tail fraser</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "5px", marginBottom: "8px" }}>
+                    {form.seoCluster.longTail.map((lt, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "center", gap: "8px", background: "#111", border: "1px solid #222", borderRadius: "7px", padding: "8px 12px" }}>
+                        <span style={{ color: "#555", fontSize: "12px" }}>→</span>
+                        <span style={{ flex: 1, fontSize: "13px", color: "#bbb" }}>{lt}</span>
+                        <button onClick={() => setField("seoCluster", { ...form.seoCluster, longTail: form.seoCluster.longTail.filter((_, j) => j !== i) })} style={{ background: "none", border: "none", color: "#444", cursor: "pointer", fontSize: "14px" }}>×</button>
+                      </div>
+                    ))}
+                  </div>
+                  <TagInput onAdd={v => setField("seoCluster", { ...form.seoCluster, longTail: [...form.seoCluster.longTail, v] })} placeholder="Long-tail fras, tryck Enter" />
+                </div>
+              </div>
+            </Field>
+            <Field label="Custom metafält">
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                {form.metafields.map((mf, idx) => (
+                  <div key={idx} style={{ background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "9px", padding: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: "8px", alignItems: "end" }}>
+                      <div>
+                        <div style={{ fontSize: "10px", color: "#555", marginBottom: "4px", textTransform: "uppercase" }}>Nyckel</div>
+                        <input value={mf.key} onChange={e => { const m = [...form.metafields]; m[idx] = { ...m[idx], key: e.target.value }; setField("metafields", m); }} placeholder="min_nyckel" style={{ ...inp, padding: "7px 10px", fontSize: "13px" }} />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: "10px", color: "#555", marginBottom: "4px", textTransform: "uppercase" }}>Typ</div>
+                        <select value={mf.type} onChange={e => { const m = [...form.metafields]; m[idx] = { ...m[idx], type: e.target.value }; setField("metafields", m); }} style={{ ...inp, padding: "7px 10px", fontSize: "13px", cursor: "pointer" }}>
+                          <option value="single_line_text_field">Text</option>
+                          <option value="multi_line_text_field">Lång text</option>
+                          <option value="rich_text_field">Rich text</option>
+                          <option value="url">URL</option>
+                          <option value="number_integer">Heltal</option>
+                          <option value="json">JSON</option>
+                        </select>
+                      </div>
+                      <button onClick={() => setField("metafields", form.metafields.filter((_, i) => i !== idx))} style={{ background: "none", border: "1px solid #2a2a2a", borderRadius: "7px", padding: "7px 10px", color: "#555", cursor: "pointer" }}>×</button>
+                    </div>
+                    <input value={mf.value} onChange={e => { const m = [...form.metafields]; m[idx] = { ...m[idx], value: e.target.value }; setField("metafields", m); }} placeholder="Värde" style={{ ...inp, padding: "7px 10px", fontSize: "13px" }} />
+                  </div>
+                ))}
+                <button onClick={() => setField("metafields", [...form.metafields, { key: "", value: "", namespace: "custom", type: "single_line_text_field" }])} style={{ alignSelf: "flex-start", background: "none", border: "1px dashed #333", borderRadius: "7px", padding: "7px 12px", color: "#555", cursor: "pointer", fontSize: "12px" }}>+ Lägg till metafält</button>
+              </div>
+            </Field>
+          </div>
+        )}
+
+        {/* ─── Tab: FAQ ─── */}
+        {tab === 3 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ fontSize: "13px", color: "#ccc" }}>{form.faq.length} frågor</div>
+              <div style={{ display: "flex", gap: "8px" }}>
+                <AiBtn field="faq" label="Generera 5 FAQ" />
+                <button onClick={() => setField("faq", [...form.faq, { q: "", a: "" }])} style={{ background: "#1a1a1a", border: "1px solid #333", borderRadius: "7px", padding: "7px 12px", color: "#f0ede8", cursor: "pointer", fontSize: "12px" }}>+ Lägg till</button>
+              </div>
+            </div>
+            {form.faq.length === 0 && <div style={{ textAlign: "center", padding: "48px", border: "1px dashed #2a2a2a", borderRadius: "12px", color: "#444" }}><div style={{ fontSize: "32px", marginBottom: "10px" }}>❓</div>Klicka "Generera 5 FAQ" för AI-förslag</div>}
+            {form.faq.map((item, idx) => (
+              <div key={idx} style={{ background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "12px", padding: "16px", display: "flex", flexDirection: "column", gap: "10px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: "11px", color: "#c8a96e", letterSpacing: "0.08em", textTransform: "uppercase" }}>Fråga {idx + 1}</span>
+                  <button onClick={() => setField("faq", form.faq.filter((_, i) => i !== idx))} style={{ background: "none", border: "none", color: "#444", cursor: "pointer", fontSize: "16px" }}>×</button>
+                </div>
+                <div>
+                  <div style={{ fontSize: "10px", color: "#666", marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.07em" }}>Fråga</div>
+                  <input value={item.q} onChange={e => { const f = [...form.faq]; f[idx] = { ...f[idx], q: e.target.value }; setField("faq", f); }} placeholder="t.ex. Passar produkten för känslig hud?" style={inp} />
+                </div>
+                <div>
+                  <div style={{ fontSize: "10px", color: "#666", marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.07em" }}>Svar (HTML)</div>
+                  <textarea value={item.a} onChange={e => { const f = [...form.faq]; f[idx] = { ...f[idx], a: e.target.value }; setField("faq", f); }} rows={4} placeholder="<p>Svar...</p>" style={monoTa} />
+                  {item.a && item.a.includes("<") && (
+                    <details style={{ marginTop: "6px" }}>
+                      <summary style={{ fontSize: "10px", color: "#555", cursor: "pointer" }}>Förhandsgranskning</summary>
+                      <div dangerouslySetInnerHTML={{ __html: item.a }} style={{ marginTop: "6px", background: "#0d0d0d", border: "1px solid #1e1e1e", borderRadius: "6px", padding: "10px 14px", fontSize: "13px", lineHeight: "1.7", color: "#ccc" }} />
+                    </details>
+                  )}
+                </div>
+              </div>
+            ))}
+            {form.faq.length > 0 && <div style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "9px", padding: "12px 16px", fontSize: "11px", color: "#555" }}>
+              Sparas som <code style={{ color: "#888" }}>custom.faq_fraga_1</code> / <code style={{ color: "#888" }}>custom.faq_a1</code> ... ×5
+            </div>}
+          </div>
+        )}
+
+        {/* ─── Tab: Användning ─── */}
+        {tab === 4 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <div style={{ fontSize: "13px", color: "#ccc" }}>Användningsinstruktioner</div>
+                <div style={{ fontSize: "11px", color: "#555", marginTop: "2px" }}>→ custom.usage_instructions (rich text)</div>
+              </div>
+              <AiBtn field="usage" label="Generera instruktioner" />
+            </div>
+            <div>
+              <div style={{ fontSize: "11px", color: "#888", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "6px" }}>Intro</div>
+              <textarea value={form.usage.intro} onChange={e => setField("usage", { ...form.usage, intro: e.target.value })} rows={3} placeholder="t.ex. Vårt serum passar som andra steg i morgonrutinen, efter rengöring och toner." style={ta} />
+            </div>
+            <div>
+              <div style={{ fontSize: "11px", color: "#888", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" }}>Steg</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "7px" }}>
+                {form.usage.steps.map((step, idx) => (
+                  <div key={idx} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <span style={{ width: "24px", height: "24px", borderRadius: "50%", background: "rgba(200,169,110,0.15)", border: "1px solid rgba(200,169,110,0.3)", color: "#c8a96e", fontSize: "11px", fontWeight: "600", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{idx + 1}</span>
+                    <input value={step} onChange={e => { const s = [...form.usage.steps]; s[idx] = e.target.value; setField("usage", { ...form.usage, steps: s }); }} placeholder={"Steg " + (idx + 1) + " – börja med verb"} style={{ ...inp, flex: 1, padding: "8px 12px" }} />
+                    <button onClick={() => setField("usage", { ...form.usage, steps: form.usage.steps.filter((_, i) => i !== idx) })} style={{ background: "none", border: "none", color: "#444", cursor: "pointer", fontSize: "16px", padding: "0 4px" }}>×</button>
+                  </div>
+                ))}
+                <button onClick={() => setField("usage", { ...form.usage, steps: [...form.usage.steps, ""] })} style={{ alignSelf: "flex-start", background: "none", border: "1px dashed #333", borderRadius: "7px", padding: "6px 12px", color: "#555", cursor: "pointer", fontSize: "12px", marginTop: "3px" }}>+ Lägg till steg</button>
+              </div>
+            </div>
+            {(form.usage.intro || form.usage.steps.filter(s => s.trim()).length > 0) && (
+              <div style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "12px", padding: "16px" }}>
+                <div style={{ fontSize: "10px", color: "#555", marginBottom: "10px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Förhandsgranskning</div>
+                {form.usage.intro && <p style={{ fontSize: "13px", color: "#ccc", lineHeight: "1.7", marginBottom: "10px" }}>{form.usage.intro}</p>}
+                <ol style={{ margin: 0, paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "5px" }}>
+                  {form.usage.steps.filter(s => s.trim()).map((s, i) => <li key={i} style={{ fontSize: "13px", color: "#bbb", lineHeight: "1.6" }}>{s}</li>)}
+                </ol>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ─── Tab: Ingredienser & Taggar ─── */}
+        {tab === 5 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+            <Field label="INCI-ingredienslista" hint="→ custom.ingredienser">
+              <textarea value={form.inci} onChange={e => setField("inci", e.target.value)} rows={4} placeholder="Aqua, Glycerin, Niacinamide, Sodium Hyaluronate..." style={monoTa} />
+              <div style={{ marginTop: "5px", fontSize: "11px", color: "#555" }}>Klistra in INCI-listan från produktleverantören</div>
+            </Field>
+
+            <Field label="Nyckelingredienser" hint="→ custom.key_ingredients (json)" action={<AiBtn field="keyIngredients" label="Generera" />}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "9px" }}>
+                {form.keyIngredients.map((ki, idx) => (
+                  <div key={idx} style={{ background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "9px", padding: "11px 14px", display: "flex", gap: "10px", alignItems: "center" }}>
+                    <input value={ki.name} onChange={e => { const k = [...form.keyIngredients]; k[idx] = { ...k[idx], name: e.target.value }; setField("keyIngredients", k); }} placeholder="Ingrediens" style={{ flex: "0 0 150px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "6px", padding: "7px 10px", color: "#c8a96e", fontSize: "13px", outline: "none", fontWeight: "500" }} />
+                    <input value={ki.benefit} onChange={e => { const k = [...form.keyIngredients]; k[idx] = { ...k[idx], benefit: e.target.value }; setField("keyIngredients", k); }} placeholder="Vad den gör för huden..." style={{ flex: 1, background: "#111", border: "1px solid #2a2a2a", borderRadius: "6px", padding: "7px 10px", color: "#f0ede8", fontSize: "13px", outline: "none" }} />
+                    <button onClick={() => setField("keyIngredients", form.keyIngredients.filter((_, i) => i !== idx))} style={{ background: "none", border: "none", color: "#444", cursor: "pointer", fontSize: "16px", padding: "0 2px" }}>×</button>
+                  </div>
+                ))}
+                <button onClick={() => setField("keyIngredients", [...form.keyIngredients, { name: "", benefit: "" }])} style={{ alignSelf: "flex-start", background: "none", border: "1px dashed #333", borderRadius: "7px", padding: "6px 12px", color: "#555", cursor: "pointer", fontSize: "12px" }}>+ Lägg till</button>
+              </div>
+            </Field>
+
+            <Field label="Produkttaggar" hint="→ product.tags" action={<AiBtn field="tags" label="Generera taggar" />}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "7px", marginBottom: "9px" }}>
+                {form.tags.map((tag, i) => <Tag key={i} label={tag} onRemove={() => setField("tags", form.tags.filter((_, j) => j !== i))} />)}
+              </div>
+              <TagInput onAdd={v => setField("tags", [...form.tags, v.toLowerCase().replace(/\s+/g, "-")])} placeholder="Skriv tagg och tryck Enter" />
+              <div style={{ marginTop: "5px", fontSize: "11px", color: "#555" }}>Skickas direkt som <code style={{ color: "#888" }}>product.tags</code></div>
+            </Field>
+          </div>
+        )}
+
+        {/* ─── Publish bar ─── */}
+        <div style={{ marginTop: "32px", padding: "20px", background: "#0f0f0f", border: "1px solid #1e1e1e", borderRadius: "14px" }}>
+          {publishResult && (
+            <div style={{ marginBottom: "12px", padding: "10px 14px", borderRadius: "8px", background: publishResult.ok ? "rgba(52,168,83,0.1)" : "rgba(232,124,90,0.1)", border: "1px solid " + (publishResult.ok ? "rgba(52,168,83,0.3)" : "rgba(232,124,90,0.3)"), color: publishResult.ok ? "#34a853" : "#e87c5a", fontSize: "13px" }}>
+              {publishResult.msg}
+            </div>
+          )}
+          <div style={{ display: "flex", gap: "10px" }}>
+            <button
+              onClick={publish}
+              disabled={publishing || !form.productName || !settings.productId}
+              style={{ flex: 1, padding: "14px", background: (!form.productName || !settings.productId) ? "#1a1a1a" : "linear-gradient(135deg,#c8a96e,#a87d3e)", border: "none", borderRadius: "10px", color: (!form.productName || !settings.productId) ? "#444" : "#0f0f0f", fontSize: "14px", fontWeight: "600", cursor: (!form.productName || !settings.productId || publishing) ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
+            >
+              {publishing ? <><Spinner /> Publicerar...</> : "↑ Publicera till Shopify"}
+            </button>
+            <button onClick={() => setShowSettings(true)} style={{ padding: "14px 16px", background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "10px", color: "#888", cursor: "pointer" }}>⚙</button>
+          </div>
+          <div style={{ marginTop: "8px", fontSize: "11px", color: "#555", textAlign: "center" }}>
+            {settings.productId ? "Produkt-ID: " + settings.productId : <span style={{ color: "#e87c5a" }}>Ange Produkt-ID ovan för att publicera</span>}
+          </div>
+        </div>
+
+      </div>
+
+      {showSettings && <SettingsPanel settings={settings} onSave={saveSettings} onClose={() => setShowSettings(false)} />}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
