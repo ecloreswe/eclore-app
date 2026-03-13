@@ -200,13 +200,21 @@ function App() {
   const [queueRunning, setQueueRunning] = useState(false);
   const [queueLog, setQueueLog] = useState([]);
   const [autoPublish, setAutoPublish] = useState(false);
+  const [queueOptions, setQueueOptions] = useState({
+    description: true, shortDescription: true, bulletPoints: true,
+    seoTitle: true, seoDescription: true, seoCluster: true,
+    faq: true, usage: true, keyIngredients: true, tags: true, images: false,
+  });
+  const toggleQueueOption = (key) => setQueueOptions(o => ({ ...o, [key]: !o[key] }));
   const [queueIdx, setQueueIdx] = useState(null);
 
   // Refs
   const formRef = useRef(form);
   const settingsRef = useRef(settings);
+  const queueOptionsRef = useRef(queueOptions);
   useEffect(() => { formRef.current = form; }, [form]);
   useEffect(() => { settingsRef.current = settings; }, [settings]);
+  useEffect(() => { queueOptionsRef.current = queueOptions; }, [queueOptions]);
 
   // ─── Helpers ───────────────────────────────────────────────────────────────
 
@@ -337,8 +345,10 @@ function App() {
       const prompts = {
         shortDescription:
           `${c}\n\nSkriv en above the fold-text på svenska för: "${name}". Ca 80 ord. ` +
-          `Struktur: (1) vad produkten är + primärt sökord naturligt, (2) ursprung/ingrediens med effekt, (3) för vem och när. ` +
-          `Professionell och varm ton. Returnera bara texten, ingen HTML.`,
+          `Struktur: ` +
+          `(1) Börja med en H2-rubrik som är mer beskrivande än produktnamnet – lyft fram viktigaste egenskapen/fördelen, inkludera primärt sökord naturligt. Returnera rubriken som <h2>...</h2>. ` +
+          `(2) Sedan 2-3 meningar: vad produkten är + ursprung/ingrediens med effekt + för vem och när. ` +
+          `Professionell och varm ton. Returnera bara HTML med <h2> och <p>.`,
 
         description: (() => {
           const productType = (formRef.current.productType || "").toLowerCase();
@@ -356,7 +366,19 @@ function App() {
             `<h2>[Produktnamn] – [fras med primärt sökord]</h2>\n<p>2-3 meningar, sökord i mening 1.</p>\n` +
             `<h2>${h2mid}</h2>\n${midContent}\n` +
             `<h2>${h2result}</h2>\n<ul><li>Punkt 1</li><li>Punkt 2</li><li>Punkt 3</li></ul>\n` +
-            `<h2>För vem passar [produkttyp]?</h2>\n<p>Målgrupp + long-tail sökord naturligt.</p>`;
+            `<h2>För vem passar [produkttyp]?</h2>\n<p>Målgrupp + long-tail sökord naturligt.</p>\n\n` +
+            `VIKTIGT: Väv in 2-3 naturliga interna länkar i texten (ej i rubriker). Använd dessa URL:er och ankarlänktexter efter relevans:\n` +
+            `Ansiktsvård: <a href="https://www.eclore.se/collections/ansiktsvard">ansiktsvård</a>\n` +
+            `Serum: <a href="https://www.eclore.se/collections/serum">serum</a>\n` +
+            `Anti-age: <a href="https://www.eclore.se/collections/anti-age">anti-age</a>\n` +
+            `Hårvård: <a href="https://www.eclore.se/collections/harvard">hårvård</a>\n` +
+            `Kroppsvård: <a href="https://www.eclore.se/collections/kroppsvard">kroppsvård</a>\n` +
+            `Sminkväskor: <a href="https://www.eclore.se/collections/sminkvaskor">sminkväskor</a>\n` +
+            `Doftljus: <a href="https://www.eclore.se/collections/doftljus">doftljus</a>\n` +
+            `Body scrub: <a href="https://www.eclore.se/collections/bodyscrub">body scrub</a>\n` +
+            `Ansiktsmask: <a href="https://www.eclore.se/collections/ansiktsmask">ansiktsmask</a>\n` +
+            `Naturlig hudvård: <a href="https://www.eclore.se/collections/eclore">naturlig hudvård</a>\n` +
+            `Välj bara de kategorier som är relevanta för produkten. Länkarna ska kännas naturliga i texten.`;
         })(),
 
         bulletPoints:
@@ -365,12 +387,15 @@ function App() {
 
         seoTitle:
           `${c}\n\nSkriv en SEO-titel (max 60 tecken) för: "${name}". ` +
-          `Titeln ska vara en naturlig, läsbar mening – INTE lösa nyckelord. ` +
-          `Inkludera primärt sökord naturligt med bindeord som "för", "med", "i", "av". ` +
-          `Titeln MÅSTE sluta med " | éclore". ` +
-          `Bra exempel hudvård: "Ansiktskräm för torr och mogen hud | éclore". ` +
-          `Bra exempel väska: "Handgjord sminkväska i naturliga material | éclore". ` +
-          `Dåligt exempel: "sminkväska naturliga material set éclore". Returnera bara titeln.`,
+          `REGLER: (1) Naturlig mening med bindeord – ALDRIG lösa nyckelord. ` +
+          `(2) Inkludera produktens mest säljande egenskap (material, funktion, storlek, mönster etc). ` +
+          `(3) Titeln MÅSTE sluta med " | éclore". ` +
+          `(4) Max 60 tecken INKLUSIVE " | éclore". ` +
+          `BRA: "Sminkväska i set med blommigt mönster | éclore". ` +
+          `BRA: "Ansiktskräm för torr och mogen hud | éclore". ` +
+          `BRA: "Doftljus med citrongräs i sojavax | éclore". ` +
+          `DÅLIGT: "sminkväska naturliga material set éclore". ` +
+          `Returnera bara titeln, ingenting annat.`,
 
         handle:
           `${c}\n\nGenerera en URL-slug på svenska för produkten: "${name}". ` +
@@ -381,11 +406,14 @@ function App() {
 
         seoDescription:
           `${c}\n\nSkriv en SEO-metabeskrivning (max 155 tecken) för: "${name}". ` +
-          `Fokusera på: (1) specifik effekt eller fördel, (2) målgrupp/hudtyp/användningsområde, (3) ev. kort CTA. ` +
-          `Undvik: "Tillverkat i Europa", "genuint hantverk", vaga påståenden utan substans. ` +
-          `Exempel hudvård: "Djupt återfuktande ansiktskräm för torr och mogen hud. Naturliga ingredienser som stärker hudbarriären. Beställ idag." ` +
-          `Exempel doftljus: "Handgjort sojavaxljus med citrongräs – 40 timmars brinntid. Naturliga eteriska oljor för harmonisk atmosfär hemma." ` +
-          `Returnera bara texten.`,
+          `REGLER: (1) Börja med produktens konkreta, unika egenskap (material, storlek, funktion, mönster). ` +
+          `(2) Ange specifik nytta eller fördel för användaren. ` +
+          `(3) Avsluta gärna med kort CTA eller praktisk info. ` +
+          `UNDVIK: "från Europa", "genuint hantverk", "kvalitetsmedvetna kvinnor", vaga fraser. ` +
+          `BRA väska: "Set med 2 handgjorda sminkväskor i bomull med vattentätt foder. Stor och liten storlek – perfekt för resor och vardagsbruk." ` +
+          `BRA hudvård: "Djupt återfuktande ansiktskräm med hyaluronsyra för torr och mogen hud. Stärker hudbarriären och minskar rynkor." ` +
+          `BRA doftljus: "Sojavaxljus med citrongräs och eteriska oljor – ca 40 timmars brinntid. Skapar harmonisk atmosfär utan syntetiska tillsatser." ` +
+          `Returnera bara texten, max 155 tecken.`,
 
         seoCluster:
           `${c}\n\nSEO-kluster för: "${name}". ` +
@@ -504,7 +532,8 @@ function App() {
 
   // ─── Generate all ──────────────────────────────────────────────────────────
 
-  const generateAll = async () => {
+  const generateAll = async (opts) => {
+    const options = opts || { description: true, shortDescription: true, bulletPoints: true, seoTitle: true, seoDescription: true, seoCluster: true, faq: true, usage: true, keyIngredients: true, tags: true, images: true };
     setGeneratingAll(true);
     const steps = [
       ["description", "Genererar beskrivning..."],
@@ -519,15 +548,15 @@ function App() {
       ["tags", "Genererar taggar..."],
     ];
     for (const [field, label] of steps) {
+      if (!options[field]) continue;
       setGenAllProgress(label);
       await generate(field);
     }
-    if (formRef.current.images.length > 0) {
+    if (options.images && formRef.current.images.length > 0) {
       setGenAllProgress("Analyserar bilder...");
       try {
         await generateAllImgMeta();
       } catch(e) {
-        // Bildanalys misslyckades – fortsätter ändå
         setApiError("Bildanalys misslyckades men övrig generering är klar: " + e.message);
       }
     }
@@ -815,7 +844,7 @@ function App() {
         await fetchProduct(s);
         setQueue(q => q.map((it, j) => j === i ? { ...it, status: "genererar..." } : it));
         logQ("Genererar innehåll...");
-        await generateAll();
+        await generateAll(queueOptionsRef.current);
         if (autoPublish) {
           setQueue(q => q.map((it, j) => j === i ? { ...it, status: "publicerar..." } : it));
           await publish();
@@ -923,6 +952,35 @@ function App() {
                 <input type="checkbox" checked={autoPublish} onChange={e => setAutoPublish(e.target.checked)} style={{ accentColor: "#c8a96e" }} />
                 Helautomatisk
               </label>
+            </div>
+            {/* Queue options */}
+            <div style={{ background: "#0a0a0a", border: "1px solid #1e1e1e", borderRadius: "8px", padding: "12px" }}>
+              <div style={{ fontSize: "11px", color: "#555", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Vad ska genereras?</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                {[
+                  ["description", "Beskrivning"],
+                  ["shortDescription", "Ingress"],
+                  ["bulletPoints", "USP:er"],
+                  ["seoTitle", "SEO-titel"],
+                  ["seoDescription", "Metabeskrivning"],
+                  ["seoCluster", "SEO-kluster"],
+                  ["faq", "FAQ"],
+                  ["usage", "Användning"],
+                  ["keyIngredients", "Ingredienser"],
+                  ["tags", "Taggar"],
+                  ["images", "Bildanalys"],
+                ].map(([key, label]) => (
+                  <label key={key} style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "12px", color: queueOptions[key] ? "#c8a96e" : "#444", cursor: "pointer", background: queueOptions[key] ? "rgba(200,169,110,0.1)" : "#111", border: "1px solid " + (queueOptions[key] ? "rgba(200,169,110,0.3)" : "#1e1e1e"), borderRadius: "6px", padding: "4px 10px" }}>
+                    <input type="checkbox" checked={queueOptions[key]} onChange={() => toggleQueueOption(key)} style={{ accentColor: "#c8a96e", margin: 0 }} />
+                    {label}
+                  </label>
+                ))}
+              </div>
+              <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+                <button onClick={() => setQueueOptions(o => Object.fromEntries(Object.keys(o).map(k => [k, true])))} style={{ fontSize: "11px", color: "#555", background: "none", border: "none", cursor: "pointer", padding: 0 }}>Markera alla</button>
+                <span style={{ color: "#333" }}>|</span>
+                <button onClick={() => setQueueOptions(o => Object.fromEntries(Object.keys(o).map(k => [k, false])))} style={{ fontSize: "11px", color: "#555", background: "none", border: "none", cursor: "pointer", padding: 0 }}>Avmarkera alla</button>
+              </div>
             </div>
             <div style={{ display: "flex", gap: "10px" }}>
               <textarea value={queueInput} onChange={e => setQueueInput(e.target.value)} placeholder={"Produkt-ID:n, ett per rad:\n8123456789\n8987654321"} rows={3} style={{ flex: 1, background: "#0a0a0a", border: "1px solid #2a2a2a", borderRadius: "8px", padding: "10px", color: "#f0ede8", fontSize: "12px", fontFamily: "monospace", resize: "vertical", outline: "none" }} />
