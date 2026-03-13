@@ -274,23 +274,44 @@ function App() {
       .replace(/\*([\s\S]+?)\*/g, "<em>$1</em>")
       .replace(/^#{1,6}\s+/gm, "");
 
-    // Split by block-level tags into paragraphs
-    const blocks = text
-      .replace(/<\/p>\s*/gi, "\n")
-      .replace(/<p[^>]*>/gi, "")
+    // Parse into blocks preserving h2/h3
+    const rawBlocks = [];
+    const temp = text
+      .replace(/<\/p>\s*/gi, "\n__PBREAK__\n")
+      .replace(/<p[^>]*>/gi, "__PSTART__")
       .replace(/<br\s*\/?>/gi, "\n")
-      .replace(/<\/(li|div|h[1-6])>/gi, "\n")
-      .replace(/<(li|div|h[1-6])[^>]*>/gi, "")
-      .split(/\n+/)
-      .map(s => s.trim())
-      .filter(Boolean);
+      .replace(/<\/(li|div)>/gi, "\n")
+      .replace(/<(li|div)[^>]*>/gi, "");
+
+    // Split on heading tags specially
+    const parts = temp.split(/(<h[1-6][^>]*>[\s\S]*?<\/h[1-6]>)/gi);
+    for (const part of parts) {
+      const hMatch = part.match(/^<h([1-6])[^>]*>([\s\S]*?)<\/h[1-6]>$/i);
+      if (hMatch) {
+        const level = parseInt(hMatch[1]);
+        const headingText = hMatch[2].replace(/<[^>]+>/g, "").trim();
+        if (headingText) rawBlocks.push({ type: "heading", level, text: headingText });
+      } else {
+        const lines = part.replace(/__PBREAK__/g, "\n").replace(/__PSTART__/g, "").split(/\n+/).map(s => s.trim()).filter(Boolean);
+        for (const line of lines) rawBlocks.push({ type: "paragraph", text: line });
+      }
+    }
 
     return JSON.stringify({
       type: "root",
-      children: blocks.map(block => ({
-        type: "paragraph",
-        children: parseInlineHtml(block)
-      }))
+      children: rawBlocks.map(block => {
+        if (block.type === "heading") {
+          return {
+            type: "heading",
+            level: block.level,
+            children: [{ type: "text", value: block.text }]
+          };
+        }
+        return {
+          type: "paragraph",
+          children: parseInlineHtml(block.text)
+        };
+      })
     });
   };
 
