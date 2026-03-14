@@ -446,12 +446,26 @@ function App() {
           `3-5 steg som börjar med verb (Applicera, Massera, Följ upp...).`,
 
         faq:
-          `${c}\n\n5 FAQ-frågor och svar på svenska för: "${name}". ` +
-          `Täck: (1) ingredienser och effekt, (2) användning, (3) hudtyp, (4) ursprung/certifiering, (5) förvaring.\n` +
-          `Svar: 4-6 meningar HTML med <p>. Inkludera naturliga interna länkar till éclore-kategorier:\n` +
-          `Ansiktsvård: https://www.eclore.se/collections/ansiktsvard | Serum: https://www.eclore.se/collections/serum\n` +
-          `Anti-age: https://www.eclore.se/collections/anti-age | Hårvård: https://www.eclore.se/collections/hArvard\n` +
-          `Returnera BARA JSON: {"faq_fraga_1":"...","faq_a1":"<p>...</p>","faq_fraga_2":"...","faq_a2":"<p>...</p>","faq_fraga_3":"...","faq_a3":"<p>...</p>","faq_fraga_4":"...","faq_a4":"<p>...</p>","faq_fraga_5":"...","faq_a5":"<p>...</p>"}`,
+          (() => {
+            const productType = (formRef.current.productType || "").toLowerCase();
+            const isVaska = productType.includes("sminkväskor");
+            const isDoftljus = productType.includes("doftljus");
+            const topics = isVaska
+              ? "(1) material och konstruktion, (2) hur man använder och organiserar, (3) vilka produkter/ändamål den passar för, (4) skötsel och rengöring, (5) storlekar och vad som får plats"
+              : isDoftljus
+              ? "(1) doftnoter och stämning, (2) vaxtyp och brinntid, (3) hur man använder och tar hand om ljuset, (4) tillverkning och material, (5) när och var det passar bäst"
+              : "(1) ingredienser och effekt, (2) användning, (3) hudtyp, (4) ursprung/certifiering, (5) förvaring";
+            const links = isVaska
+              ? `Sminkväskor: https://www.eclore.se/collections/sminkvaskor | Ansiktsvård: https://www.eclore.se/collections/ansiktsvard | Hårvård: https://www.eclore.se/collections/harvard`
+              : isDoftljus
+              ? `Doftljus: https://www.eclore.se/collections/doftljus | Naturlig hudvård: https://www.eclore.se/collections/eclore`
+              : `Ansiktsvård: https://www.eclore.se/collections/ansiktsvard | Serum: https://www.eclore.se/collections/serum\nAnti-age: https://www.eclore.se/collections/anti-age | Hårvård: https://www.eclore.se/collections/harvard`;
+            return `${c}\n\n5 FAQ-frågor och svar på svenska för: "${name}". ` +
+              `Täck: ${topics}.\n` +
+              `Svar: 4-6 meningar HTML med <p>. Inkludera naturliga interna länkar till éclore-kategorier:\n` +
+              `${links}\n` +
+              `Returnera BARA JSON: {"faq_fraga_1":"...","faq_a1":"<p>...</p>","faq_fraga_2":"...","faq_a2":"<p>...</p>","faq_fraga_3":"...","faq_a3":"<p>...</p>","faq_fraga_4":"...","faq_a4":"<p>...</p>","faq_fraga_5":"...","faq_a5":"<p>...</p>"}`;
+          })(),
 
         keyIngredients:
           `${c}\n\n4-5 nyckelingredienser och fördelar på svenska för: "${name}". ` +
