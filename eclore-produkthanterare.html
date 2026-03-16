@@ -452,49 +452,68 @@ function App() {
             const productType = (formRef.current.productType || "").toLowerCase();
             const isVaska = productType.includes("sminkväskor");
             const isDoftljus = productType.includes("doftljus");
-            const topics = isVaska
-              ? `Välj de 5 mest relevanta frågorna från denna pool och anpassa dem till produkten:
-- Hur är väskan konstruerad och vad gör den praktisk att använda?
-- Vad får plats i de olika storlekarna?
-- Hur organiserar man bäst sin smink- och hudvårdsrutin med väskan?
-- Passar den för resor eller är den mest för hemmabruk?
-- Hur tvättar och rengör man väskan?
-- Hur länge håller väskan med normal användning?
-- Vad skiljer den från vanliga sminkväskor i butik?
-- Passar den som present?
-- Kan man använda den till annat än smink, t.ex. som toalettväska eller förvaringspåse?
-- Vad är dragkedjetypen och hur smidig är den?
-VIKTIGT: Detta är en väska/necessär. Skriv ALDRIG om hudtyp, hudvårdseffekter eller ingredienser.`
-              : isDoftljus
-              ? `Välj de 5 mest relevanta frågorna från denna pool och anpassa dem till produkten:
-- Hur länge varar doften och vad påverkar brinntiden?
-- Vilka doftnoter ingår och vilken stämning skapar de?
-- Hur tar man hand om ett doftljus för bästa resultat?
-- Är vaxet naturligt och vad är det gjort av?
-- Är ljuset lämpligt för personer med doftkänslighet?
-- Hur stort rum passar ljuset för?
-- Kan man återanvända behållaren?
-- Skiljer sig doften när ljuset brinner mot när det är kallt?
-- Passar det som present?
-- Var tillverkas ljuset och hur?`
-              : `Välj de 5 mest relevanta frågorna från denna pool och anpassa dem till produkten:
-- Vilka ingredienser är viktigast och vad gör de för huden?
-- Vilken hudtyp passar produkten bäst för?
-- Hur används produkten och när i hudvårdsrutinen?
-- Kan produkten kombineras med andra hudvårdsprodukter?
-- Hur snabbt märker man resultat?
-- Är produkten lämplig för känslig hud?
-- Är produkten vegansk, naturlig eller certifierad?
-- Hur förvaras produkten och hur länge håller den?
-- Vad skiljer den från liknande produkter på marknaden?
-- Finns det några vanliga missuppfattningar om produkten?`;
+
+            // Shuffle helper – randomizes order so Claude picks different questions each time
+            const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
+
+            const vaskaPool = shuffle([
+              "Hur är väskan konstruerad och vad gör den praktisk att använda?",
+              "Vad får plats i de olika storlekarna?",
+              "Hur organiserar man bäst sin smink- och hudvårdsrutin med väskan?",
+              "Passar den för resor eller är den mest för hemmabruk?",
+              "Hur tvättar och rengör man väskan?",
+              "Hur länge håller väskan med normal användning?",
+              "Vad skiljer den från vanliga sminkväskor i butik?",
+              "Passar den som present?",
+              "Kan man använda den till annat än smink, t.ex. som toalettväska eller förvaringspåse?",
+              "Vad är dragkedjetypen och hur smidig är den?",
+              "Hur många fack och fickor har väskan?",
+              "Passar väskan i en resväska eller handväska?",
+            ]);
+
+            const doftljusPool = shuffle([
+              "Hur länge varar doften och vad påverkar brinntiden?",
+              "Vilka doftnoter ingår och vilken stämning skapar de?",
+              "Hur tar man hand om ett doftljus för bästa resultat?",
+              "Är vaxet naturligt och vad är det gjort av?",
+              "Är ljuset lämpligt för personer med doftkänslighet?",
+              "Hur stort rum passar ljuset för?",
+              "Kan man återanvända behållaren?",
+              "Skiljer sig doften när ljuset brinner mot när det är kallt?",
+              "Passar det som present?",
+              "Var tillverkas ljuset och hur?",
+              "Hur placerar man ljuset för bästa doftspridning?",
+              "Finns det några säkerhetsråd för att använda doftljuset?",
+            ]);
+
+            const hudvardPool = shuffle([
+              "Vilka ingredienser är viktigast och vad gör de för huden?",
+              "Vilken hudtyp passar produkten bäst för?",
+              "Hur används produkten och när i hudvårdsrutinen?",
+              "Kan produkten kombineras med andra hudvårdsprodukter?",
+              "Hur snabbt märker man resultat?",
+              "Är produkten lämplig för känslig hud?",
+              "Är produkten vegansk, naturlig eller certifierad?",
+              "Hur förvaras produkten och hur länge håller den?",
+              "Vad skiljer den från liknande produkter på marknaden?",
+              "Finns det några vanliga missuppfattningar om produkten?",
+              "Kan man använda produkten under graviditet eller amning?",
+              "Hur mycket produkt ska man använda per tillfälle?",
+            ]);
+
+            const pool = isVaska ? vaskaPool : isDoftljus ? doftljusPool : hudvardPool;
+            // Take first 7 from shuffled pool – Claude picks best 5 from these
+            const selected = pool.slice(0, 7).map((q, i) => `${i+1}. ${q}`).join("\n");
+
             const links = isVaska
               ? `Sminkväskor: https://www.eclore.se/collections/sminkvaskor | Ansiktsvård: https://www.eclore.se/collections/ansiktsvard | Hårvård: https://www.eclore.se/collections/harvard`
               : isDoftljus
               ? `Doftljus: https://www.eclore.se/collections/doftljus | Naturlig hudvård: https://www.eclore.se/collections/eclore`
               : `Ansiktsvård: https://www.eclore.se/collections/ansiktsvard | Serum: https://www.eclore.se/collections/serum\nAnti-age: https://www.eclore.se/collections/anti-age | Hårvård: https://www.eclore.se/collections/harvard`;
-            return `${c}\n\n5 FAQ-frågor och svar på svenska för: "${name}". ` +
-              `${topics}\n` +
+
+            return `${c}\n\n5 FAQ-frågor och svar på svenska för: "${name}".\n` +
+              `Välj de 5 bäst lämpade frågorna från listan nedan och anpassa dem specifikt till denna produkt:\n${selected}\n` +
+              (isVaska ? `VIKTIGT: Detta är en väska/necessär. Skriv ALDRIG om hudtyp, hudvårdseffekter eller ingredienser.\n` : "") +
               `Svar: 4-6 meningar HTML med <p>. Inkludera naturliga interna länkar till éclore-kategorier:\n` +
               `${links}\n` +
               `Returnera BARA JSON: {"faq_fraga_1":"...","faq_a1":"<p>...</p>","faq_fraga_2":"...","faq_a2":"<p>...</p>","faq_fraga_3":"...","faq_a3":"<p>...</p>","faq_fraga_4":"...","faq_a4":"<p>...</p>","faq_fraga_5":"...","faq_a5":"<p>...</p>"}`;
