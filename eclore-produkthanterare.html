@@ -806,7 +806,7 @@ VIKTIGT: Detta är en väska/necessär. Skriv ALDRIG om hudtyp, hudvårdseffekte
 
   // ─── Publish ───────────────────────────────────────────────────────────────
 
-  const publish = async () => {
+  const publish = async (opts) => {
     const s = settingsRef.current;
     if (!s.shopifyStore || !s.shopifyToken || !s.productId) {
       setPublishResult({ ok: false, msg: "Fyll i Shopify-inställningarna (⚙)." });
@@ -815,6 +815,8 @@ VIKTIGT: Detta är en väska/necessär. Skriv ALDRIG om hudtyp, hudvårdseffekte
     setPublishing(true);
     setPublishResult(null);
     const f = formRef.current;
+    // If opts provided (from queue), only publish selected fields. Otherwise publish all.
+    const all = !opts;
     try {
       const allMfs = [
         ...f.metafields.filter(m => m.key && m.value).map(m => ({
@@ -823,10 +825,10 @@ VIKTIGT: Detta är en väska/necessär. Skriv ALDRIG om hudtyp, hudvårdseffekte
           value: m.value,
           type: m.type || "single_line_text_field",
         })),
-        ...(f.inci.trim() ? [{ namespace: "custom", key: "ingredienser", value: f.inci.trim(), type: "multi_line_text_field" }] : []),
+        ...(all || opts.keyIngredients ? (f.inci.trim() ? [{ namespace: "custom", key: "ingredienser", value: f.inci.trim(), type: "multi_line_text_field" }] : []) : []),
         { namespace: "custom", key: "vanliga_fragor", value: "Vanliga frågor", type: "single_line_text_field" },
-        ...(f.shortDescription.trim() ? [{ namespace: "custom", key: "beskrivning", value: toRichText(f.shortDescription.trim()), type: "rich_text_field" }] : []),
-        ...(f.keyIngredients.filter(k => k.name && k.benefit).length > 0 ? [{
+        ...(all || opts.shortDescription ? (f.shortDescription.trim() ? [{ namespace: "custom", key: "beskrivning", value: toRichText(f.shortDescription.trim()), type: "rich_text_field" }] : []) : []),
+        ...(all || opts.keyIngredients ? (f.keyIngredients.filter(k => k.name && k.benefit).length > 0 ? [{
           namespace: "custom", key: "key_ingredients",
           value: JSON.stringify({
             type: "root",
@@ -839,30 +841,28 @@ VIKTIGT: Detta är en väska/necessär. Skriv ALDRIG om hudtyp, hudvårdseffekte
             }))
           }),
           type: "rich_text_field",
-        }] : []),
-        ...(f.usage.intro || f.usage.steps.filter(s => s.trim()).length > 0 ? (() => {
+        }] : []) : []),
+        ...(all || opts.usage ? (f.usage.intro || f.usage.steps.filter(s => s.trim()).length > 0 ? (() => {
           const introText = (f.usage.intro || "").trim();
           const stepsText = f.usage.steps.filter(s => s.trim()).map((s, i) => (i + 1) + ". " + s).join("\n");
           const combined = (introText ? introText + "\n\n" : "") + stepsText;
-          // Guard: never double-encode if already JSON
           const value = combined.trim().startsWith("{") ? combined : toRichText(combined);
           return [{ namespace: "custom", key: "usage_instructions", value, type: "rich_text_field" }];
-        })() : []),
-        ...f.faq.flatMap((item, i) => [
+        })() : []) : []),
+        ...(all || opts.faq ? f.faq.flatMap((item, i) => [
           item.q ? { namespace: "custom", key: "faq_fraga_" + (i+1), value: item.q, type: "single_line_text_field" } : null,
           item.a ? { namespace: "custom", key: "faq_a" + (i+1), value: toRichText(item.a), type: "rich_text_field" } : null,
-        ]).filter(Boolean),
+        ]).filter(Boolean) : []),
       ];
 
       const body = {
         product: {
           id: s.productId,
-          title: f.productName,
-          body_html: f.description,
-          ...(f.tags.length > 0 ? { tags: f.tags.join(", ") } : {}),
-          ...(f.seoTitle ? { metafields_global_title_tag: f.seoTitle } : {}),
+          ...(all || opts.description ? { title: f.productName, body_html: f.description } : {}),
+          ...(all || opts.tags ? (f.tags.length > 0 ? { tags: f.tags.join(", ") } : {}) : {}),
+          ...(all || opts.seoTitle ? (f.seoTitle ? { metafields_global_title_tag: f.seoTitle } : {}) : {}),
+          ...(all || opts.seoDescription ? (f.seoDescription ? { metafields_global_description_tag: f.seoDescription } : {}) : {}),
           ...(f.handle ? { handle: f.handle } : {}),
-          ...(f.seoDescription ? { metafields_global_description_tag: f.seoDescription } : {}),
           ...(allMfs.length > 0 ? { metafields: allMfs } : {}),
         }
       };
@@ -915,7 +915,7 @@ VIKTIGT: Detta är en väska/necessär. Skriv ALDRIG om hudtyp, hudvårdseffekte
         await generateAll(queueOptionsRef.current);
         if (autoPublish) {
           setQueue(q => q.map((it, j) => j === i ? { ...it, status: "publicerar..." } : it));
-          await publish();
+          await publish(queueOptionsRef.current);
           setQueue(q => q.map((it, j) => j === i ? { ...it, status: "klar", productName: formRef.current.productName } : it));
           logQ("✓ " + (formRef.current.productName || queue[i].id) + " klar!", "success");
         } else {
