@@ -346,6 +346,7 @@ function App() {
     const parts = [
       aiContext,
       f.productName ? "Produktnamn: " + f.productName : "",
+      f.productType ? "Produkttyp: " + f.productType : "",
       f.description ? "Befintlig beskrivning:\n" + f.description.replace(/<[^>]+>/g, "") : "",
       f.inci ? "INCI: " + f.inci : "",
       f.seoCluster?.primary ? "Primärt sökord: " + f.seoCluster.primary : "",
@@ -378,7 +379,7 @@ function App() {
           const h2mid = isVaska ? "Material & hantverk" : isDoftljus ? "Doft & material" : "Ingredienser & effekter";
           const h2result = isVaska ? "Funktion & detaljer" : isDoftljus ? "Varför välja vårt doftljus?" : "Resultat & fördelar";
           const midContent = isVaska
-            ? "<p>Material, tillverkning, hållbarhet – namn i <strong>fetstil</strong>.</p>"
+            ? "<p>Fokusera på hantverk, konstruktion och praktiska detaljer (fickor, dragkedjor, storlek, foder) – namn i <strong>fetstil</strong>. Undvik att lyfta fram \"naturligt material\" som huvudargument.</p>"
             : isDoftljus
             ? "<p>Doftnoter, vaxtyp, brinntid, tillverkningsland – namn i <strong>fetstil</strong>.</p>"
             : "<p>3-4 ingredienser med effekt, namn i <strong>fetstil</strong>.</p>";
@@ -388,6 +389,7 @@ function App() {
             `<h2>${h2mid}</h2>\n${midContent}\n` +
             `<h2>${h2result}</h2>\n<ul><li>Punkt 1</li><li>Punkt 2</li><li>Punkt 3</li></ul>\n` +
             `<h2>För vem passar [produkttyp]?</h2>\n<p>Målgrupp + long-tail sökord naturligt.</p>\n\n` +
+            (isVaska ? `VIKTIGT FÖR SMINKVÄSKOR: Fokusera på att väskan är handgjord, praktisk och välkonstruerad. Lyft fram organisation, förvaring och användningsområden. Undvik att "naturligt material" är huvudargumentet – det är ett sekundärt attribut.\n\n` : "") +
             `VIKTIGT: Väv in 2-3 naturliga interna länkar i texten (ej i rubriker). Använd dessa URL:er och ankarlänktexter efter relevans:\n` +
             `Ansiktsvård: <a href="https://www.eclore.se/collections/ansiktsvard">ansiktsvård</a>\n` +
             `Serum: <a href="https://www.eclore.se/collections/serum">serum</a>\n` +
@@ -451,17 +453,48 @@ function App() {
             const isVaska = productType.includes("sminkväskor");
             const isDoftljus = productType.includes("doftljus");
             const topics = isVaska
-              ? "(1) material och konstruktion, (2) hur man använder och organiserar, (3) vilka produkter/ändamål den passar för, (4) skötsel och rengöring, (5) storlekar och vad som får plats"
+              ? `Välj de 5 mest relevanta frågorna från denna pool och anpassa dem till produkten:
+- Hur är väskan konstruerad och vad gör den praktisk att använda?
+- Vad får plats i de olika storlekarna?
+- Hur organiserar man bäst sin smink- och hudvårdsrutin med väskan?
+- Passar den för resor eller är den mest för hemmabruk?
+- Hur tvättar och rengör man väskan?
+- Hur länge håller väskan med normal användning?
+- Vad skiljer den från vanliga sminkväskor i butik?
+- Passar den som present?
+- Kan man använda den till annat än smink, t.ex. som toalettväska eller förvaringspåse?
+- Vad är dragkedjetypen och hur smidig är den?
+VIKTIGT: Detta är en väska/necessär. Skriv ALDRIG om hudtyp, hudvårdseffekter eller ingredienser.`
               : isDoftljus
-              ? "(1) doftnoter och stämning, (2) vaxtyp och brinntid, (3) hur man använder och tar hand om ljuset, (4) tillverkning och material, (5) när och var det passar bäst"
-              : "(1) ingredienser och effekt, (2) användning, (3) hudtyp, (4) ursprung/certifiering, (5) förvaring";
+              ? `Välj de 5 mest relevanta frågorna från denna pool och anpassa dem till produkten:
+- Hur länge varar doften och vad påverkar brinntiden?
+- Vilka doftnoter ingår och vilken stämning skapar de?
+- Hur tar man hand om ett doftljus för bästa resultat?
+- Är vaxet naturligt och vad är det gjort av?
+- Är ljuset lämpligt för personer med doftkänslighet?
+- Hur stort rum passar ljuset för?
+- Kan man återanvända behållaren?
+- Skiljer sig doften när ljuset brinner mot när det är kallt?
+- Passar det som present?
+- Var tillverkas ljuset och hur?`
+              : `Välj de 5 mest relevanta frågorna från denna pool och anpassa dem till produkten:
+- Vilka ingredienser är viktigast och vad gör de för huden?
+- Vilken hudtyp passar produkten bäst för?
+- Hur används produkten och när i hudvårdsrutinen?
+- Kan produkten kombineras med andra hudvårdsprodukter?
+- Hur snabbt märker man resultat?
+- Är produkten lämplig för känslig hud?
+- Är produkten vegansk, naturlig eller certifierad?
+- Hur förvaras produkten och hur länge håller den?
+- Vad skiljer den från liknande produkter på marknaden?
+- Finns det några vanliga missuppfattningar om produkten?`;
             const links = isVaska
               ? `Sminkväskor: https://www.eclore.se/collections/sminkvaskor | Ansiktsvård: https://www.eclore.se/collections/ansiktsvard | Hårvård: https://www.eclore.se/collections/harvard`
               : isDoftljus
               ? `Doftljus: https://www.eclore.se/collections/doftljus | Naturlig hudvård: https://www.eclore.se/collections/eclore`
               : `Ansiktsvård: https://www.eclore.se/collections/ansiktsvard | Serum: https://www.eclore.se/collections/serum\nAnti-age: https://www.eclore.se/collections/anti-age | Hårvård: https://www.eclore.se/collections/harvard`;
             return `${c}\n\n5 FAQ-frågor och svar på svenska för: "${name}". ` +
-              `Täck: ${topics}.\n` +
+              `${topics}\n` +
               `Svar: 4-6 meningar HTML med <p>. Inkludera naturliga interna länkar till éclore-kategorier:\n` +
               `${links}\n` +
               `Returnera BARA JSON: {"faq_fraga_1":"...","faq_a1":"<p>...</p>","faq_fraga_2":"...","faq_a2":"<p>...</p>","faq_fraga_3":"...","faq_a3":"<p>...</p>","faq_fraga_4":"...","faq_a4":"<p>...</p>","faq_fraga_5":"...","faq_a5":"<p>...</p>"}`;
