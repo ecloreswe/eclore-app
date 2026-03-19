@@ -366,11 +366,13 @@ function App() {
 
       const prompts = {
         shortDescription:
-          `${c}\n\nSkriv en above the fold-text på svenska för: "${name}". Ca 80 ord. ` +
+          `${c}\n\nSkriv above the fold-texten på svenska för: "${name}". Ca 80 ord. ` +
+          `Skriv som en av Ogilvys bästa copywriters – säljande, konkret och engagerande. ` +
           `Struktur: ` +
-          `(1) Börja med en H2-rubrik som är mer beskrivande än produktnamnet – lyft fram viktigaste egenskapen/fördelen, inkludera primärt sökord naturligt. Returnera rubriken som <h2>...</h2>. ` +
-          `(2) Sedan 2-3 meningar: vad produkten är + ursprung/ingrediens med effekt + för vem och när. ` +
-          `Professionell och varm ton. Returnera bara HTML med <h2> och <p>.`,
+          `(1) Börja med en H2-rubrik som är mer beskrivande än produktnamnet – lyft fram den viktigaste fördelen för kunden, inkludera primärt sökord naturligt. Returnera som <h2>...</h2>. ` +
+          `(2) Sedan ett stycke: öppna med en stark mening som talar direkt till kundens behov eller önskan. Lyft fördelar före egenskaper. Avsluta med en mening som skapar vilja att läsa mer eller köpa. ` +
+          `Ton: professionell, varm och övertygande – aldrig skrytsam eller klichéfylld. Inga fraser som "genuint hantverk" eller "tillverkat i Europa". ` +
+          `Returnera bara HTML med <h2> och <p>.`,
 
         description: (() => {
           const productType = (formRef.current.productType || "").toLowerCase();
@@ -384,12 +386,14 @@ function App() {
             ? "<p>Doftnoter, vaxtyp, brinntid, tillverkningsland – namn i <strong>fetstil</strong>.</p>"
             : "<p>3-4 ingredienser med effekt, namn i <strong>fetstil</strong>.</p>";
           return `${c}\n\nSkriv en strukturerad produktbeskrivning på svenska för: "${name}". Max 350 ord. Returnera bara HTML.\n\n` +
+            `Skriv som en av Ogilvys bästa copywriters – säljande, konkret och engagerande. Fördelar före egenskaper. Varje sektion ska bygga på den förra och leda läsaren mot ett köpbeslut.\n\n` +
             `Exakt struktur:\n` +
-            `<h2>[Produktnamn] – [fras med primärt sökord]</h2>\n<p>2-3 meningar, sökord i mening 1.</p>\n` +
+            `<h2>[Produktnamn] – [säljande fras med primärt sökord]</h2>\n<p>2-3 meningar. Öppna starkt – tala direkt till kundens behov. Sökord i mening 1.</p>\n` +
             `<h2>${h2mid}</h2>\n${midContent}\n` +
-            `<h2>${h2result}</h2>\n<ul><li>Punkt 1</li><li>Punkt 2</li><li>Punkt 3</li></ul>\n` +
-            `<h2>För vem passar [produkttyp]?</h2>\n<p>Målgrupp + long-tail sökord naturligt.</p>\n\n` +
-            (isVaska ? `VIKTIGT FÖR SMINKVÄSKOR: Fokusera på att väskan är handgjord, praktisk och välkonstruerad. Lyft fram organisation, förvaring och användningsområden. Undvik att "naturligt material" är huvudargumentet – det är ett sekundärt attribut.\n\n` : "") +
+            `<h2>${h2result}</h2>\n<ul><li>Konkret fördel 1</li><li>Konkret fördel 2</li><li>Konkret fördel 3</li></ul>\n` +
+            `<h2>För vem passar [produkttyp]?</h2>\n<p>Tala direkt till målgruppen. Long-tail sökord naturligt. Avsluta med en subtil uppmaning.</p>\n\n` +
+            (isVaska ? `VIKTIGT FÖR SMINKVÄSKOR: Fokusera på att väskan är handgjord, praktisk och välkonstruerad. Lyft fram organisation, förvaring och användningsområden. Undvik att "naturligt material" är huvudargumentet.\n\n` : "") +
+            `UNDVIK: "genuint hantverk", "tillverkat i Europa", klichéer utan substans.\n\n` +
             `VIKTIGT: Väv in 2-3 naturliga interna länkar i texten (ej i rubriker). Använd dessa URL:er och ankarlänktexter efter relevans:\n` +
             `Ansiktsvård: <a href="https://www.eclore.se/collections/ansiktsvard">ansiktsvård</a>\n` +
             `Serum: <a href="https://www.eclore.se/collections/serum">serum</a>\n` +
