@@ -982,7 +982,8 @@ function App() {
           { method: "PUT", headers: { "Content-Type": "application/json", "X-Shopify-Access-Token": s.shopifyToken }, body: JSON.stringify(mfBody) }
         );
         const mfData = await mfRes.json();
-        console.log("Metafields PUT response errors:", JSON.stringify(mfData.errors || "none"));
+        console.log("Metafields PUT full response:", JSON.stringify(mfData).substring(0, 2000));
+        console.log("Metafields in response:", JSON.stringify(mfData.product?.metafields || "none").substring(0, 500));
       }
 
       if (!res.ok) {
@@ -1519,7 +1520,7 @@ function App() {
           )}
           <div style={{ display: "flex", gap: "10px" }}>
             <button
-              onClick={publish}
+              onClick={() => { console.log("Publishing - form.faq length:", form.faq.length, "formRef.faq length:", formRef.current.faq.length); publish(); }}
               disabled={publishing || !form.productName || !settings.productId}
               style={{ flex: 1, padding: "14px", background: (!form.productName || !settings.productId) ? "#1a1a1a" : "linear-gradient(135deg,#c8a96e,#a87d3e)", border: "none", borderRadius: "10px", color: (!form.productName || !settings.productId) ? "#444" : "#0f0f0f", fontSize: "14px", fontWeight: "600", cursor: (!form.productName || !settings.productId || publishing) ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
             >
