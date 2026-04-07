@@ -951,7 +951,6 @@ function App() {
           ...(all || opts.seoTitle ? (f.seoTitle ? { metafields_global_title_tag: f.seoTitle } : {}) : {}),
           ...(all || opts.seoDescription ? (f.seoDescription ? { metafields_global_description_tag: f.seoDescription } : {}) : {}),
           ...(f.handle ? { handle: f.handle } : {}),
-          ...(allMfs.length > 0 ? { metafields: allMfs } : {}),
         }
       };
 
@@ -964,10 +963,26 @@ function App() {
       );
 
       const resData = await res.json();
-      console.log("Shopify publish response:", JSON.stringify(resData).substring(0, 500));
-      
-      if (resData.product?.metafields) {
-        console.log("Shopify metafields in response:", JSON.stringify(resData.product.metafields).substring(0, 500));
+      console.log("Shopify publish response:", JSON.stringify(resData).substring(0, 300));
+
+      if (!res.ok) {
+        throw new Error(JSON.stringify(resData.errors || resData));
+      }
+
+      // Send metafields via separate POST calls (more reliable than product PUT)
+      if (allMfs.length > 0) {
+        const mfBase = "https://" + s.shopifyStore + "/admin/api/2024-01/products/" + s.productId + "/metafields.json";
+        const mfHeaders = { "Content-Type": "application/json", "X-Shopify-Access-Token": s.shopifyToken };
+        await Promise.all(allMfs.map(mf =>
+          fetchWithProxy(mfBase, {
+            method: "POST",
+            headers: mfHeaders,
+            body: JSON.stringify({ metafield: { namespace: mf.namespace, key: mf.key, value: mf.value, type: mf.type } })
+          }).then(r => r.json()).then(d => {
+            if (d.errors) console.warn("Metafield error for " + mf.key + ":", JSON.stringify(d.errors));
+            else console.log("Metafield saved:", mf.key);
+          })
+        ));
       }
 
       if (!res.ok) {
