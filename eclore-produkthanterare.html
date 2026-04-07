@@ -502,20 +502,63 @@ function App() {
               "Finns det några säkerhetsråd för att använda doftljuset?",
             ]);
 
-            const hudvardPool = shuffle([
-              "Vilka ingredienser är viktigast och vad gör de för huden?",
-              "Vilken hudtyp passar produkten bäst för?",
-              "Hur används produkten och när i hudvårdsrutinen?",
-              "Kan produkten kombineras med andra hudvårdsprodukter?",
-              "Hur snabbt märker man resultat?",
-              "Är produkten lämplig för känslig hud?",
-              "Är produkten vegansk, naturlig eller certifierad?",
-              "Hur förvaras produkten och hur länge håller den?",
-              "Vad skiljer den från liknande produkter på marknaden?",
-              "Finns det några vanliga missuppfattningar om produkten?",
-              "Kan man använda produkten under graviditet eller amning?",
-              "Hur mycket produkt ska man använda per tillfälle?",
-            ]);
+            // Detect subcategory for more targeted questions
+            const pName = name.toLowerCase();
+            const isSchampo = pName.includes("schampo") || pName.includes("shampoo");
+            const isBalsam = pName.includes("balsam") || pName.includes("conditioner");
+            const isSerum = pName.includes("serum");
+            const isKram = pName.includes("kräm") || pName.includes("cream") || pName.includes("lotion");
+            const isOlja = pName.includes("olja") || pName.includes("oil");
+            const isMask = pName.includes("mask");
+            const isRengoring = pName.includes("rengör") || pName.includes("cleanser") || pName.includes("toner");
+            const isHarvard = (formRef.current.productType || "").toLowerCase().includes("hårvård") || isSchampo || isBalsam;
+
+            // Base pool relevant for all skincare/haircare
+            const basePool = [
+              "Vilka ingredienser är viktigast och vad gör de för " + (isHarvard ? "håret och hårbotten?" : "huden?"),
+              "Vilken " + (isHarvard ? "hårtyp och hårbotten" : "hudtyp") + " passar produkten bäst för?",
+              "Hur och när i " + (isHarvard ? "hårvårdsrutinen" : "hudvårdsrutinen") + " används produkten optimalt?",
+              "Kan man kombinera produkten med " + (isSerum ? "retinol eller syror?" : isSchampo ? "balsam och hårinpackning?" : "andra produkter i rutinen?"),
+              "Hur snabbt märker man resultat och vad kan man förvänta sig?",
+              "Passar produkten känslig " + (isHarvard ? "hårbotten?" : "hud?"),
+              "Är produkten vegansk och fri från skadliga ämnen?",
+              "Vad skiljer den här produkten från vanliga " + (isSchampo ? "schampon i butik?" : isSerum ? "serum på marknaden?" : isKram ? "krämer i handeln?" : "alternativ på marknaden?"),
+              "Hur mycket produkt ska man använda per tillfälle för bästa effekt?",
+              "Kan man använda produkten dagligen eller bör man ta pauser?",
+            ];
+
+            // Add subcategory-specific questions
+            const specificPool = isSerum ? [
+              "Ska man använda serummet före eller efter kräm?",
+              "Kan man använda serummet under ögonen?",
+              "Fungerar serummet ihop med solskydd?",
+            ] : isSchampo ? [
+              "Hur ofta bör man tvätta håret med det här schampot?",
+              "Behöver man använda balsam efter schampot?",
+              "Hjälper schampot mot håravfall eller tunnare hår?",
+            ] : isBalsam ? [
+              "Hur länge ska man låta balsamen verka?",
+              "Ska man applicera balsam på hårbotten eller bara på längderna?",
+              "Kan man använda balsamen som hårinpackning?",
+            ] : isKram ? [
+              "Kan man använda krämen både morgon och kväll?",
+              "Fungerar krämen som bas under makeup?",
+              "Hjälper krämen mot fina linjer och rynkor?",
+            ] : isOlja ? [
+              "Hur applicerar man oljan utan att håret eller huden känns fet?",
+              "Kan man blanda oljan med andra produkter?",
+              "Passar oljan som ansiktsolja och hårolja?",
+            ] : isMask ? [
+              "Hur ofta bör man använda masken för bästa resultat?",
+              "Kan man kombinera masken med serum efteråt?",
+              "Passar masken som nattmask?",
+            ] : isRengoring ? [
+              "Tar rengöringen bort makeup och solskydd effektivt?",
+              "Kan man använda rengöringen morgon och kväll?",
+              "Torkar rengöringen ut huden?",
+            ] : [];
+
+            const hudvardPool = shuffle([...basePool, ...specificPool]);
 
             const pool = isVaska ? vaskaPool : isDoftljus ? doftljusPool : hudvardPool;
             // Take first 7 from shuffled pool – Claude picks best 5 from these
