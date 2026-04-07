@@ -954,16 +954,11 @@ function App() {
         }
       };
 
-      // Debug FAQ metafields specifically
-      const faqMfs = allMfs.filter(m => m.key && m.key.startsWith("faq"));
-      
-
       const res = await fetchWithProxy("https://" + s.shopifyStore + "/admin/api/2024-01/products/" + s.productId + ".json",
         { method: "PUT", headers: { "Content-Type": "application/json", "X-Shopify-Access-Token": s.shopifyToken }, body: JSON.stringify(body) }
       );
 
       const resData = await res.json();
-      
 
       if (!res.ok) {
         throw new Error(JSON.stringify(resData.errors || resData));
@@ -988,15 +983,14 @@ function App() {
             );
             const d = await r.json();
             if (d.errors) console.warn("PUT error " + mf.key + ":", JSON.stringify(d.errors));
-            else 
-          } else {
+            else console.log("PUT ok:", mf.key);
             const r = await fetchWithProxy(mfBase, {
               method: "POST", headers: mfHeaders,
               body: JSON.stringify({ metafield: { namespace: mf.namespace, key: mf.key, value: mf.value, type: mf.type } })
             });
             const d = await r.json();
             if (d.errors) console.warn("POST error " + mf.key + ":", JSON.stringify(d.errors));
-            else 
+            else console.log("POST ok:", mf.key);
           }
         }
       }
