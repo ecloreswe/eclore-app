@@ -1535,7 +1535,7 @@ function App() {
           )}
           <div style={{ display: "flex", gap: "10px" }}>
             <button
-              onClick={() => { 
+              onClick={() => { publish(); }}
               disabled={publishing || !form.productName || !settings.productId}
               style={{ flex: 1, padding: "14px", background: (!form.productName || !settings.productId) ? "#1a1a1a" : "linear-gradient(135deg,#c8a96e,#a87d3e)", border: "none", borderRadius: "10px", color: (!form.productName || !settings.productId) ? "#444" : "#0f0f0f", fontSize: "14px", fontWeight: "600", cursor: (!form.productName || !settings.productId || publishing) ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
             >
