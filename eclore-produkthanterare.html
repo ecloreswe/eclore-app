@@ -969,40 +969,20 @@ function App() {
         throw new Error(JSON.stringify(resData.errors || resData));
       }
 
-      // Send metafields via separate API calls (PUT if exists, POST if new)
+      // Send metafields via product PUT (proven to work)
       if (allMfs.length > 0) {
-        const mfBase = "https://" + s.shopifyStore + "/admin/api/2024-01/products/" + s.productId + "/metafields.json";
-        const mfHeaders = { "Content-Type": "application/json", "X-Shopify-Access-Token": s.shopifyToken };
-        
-        // First fetch existing metafields to get their IDs (filter by namespace=custom)
-        const existingRes = await fetchWithProxy(mfBase + "?namespace=custom&limit=250", { headers: { "X-Shopify-Access-Token": s.shopifyToken } });
-        const existingData = await existingRes.json();
-        const existing = existingData.metafields || [];
-        console.log("Existing metafields found:", existing.map(e => e.key).join(", "));
-        
-        await Promise.all(allMfs.map(mf => {
-          const found = existing.find(e => e.key === mf.key && e.namespace === mf.namespace);
-          if (found) {
-            // Update existing metafield via PUT
-            return fetchWithProxy(
-              "https://" + s.shopifyStore + "/admin/api/2024-01/products/" + s.productId + "/metafields/" + found.id + ".json",
-              { method: "PUT", headers: mfHeaders, body: JSON.stringify({ metafield: { id: found.id, value: mf.value, type: mf.type } }) }
-            ).then(r => r.json()).then(d => {
-              if (d.errors) console.warn("Metafield PUT error for " + mf.key + ":", JSON.stringify(d.errors));
-              else console.log("Metafield updated:", mf.key, "new value preview:", JSON.stringify(d.metafield?.value || "").substring(0, 80));
-            });
-          } else {
-            // Create new metafield via POST
-            return fetchWithProxy(mfBase, {
-              method: "POST",
-              headers: mfHeaders,
-              body: JSON.stringify({ metafield: { namespace: mf.namespace, key: mf.key, value: mf.value, type: mf.type } })
-            }).then(r => r.json()).then(d => {
-              if (d.errors) console.warn("Metafield POST error for " + mf.key + ":", JSON.stringify(d.errors));
-              else console.log("Metafield created:", mf.key);
-            });
+        const mfBody = {
+          product: {
+            id: s.productId,
+            metafields: allMfs
           }
-        }));
+        };
+        const mfRes = await fetchWithProxy(
+          "https://" + s.shopifyStore + "/admin/api/2024-01/products/" + s.productId + ".json",
+          { method: "PUT", headers: { "Content-Type": "application/json", "X-Shopify-Access-Token": s.shopifyToken }, body: JSON.stringify(mfBody) }
+        );
+        const mfData = await mfRes.json();
+        console.log("Metafields PUT response errors:", JSON.stringify(mfData.errors || "none"));
       }
 
       if (!res.ok) {
