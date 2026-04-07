@@ -47,11 +47,11 @@ SORTIMENT: Ansiktsvård, hudvård, hårvård – naturliga ingredienser, tillver
 
 KÄNSLA: Inte skandinaviskt minimalistiskt – hämtar sin själ från södra Europa. Känslan påminner om ett välsorterat apotek i Provence. Genuint, inte massindustri.
 
-MÅLGRUPP: Kvinnor 40–70 år. Omvärldsmedvetna, kvalitetsmedvetna. Lockas av historien bakom produkten.
+MÅLGRUPP: Kvalitetsmedvetna personer som lockas av historien bakom produkten och värdesätter naturliga ingredienser och hantverk. Skriv ALDRIG ut ålder eller kön explicit i texterna.
 
-TONALITET: Professionell och varm. Undvik superlativ utan substans. Använd gärna: "hantverk", "naturliga ingredienser", "tillverkat i Europa", "genuint".
+TONALITET: Professionell och varm. Undvik superlativ utan substans. Undvik klichéer som "genuint hantverk", "tillverkat i Europa", "kvalitetsmedvetna kvinnor", "mogen hud" som avslutning.
 
-SEO: Long-tail kombinationer: produkttyp + naturlig/ekologisk + användningsområde. Ex: "naturlig ansiktskräm mogen hud".`;
+SEO: Long-tail kombinationer: produkttyp + naturlig/ekologisk + användningsområde.`;
 
 const DEFAULT_FORM = {
   productName: "",
@@ -369,10 +369,10 @@ function App() {
           `${c}\n\nSkriv above the fold-texten på svenska för: "${name}". Ca 80 ord. ` +
           `Skriv som en av Ogilvys bästa copywriters – säljande, konkret och engagerande. ` +
           `Struktur: ` +
-          `(1) Börja med en H2-rubrik som är mer beskrivande än produktnamnet – lyft fram den viktigaste fördelen för kunden, inkludera primärt sökord naturligt. Returnera som <h2>...</h2>. ` +
+          `(1) Börja med en H2-rubrik som är mer beskrivande än produktnamnet – lyft fram den viktigaste fördelen, inkludera primärt sökord naturligt. Returnera som <h2>...</h2>. ` +
           `(2) Sedan ett stycke: öppna med en stark mening som talar direkt till kundens behov eller önskan. Lyft fördelar före egenskaper. Avsluta med en mening som skapar vilja att läsa mer eller köpa. ` +
-          `Ton: professionell, varm och övertygande – aldrig skrytsam eller klichéfylld. Inga fraser som "genuint hantverk" eller "tillverkat i Europa". ` +
-          `Returnera bara HTML med <h2> och <p>.`,
+          `UNDVIK: "passar mogna kvinnor", "för dig över 40", "mogen hud", "genuint hantverk", "tillverkat i Europa", vaga klichéer. Tala om behovet eller situationen – inte demografin. ` +
+          `Ton: professionell, varm och övertygande. Returnera bara HTML med <h2> och <p>.`,
 
         description: (() => {
           const productType = (formRef.current.productType || "").toLowerCase();
@@ -388,12 +388,12 @@ function App() {
           return `${c}\n\nSkriv en strukturerad produktbeskrivning på svenska för: "${name}". Max 350 ord. Returnera bara HTML.\n\n` +
             `Skriv som en av Ogilvys bästa copywriters – säljande, konkret och engagerande. Fördelar före egenskaper. Varje sektion ska bygga på den förra och leda läsaren mot ett köpbeslut.\n\n` +
             `Exakt struktur:\n` +
-            `<h2>[Produktnamn] – [säljande fras med primärt sökord]</h2>\n<p>2-3 meningar. Öppna starkt – tala direkt till kundens behov. Sökord i mening 1.</p>\n` +
+            `<h2>[Produktnamn] – [säljande fras med primärt sökord]</h2>\n<p>2-3 meningar. Öppna starkt – tala direkt till kundens behov eller önskan. Sökord i mening 1.</p>\n` +
             `<h2>${h2mid}</h2>\n${midContent}\n` +
             `<h2>${h2result}</h2>\n<ul><li>Konkret fördel 1</li><li>Konkret fördel 2</li><li>Konkret fördel 3</li></ul>\n` +
-            `<h2>För vem passar [produkttyp]?</h2>\n<p>Tala direkt till målgruppen. Long-tail sökord naturligt. Avsluta med en subtil uppmaning.</p>\n\n` +
+            `<h2>För vem passar [produkttyp]?</h2>\n<p>Beskriv användningssituationen eller behovet – INTE demografin. Skriv ALDRIG "passar kvinnor 40+", "mogen hud" eller liknande. Tala istället om livsstil, behov eller situation. Long-tail sökord naturligt. Avsluta med en subtil uppmaning.</p>\n\n` +
             (isVaska ? `VIKTIGT FÖR SMINKVÄSKOR: Fokusera på att väskan är handgjord, praktisk och välkonstruerad. Lyft fram organisation, förvaring och användningsområden. Undvik att "naturligt material" är huvudargumentet.\n\n` : "") +
-            `UNDVIK: "genuint hantverk", "tillverkat i Europa", klichéer utan substans.\n\n` +
+            `UNDVIK: "genuint hantverk", "tillverkat i Europa", "mogen hud", "kvalitetsmedvetna kvinnor", klichéer utan substans. Variera avslutningen – den ska vara unik för just denna produkt.\n\n` +
             `VIKTIGT: Väv in 2-3 naturliga interna länkar i texten (ej i rubriker). Använd dessa URL:er och ankarlänktexter efter relevans:\n` +
             `Ansiktsvård: <a href="https://www.eclore.se/collections/ansiktsvard">ansiktsvård</a>\n` +
             `Serum: <a href="https://www.eclore.se/collections/serum">serum</a>\n` +
@@ -404,7 +404,7 @@ function App() {
             `Doftljus: <a href="https://www.eclore.se/collections/doftljus">doftljus</a>\n` +
             `Body scrub: <a href="https://www.eclore.se/collections/bodyscrub">body scrub</a>\n` +
             `Ansiktsmask: <a href="https://www.eclore.se/collections/ansiktsmask">ansiktsmask</a>\n` +
-            `Naturlig hudvård: <a href="https://www.eclore.se/collections/eclore">naturlig hudvård</a>\n` +
+            `Naturlig hudvård: <a href="https://www.eclore.se">naturlig hudvård</a>\n` +
             `Välj bara de kategorier som är relevanta för produkten. Länkarna ska kännas naturliga i texten.`;
         })(),
 
@@ -414,14 +414,14 @@ function App() {
 
         seoTitle:
           `${c}\n\nSkriv en SEO-titel (max 60 tecken) för: "${name}". ` +
-          `REGLER: (1) Naturlig mening med bindeord – ALDRIG lösa nyckelord. ` +
-          `(2) Inkludera produktens mest säljande egenskap (material, funktion, storlek, mönster etc). ` +
-          `(3) Titeln MÅSTE sluta med " | éclore". ` +
+          `REGLER: ` +
+          `(1) Börja alltid med varumärket om det finns i produktnamnet (t.ex. "Nurme", "Moi Mili", "Berrichi"). ` +
+          `(2) Bedöm om produktnamnet redan är på svenska och beskrivande – följ då dessa två vägar: ` +
+          `VÄG A – Produktnamnet är på svenska och beskrivande: Håll dig nära produktnamnet, översätt/anpassa minimalt, lägg till volym eller storlek om det finns. Ex: "Nurme Torvschampo för Lugnande Hårbotten – 250 ml | éclore". ` +
+          `VÄG B – Produktnamnet är på engelska eller otydligt: Översätt och beskriv funktionen på svenska med en säljande fras. Ex: "Moi Mili Sminkväska i Set med Blommigt Mönster | éclore". ` +
+          `(3) Avsluta ALLTID med " | éclore". ` +
           `(4) Max 60 tecken INKLUSIVE " | éclore". ` +
-          `BRA: "Sminkväska i set med blommigt mönster | éclore". ` +
-          `BRA: "Ansiktskräm för torr och mogen hud | éclore". ` +
-          `BRA: "Doftljus med citrongräs i sojavax | éclore". ` +
-          `DÅLIGT: "sminkväska naturliga material set éclore". ` +
+          `(5) Naturlig mening – ALDRIG lösa nyckelord. ` +
           `Returnera bara titeln, ingenting annat.`,
 
         handle:
@@ -433,13 +433,14 @@ function App() {
 
         seoDescription:
           `${c}\n\nSkriv en SEO-metabeskrivning (max 155 tecken) för: "${name}". ` +
-          `REGLER: (1) Börja med produktens konkreta, unika egenskap (material, storlek, funktion, mönster). ` +
-          `(2) Ange specifik nytta eller fördel för användaren. ` +
-          `(3) Avsluta gärna med kort CTA eller praktisk info. ` +
-          `UNDVIK: "från Europa", "genuint hantverk", "kvalitetsmedvetna kvinnor", vaga fraser. ` +
-          `BRA väska: "Set med 2 handgjorda sminkväskor i bomull med vattentätt foder. Stor och liten storlek – perfekt för resor och vardagsbruk." ` +
-          `BRA hudvård: "Djupt återfuktande ansiktskräm med hyaluronsyra för torr och mogen hud. Stärker hudbarriären och minskar rynkor." ` +
-          `BRA doftljus: "Sojavaxljus med citrongräs och eteriska oljor – ca 40 timmars brinntid. Skapar harmonisk atmosfär utan syntetiska tillsatser." ` +
+          `REGLER: ` +
+          `(1) Lyft produktens mest unika och konkreta egenskap – något som skiljer just denna produkt från andra. ` +
+          `(2) Nämn 1-2 nyckelingredienser eller funktioner med specifik effekt. ` +
+          `(3) Avsluta med en kort praktisk info eller CTA. ` +
+          `UNDVIK: "från Europa", "genuint hantverk", "kvalitetsmedvetna", "mogen hud", "passar kvinnor", vaga fraser. ` +
+          `BRA schampo: "Nurmes mjällschampo med rosmarin, tea tree och panthenol. Balanserar hårbotten och stärker hårstråt – skonsamt nog för daglig användning." ` +
+          `BRA väska: "Handgjord sminkväska i 2 storlekar med vattentätt foder och innerfickor. Perfekt för smink, resor och organiserad vardag." ` +
+          `BRA serum: "C-vitaminserum med 15% askorbinsyra och hyaluronsyra. Jämnar hudton, minskar pigmentfläckar och ger synlig lyster på 4 veckor." ` +
           `Returnera bara texten, max 155 tecken.`,
 
         seoCluster:
@@ -447,9 +448,13 @@ function App() {
           `Returnera BARA JSON: {"primary":"sökord","secondary":["ord1","ord2","ord3"],"longTail":["fras 1","fras 2","fras 3"]}`,
 
         usage:
-          `${c}\n\nAnvändningsinstruktioner på svenska för: "${name}". ` +
-          `Returnera BARA JSON: {"intro":"2-3 meningar: när i rutinen, vilket steg, kompletterande produkttyp","steps":["Verbsteg 1","Verbsteg 2","Verbsteg 3"]}. ` +
-          `3-5 steg som börjar med verb (Applicera, Massera, Följ upp...).`,
+          `${c}\n\nSkriv detaljerade användningsinstruktioner på svenska för: "${name}". ` +
+          `Skriv som en av Ogilvys bästa copywriters – engagerande och konkret. ` +
+          `Struktur: ` +
+          `Intro: 2-3 meningar som sätter kontexten – när i rutinen, hur man förbereder sig, vad som gör produkten speciell att använda. Tala direkt till kunden. ` +
+          `Steg: 5-7 detaljerade steg som börjar med verb (Applicera, Massera, Arbeta, Låt, Skölj, Följ upp...). Varje steg ska förklara VARFÖR, inte bara HUR – vad händer i huden/håret och varför det spelar roll. ` +
+          `Sista steget bör innehålla ett tips om kompletterande produkttyp. ` +
+          `Returnera BARA JSON: {"intro":"2-3 meningar","steps":["Detaljerat steg 1","Detaljerat steg 2","Detaljerat steg 3","Detaljerat steg 4","Detaljerat steg 5"]}.`,
 
         faq:
           (() => {
@@ -512,7 +517,7 @@ function App() {
             const links = isVaska
               ? `Sminkväskor: https://www.eclore.se/collections/sminkvaskor | Ansiktsvård: https://www.eclore.se/collections/ansiktsvard | Hårvård: https://www.eclore.se/collections/harvard`
               : isDoftljus
-              ? `Doftljus: https://www.eclore.se/collections/doftljus | Naturlig hudvård: https://www.eclore.se/collections/eclore`
+              ? `Doftljus: https://www.eclore.se/collections/doftljus | Naturlig hudvård: https://www.eclore.se`
               : `Ansiktsvård: https://www.eclore.se/collections/ansiktsvard | Serum: https://www.eclore.se/collections/serum\nAnti-age: https://www.eclore.se/collections/anti-age | Hårvård: https://www.eclore.se/collections/harvard`;
 
             return `${c}\n\n5 FAQ-frågor och svar på svenska för: "${name}".\n` +
