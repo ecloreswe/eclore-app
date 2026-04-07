@@ -956,14 +956,14 @@ function App() {
 
       // Debug FAQ metafields specifically
       const faqMfs = allMfs.filter(m => m.key && m.key.startsWith("faq"));
-      console.log("FAQ metafields being sent (" + faqMfs.length + "):", JSON.stringify(faqMfs).substring(0, 800));
+      
 
       const res = await fetchWithProxy("https://" + s.shopifyStore + "/admin/api/2024-01/products/" + s.productId + ".json",
         { method: "PUT", headers: { "Content-Type": "application/json", "X-Shopify-Access-Token": s.shopifyToken }, body: JSON.stringify(body) }
       );
 
       const resData = await res.json();
-      console.log("Shopify publish response:", JSON.stringify(resData).substring(0, 300));
+      
 
       if (!res.ok) {
         throw new Error(JSON.stringify(resData.errors || resData));
@@ -988,7 +988,7 @@ function App() {
             );
             const d = await r.json();
             if (d.errors) console.warn("PUT error " + mf.key + ":", JSON.stringify(d.errors));
-            else console.log("PUT ok " + mf.key + ":", d.metafield?.value?.substring?.(0,50) || d.metafield?.value);
+            else 
           } else {
             const r = await fetchWithProxy(mfBase, {
               method: "POST", headers: mfHeaders,
@@ -996,7 +996,7 @@ function App() {
             });
             const d = await r.json();
             if (d.errors) console.warn("POST error " + mf.key + ":", JSON.stringify(d.errors));
-            else console.log("POST ok " + mf.key);
+            else 
           }
         }
       }
@@ -1535,7 +1535,7 @@ function App() {
           )}
           <div style={{ display: "flex", gap: "10px" }}>
             <button
-              onClick={() => { console.log("Publishing - form.faq length:", form.faq.length, "formRef.faq length:", formRef.current.faq.length); publish(); }}
+              onClick={() => { 
               disabled={publishing || !form.productName || !settings.productId}
               style={{ flex: 1, padding: "14px", background: (!form.productName || !settings.productId) ? "#1a1a1a" : "linear-gradient(135deg,#c8a96e,#a87d3e)", border: "none", borderRadius: "10px", color: (!form.productName || !settings.productId) ? "#444" : "#0f0f0f", fontSize: "14px", fontWeight: "600", cursor: (!form.productName || !settings.productId || publishing) ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
             >
