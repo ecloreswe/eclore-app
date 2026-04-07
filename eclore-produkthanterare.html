@@ -899,6 +899,7 @@ function App() {
     const f = formRef.current;
     // If opts provided (from queue), only publish selected fields. Otherwise publish all.
     const all = !opts;
+    console.log("Publish - all:", all, "opts.faq:", opts?.faq, "faq count:", formRef.current.faq.length);
     try {
       const allMfs = [
         ...f.metafields.filter(m => m.key && m.value).map(m => ({
