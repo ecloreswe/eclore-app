@@ -1019,6 +1019,7 @@ function App() {
         await generateAll(queueOptionsRef.current);
         if (autoPublishRef.current) {
           setQueue(q => q.map((it, j) => j === i ? { ...it, status: "publicerar..." } : it));
+          console.log("Queue publish - faq length:", formRef.current.faq.length);
           await publish(queueOptionsRef.current);
           setQueue(q => q.map((it, j) => j === i ? { ...it, status: "klar", productName: formRef.current.productName } : it));
           logQ("✓ " + (formRef.current.productName || queue[i].id) + " klar!", "success");
