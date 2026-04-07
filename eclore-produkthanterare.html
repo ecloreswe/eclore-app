@@ -977,26 +977,21 @@ function App() {
         for (const mf of allMfs) {
           const found = existing.find(e => e.key === mf.key && e.namespace === mf.namespace);
           if (found) {
-            const r = await fetchWithProxy(
+            const putRes = await fetchWithProxy(
               "https://" + s.shopifyStore + "/admin/api/2024-01/metafields/" + found.id + ".json",
               { method: "PUT", headers: mfHeaders, body: JSON.stringify({ metafield: { id: found.id, value: mf.value, type: mf.type } }) }
             );
-            const d = await r.json();
-            if (d.errors) console.warn("PUT error " + mf.key + ":", JSON.stringify(d.errors));
-            else console.log("PUT ok:", mf.key);
-            const r = await fetchWithProxy(mfBase, {
+            const putData = await putRes.json();
+            if (putData.errors) console.warn("PUT error " + mf.key + ":", JSON.stringify(putData.errors));
+          } else {
+            const postRes = await fetchWithProxy(mfBase, {
               method: "POST", headers: mfHeaders,
               body: JSON.stringify({ metafield: { namespace: mf.namespace, key: mf.key, value: mf.value, type: mf.type } })
             });
-            const d = await r.json();
-            if (d.errors) console.warn("POST error " + mf.key + ":", JSON.stringify(d.errors));
-            else console.log("POST ok:", mf.key);
+            const postData = await postRes.json();
+            if (postData.errors) console.warn("POST error " + mf.key + ":", JSON.stringify(postData.errors));
           }
         }
-      }
-
-      if (!res.ok) {
-        throw new Error(JSON.stringify(resData.errors || resData));
       }
 
       // Update alt texts only if images option is selected (or publishing all)
