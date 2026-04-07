@@ -964,33 +964,16 @@ function App() {
         throw new Error(JSON.stringify(resData.errors || resData));
       }
 
-      // Send metafields via separate PUT/POST calls
+      // Send metafields via product PUT (this approach worked before)
       if (allMfs.length > 0) {
-        const mfBase = "https://" + s.shopifyStore + "/admin/api/2024-01/products/" + s.productId + "/metafields.json";
-        const mfHeaders = { "Content-Type": "application/json", "X-Shopify-Access-Token": s.shopifyToken };
-
-        // Fetch existing metafields to get IDs
-        const existingRes = await fetchWithProxy(mfBase + "?namespace=custom&limit=250", { headers: { "X-Shopify-Access-Token": s.shopifyToken } });
-        const existingData = await existingRes.json();
-        const existing = existingData.metafields || [];
-
-        for (const mf of allMfs) {
-          const found = existing.find(e => e.key === mf.key && e.namespace === mf.namespace);
-          if (found) {
-            const putRes = await fetchWithProxy(
-              "https://" + s.shopifyStore + "/admin/api/2024-01/metafields/" + found.id + ".json",
-              { method: "PUT", headers: mfHeaders, body: JSON.stringify({ metafield: { id: found.id, value: mf.value, type: mf.type } }) }
-            );
-            const putData = await putRes.json();
-            if (putData.errors) console.warn("PUT error " + mf.key + ":", JSON.stringify(putData.errors));
-          } else {
-            const postRes = await fetchWithProxy(mfBase, {
-              method: "POST", headers: mfHeaders,
-              body: JSON.stringify({ metafield: { namespace: mf.namespace, key: mf.key, value: mf.value, type: mf.type } })
-            });
-            const postData = await postRes.json();
-            if (postData.errors) console.warn("POST error " + mf.key + ":", JSON.stringify(postData.errors));
-          }
+        const mfPutRes = await fetchWithProxy(
+          "https://" + s.shopifyStore + "/admin/api/2024-01/products/" + s.productId + ".json",
+          { method: "PUT", headers: { "Content-Type": "application/json", "X-Shopify-Access-Token": s.shopifyToken },
+            body: JSON.stringify({ product: { id: s.productId, metafields: allMfs } }) }
+        );
+        if (!mfPutRes.ok) {
+          const mfErr = await mfPutRes.json();
+          console.warn("Metafields PUT error:", JSON.stringify(mfErr.errors || mfErr));
         }
       }
 
