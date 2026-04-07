@@ -928,10 +928,19 @@ function App() {
           const value = combined.trim().startsWith("{") ? combined : toRichText(combined);
           return [{ namespace: "custom", key: "usage_instructions", value, type: "rich_text_field" }];
         })() : []) : []),
-        ...(all || opts.faq ? f.faq.flatMap((item, i) => [
-          item.q ? { namespace: "custom", key: "faq_fraga_" + (i+1), value: item.q, type: "single_line_text_field" } : null,
-          item.a ? { namespace: "custom", key: "faq_a" + (i+1), value: toRichText(item.a), type: "rich_text_field" } : null,
-        ]).filter(Boolean) : []),
+        ...(all || opts.faq ? f.faq.flatMap((item, i) => {
+          try {
+            return [
+              item.q ? { namespace: "custom", key: "faq_fraga_" + (i+1), value: item.q, type: "single_line_text_field" } : null,
+              item.a ? { namespace: "custom", key: "faq_a" + (i+1), value: toRichText(item.a), type: "rich_text_field" } : null,
+            ].filter(Boolean);
+          } catch(e) {
+            console.error("FAQ toRichText error on item " + i + ":", e.message, "Answer was:", item.a?.substring(0, 100));
+            return [
+              item.q ? { namespace: "custom", key: "faq_fraga_" + (i+1), value: item.q, type: "single_line_text_field" } : null,
+            ].filter(Boolean);
+          }
+        }) : []),
       ];
 
       const body = {
@@ -946,19 +955,27 @@ function App() {
         }
       };
 
+      // Debug FAQ metafields specifically
+      const faqMfs = allMfs.filter(m => m.key && m.key.startsWith("faq"));
+      console.log("FAQ metafields being sent (" + faqMfs.length + "):", JSON.stringify(faqMfs).substring(0, 800));
+
       const res = await fetchWithProxy("https://" + s.shopifyStore + "/admin/api/2024-01/products/" + s.productId + ".json",
         { method: "PUT", headers: { "Content-Type": "application/json", "X-Shopify-Access-Token": s.shopifyToken }, body: JSON.stringify(body) }
       );
 
       const resData = await res.json();
       console.log("Shopify publish response:", JSON.stringify(resData).substring(0, 500));
+      
+      if (resData.product?.metafields) {
+        console.log("Shopify metafields in response:", JSON.stringify(resData.product.metafields).substring(0, 500));
+      }
 
       if (!res.ok) {
         throw new Error(JSON.stringify(resData.errors || resData));
       }
 
-      // Update alt texts
-      const withAlt = f.images.filter(img => img.shopifyImageId && img.altText);
+      // Update alt texts only if images option is selected (or publishing all)
+      const withAlt = (all || opts.images) ? f.images.filter(img => img.shopifyImageId && img.altText) : [];
       if (withAlt.length > 0) {
         await Promise.all(withAlt.map(img =>
           fetchWithProxy(
