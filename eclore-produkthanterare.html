@@ -988,7 +988,7 @@ function App() {
               { method: "PUT", headers: mfHeaders, body: JSON.stringify({ metafield: { id: found.id, value: mf.value, type: mf.type } }) }
             ).then(r => r.json()).then(d => {
               if (d.errors) console.warn("Metafield PUT error for " + mf.key + ":", JSON.stringify(d.errors));
-              else console.log("Metafield updated:", mf.key);
+              else console.log("Metafield updated:", mf.key, "new value preview:", JSON.stringify(d.metafield?.value || "").substring(0, 80));
             });
           } else {
             // Create new metafield via POST
