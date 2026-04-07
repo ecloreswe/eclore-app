@@ -969,21 +969,36 @@ function App() {
         throw new Error(JSON.stringify(resData.errors || resData));
       }
 
-      // Send metafields via product PUT (proven to work)
+      // Send metafields via separate PUT/POST calls
       if (allMfs.length > 0) {
-        const mfBody = {
-          product: {
-            id: s.productId,
-            metafields: allMfs
+        const mfBase = "https://" + s.shopifyStore + "/admin/api/2024-01/products/" + s.productId + "/metafields.json";
+        const mfHeaders = { "Content-Type": "application/json", "X-Shopify-Access-Token": s.shopifyToken };
+
+        // Fetch existing metafields to get IDs
+        const existingRes = await fetchWithProxy(mfBase + "?namespace=custom&limit=250", { headers: { "X-Shopify-Access-Token": s.shopifyToken } });
+        const existingData = await existingRes.json();
+        const existing = existingData.metafields || [];
+
+        for (const mf of allMfs) {
+          const found = existing.find(e => e.key === mf.key && e.namespace === mf.namespace);
+          if (found) {
+            const r = await fetchWithProxy(
+              "https://" + s.shopifyStore + "/admin/api/2024-01/metafields/" + found.id + ".json",
+              { method: "PUT", headers: mfHeaders, body: JSON.stringify({ metafield: { id: found.id, value: mf.value, type: mf.type } }) }
+            );
+            const d = await r.json();
+            if (d.errors) console.warn("PUT error " + mf.key + ":", JSON.stringify(d.errors));
+            else console.log("PUT ok " + mf.key + ":", d.metafield?.value?.substring?.(0,50) || d.metafield?.value);
+          } else {
+            const r = await fetchWithProxy(mfBase, {
+              method: "POST", headers: mfHeaders,
+              body: JSON.stringify({ metafield: { namespace: mf.namespace, key: mf.key, value: mf.value, type: mf.type } })
+            });
+            const d = await r.json();
+            if (d.errors) console.warn("POST error " + mf.key + ":", JSON.stringify(d.errors));
+            else console.log("POST ok " + mf.key);
           }
-        };
-        const mfRes = await fetchWithProxy(
-          "https://" + s.shopifyStore + "/admin/api/2024-01/products/" + s.productId + ".json",
-          { method: "PUT", headers: { "Content-Type": "application/json", "X-Shopify-Access-Token": s.shopifyToken }, body: JSON.stringify(mfBody) }
-        );
-        const mfData = await mfRes.json();
-        console.log("Metafields PUT full response:", JSON.stringify(mfData).substring(0, 2000));
-        console.log("Metafields in response:", JSON.stringify(mfData.product?.metafields || "none").substring(0, 500));
+        }
       }
 
       if (!res.ok) {
