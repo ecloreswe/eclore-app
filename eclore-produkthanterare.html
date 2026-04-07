@@ -201,6 +201,7 @@ function App() {
   const [queueRunning, setQueueRunning] = useState(false);
   const [queueLog, setQueueLog] = useState([]);
   const [autoPublish, setAutoPublish] = useState(false);
+  const autoPublishRef = useRef(false);
   const [queueOptions, setQueueOptions] = useState({
     description: true, shortDescription: true, bulletPoints: true,
     seoTitle: true, seoDescription: true, seoCluster: true,
@@ -216,6 +217,7 @@ function App() {
   useEffect(() => { formRef.current = form; }, [form]);
   useEffect(() => { settingsRef.current = settings; }, [settings]);
   useEffect(() => { queueOptionsRef.current = queueOptions; }, [queueOptions]);
+  useEffect(() => { autoPublishRef.current = autoPublish; }, [autoPublish]);
 
   // ─── Helpers ───────────────────────────────────────────────────────────────
 
@@ -824,6 +826,7 @@ function App() {
           return (parsed.children || []).map(node => {
             const inner = (node.children || []).map(inlineToHtml).join("");
             if (node.type === "paragraph") return `<p>${inner}</p>`;
+            if (node.type === "heading") return `<h${node.level || 2}>${inner}</h${node.level || 2}>`;
             if (node.type === "unordered-list") {
               return "<ul>" + (node.children || []).map(li => {
                 const liText = (li.children || []).flatMap(p => p.children || [p]).map(inlineToHtml).join("");
@@ -1014,7 +1017,7 @@ function App() {
         setQueue(q => q.map((it, j) => j === i ? { ...it, status: "genererar..." } : it));
         logQ("Genererar innehåll...");
         await generateAll(queueOptionsRef.current);
-        if (autoPublish) {
+        if (autoPublishRef.current) {
           setQueue(q => q.map((it, j) => j === i ? { ...it, status: "publicerar..." } : it));
           await publish(queueOptionsRef.current);
           setQueue(q => q.map((it, j) => j === i ? { ...it, status: "klar", productName: formRef.current.productName } : it));
