@@ -380,7 +380,7 @@ function App() {
 
         description: (() => {
           const productType = (formRef.current.productType || "").toLowerCase();
-          const isVaska = productType.includes("sminkväskor");
+          const isVaska = productType.includes("sminkväskor") || productType.includes("handväska") || productType.includes("väska") || productType.includes("necessär");
           const isDoftljus = productType.includes("doftljus");
           const h2mid = isVaska ? "Material & hantverk" : isDoftljus ? "Doft & material" : "Ingredienser & effekter";
           const h2result = isVaska ? "Funktion & detaljer" : isDoftljus ? "Varför välja vårt doftljus?" : "Resultat & fördelar";
@@ -396,20 +396,15 @@ function App() {
             `<h2>${h2mid}</h2>\n${midContent}\n` +
             `<h2>${h2result}</h2>\n<ul><li>Konkret fördel 1</li><li>Konkret fördel 2</li><li>Konkret fördel 3</li></ul>\n` +
             `<h2>För vem passar [produkttyp]?</h2>\n<p>Beskriv användningssituationen eller behovet – INTE demografin. Skriv ALDRIG "passar kvinnor 40+", "mogen hud" eller liknande. Tala istället om livsstil, behov eller situation. Long-tail sökord naturligt. Avsluta med en subtil uppmaning.</p>\n\n` +
-            (isVaska ? `VIKTIGT FÖR SMINKVÄSKOR: Fokusera på att väskan är handgjord, praktisk och välkonstruerad. Lyft fram organisation, förvaring och användningsområden. Undvik att "naturligt material" är huvudargumentet.\n\n` : "") +
+            (isVaska ? `VIKTIGT FÖR VÄSKOR: Fokusera på att väskan är handgjord, praktisk och välkonstruerad. Lyft fram organisation, förvaring, material och användningsområden. Undvik att "naturligt material" är huvudargumentet. Länka ALDRIG till hudvårdskategorier – det är irrelevant för en väska.\n\n` : "") +
             `UNDVIK: "genuint hantverk", "tillverkat i Europa", "mogen hud", "kvalitetsmedvetna kvinnor", klichéer utan substans. Variera avslutningen – den ska vara unik för just denna produkt.\n\n` +
-            `VIKTIGT: Väv in 2-3 naturliga interna länkar i texten (ej i rubriker). Använd dessa URL:er och ankarlänktexter efter relevans:\n` +
-            `Ansiktsvård: <a href="https://www.eclore.se/collections/ansiktsvard">ansiktsvård</a>\n` +
-            `Serum: <a href="https://www.eclore.se/collections/serum">serum</a>\n` +
-            `Anti-age: <a href="https://www.eclore.se/collections/anti-age">anti-age</a>\n` +
-            `Hårvård: <a href="https://www.eclore.se/collections/harvard">hårvård</a>\n` +
-            `Kroppsvård: <a href="https://www.eclore.se/collections/kroppsvard">kroppsvård</a>\n` +
-            `Sminkväskor: <a href="https://www.eclore.se/collections/sminkvaskor">sminkväskor</a>\n` +
-            `Doftljus: <a href="https://www.eclore.se/collections/doftljus">doftljus</a>\n` +
-            `Body scrub: <a href="https://www.eclore.se/collections/bodyscrub">body scrub</a>\n` +
-            `Ansiktsmask: <a href="https://www.eclore.se/collections/ansiktsmask">ansiktsmask</a>\n` +
-            `Naturlig hudvård: <a href="https://www.eclore.se">naturlig hudvård</a>\n` +
-            `Välj bara de kategorier som är relevanta för produkten. Länkarna ska kännas naturliga i texten.`;
+            `VIKTIGT: Väv in 2-3 naturliga interna länkar i texten (ej i rubriker). Välj BARA länkar som är relevanta för produkttypen:\n` +
+            (isVaska
+              ? `Sminkväskor: <a href="https://www.eclore.se/collections/sminkvaskor">sminkväskor och necessärer</a>\nHandgjorda väskor: <a href="https://www.eclore.se/collections/sminkvaskor">handgjorda väskor</a>\nDoftljus: <a href="https://www.eclore.se/collections/doftljus">doftljus</a>\néclore: <a href="https://www.eclore.se">éclore</a>`
+              : isDoftljus
+              ? `Doftljus: <a href="https://www.eclore.se/collections/doftljus">doftljus</a>\nNaturlig hudvård: <a href="https://www.eclore.se">naturlig hudvård</a>\nAnsiktsvård: <a href="https://www.eclore.se/collections/ansiktsvard">ansiktsvård</a>`
+              : `Ansiktsvård: <a href="https://www.eclore.se/collections/ansiktsvard">ansiktsvård</a>\nSerum: <a href="https://www.eclore.se/collections/serum">serum</a>\nAnti-age: <a href="https://www.eclore.se/collections/anti-age">anti-age</a>\nHårvård: <a href="https://www.eclore.se/collections/harvard">hårvård</a>\nKroppsvård: <a href="https://www.eclore.se/collections/kroppsvard">kroppsvård</a>\nSminkväskor: <a href="https://www.eclore.se/collections/sminkvaskor">sminkväskor</a>\nDoftljus: <a href="https://www.eclore.se/collections/doftljus">doftljus</a>\nBody scrub: <a href="https://www.eclore.se/collections/bodyscrub">body scrub</a>\nAnsiktsmask: <a href="https://www.eclore.se/collections/ansiktsmask">ansiktsmask</a>\nNaturlig hudvård: <a href="https://www.eclore.se">naturlig hudvård</a>`) +
+            `\nLänkarna ska kännas naturliga i texten.`;
         })(),
 
         bulletPoints:
@@ -468,7 +463,7 @@ function App() {
         faq:
           (() => {
             const productType = (formRef.current.productType || "").toLowerCase();
-            const isVaska = productType.includes("sminkväskor");
+            const isVaska = productType.includes("sminkväskor") || productType.includes("handväska") || productType.includes("väska") || productType.includes("necessär");
             const isDoftljus = productType.includes("doftljus");
 
             // Shuffle helper – randomizes order so Claude picks different questions each time
