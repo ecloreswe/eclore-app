@@ -440,17 +440,17 @@ function App() {
           `Returnera BARA slugen, inget annat.`,
 
         seoDescription:
-          `${c}\n\nSkriv en SEO-metabeskrivning (max 155 tecken) för: "${name}". ` +
+          `${c}\n\nSkriv en SEO-metabeskrivning (max 160 tecken) för: "${name}". ` +
           `REGLER: ` +
           `(1) Börja med varumärket + produkttyp om det passar naturligt. ` +
           `(2) Lyft produktens mest unika och konkreta egenskap – något som skiljer just denna produkt. ` +
           `(3) Nämn 1-2 nyckelingredienser eller funktioner med specifik effekt. ` +
-          `(4) Avsluta med kort praktisk info eller CTA. ` +
+          `(4) Avsluta med "Fri frakt över 599 kr." om det finns utrymme inom 160 tecken, annars hoppa över det. ` +
           `UNDVIK: "från Europa", "genuint hantverk", "kvalitetsmedvetna", "mogen hud", "passar kvinnor", vaga fraser. ` +
-          `BRA schampo: "Nurme mjällschampo med rosmarin, tea tree och panthenol. Balanserar hårbotten och stärker hårstråt – skonsamt nog för daglig användning." ` +
-          `BRA väska: "Moi Mili sminkväska i 2 storlekar med vattentätt foder och innerfickor. Handgjord – perfekt för smink, resor och organiserad vardag." ` +
-          `BRA serum: "Berrichi C-vitaminserum med askorbinsyra och hyaluronsyra. Jämnar hudton, minskar pigmentfläckar och ger synlig lyster." ` +
-          `Returnera bara texten, max 155 tecken.`,
+          `BRA schampo: "Nurme mjällschampo med rosmarin, tea tree och panthenol. Balanserar hårbotten och stärker hårstråt. Fri frakt över 599 kr." ` +
+          `BRA väska: "Moi Mili sminkväska i 2 storlekar med vattentätt foder och innerfickor. Handgjord – perfekt för resor. Fri frakt över 599 kr." ` +
+          `BRA serum: "Berrichi C-vitaminserum med askorbinsyra och hyaluronsyra. Jämnar hudton och ger synlig lyster. Fri frakt över 599 kr." ` +
+          `Returnera bara texten, max 160 tecken.`,
 
         seoCluster:
           `${c}\n\nSEO-kluster för: "${name}". ` +
@@ -1324,8 +1324,8 @@ function App() {
             <Field label={"SEO-titel " + form.seoTitle.length + "/60"} action={<AiBtn field="seoTitle" label="Generera titel" />}>
               <input value={form.seoTitle} onChange={e => setField("seoTitle", e.target.value)} placeholder="Naturlig ansiktskräm mogen hud | éclore" style={{ ...inp, border: "1px solid " + (form.seoTitle.length > 60 ? "#e87c5a" : "#2a2a2a") }} />
             </Field>
-            <Field label={"SEO-metabeskrivning " + form.seoDescription.length + "/155"} action={<AiBtn field="seoDescription" label="Generera metabeskrivning" />}>
-              <textarea value={form.seoDescription} onChange={e => setField("seoDescription", e.target.value)} rows={3} placeholder="Beskrivande text för Google..." style={{ ...ta, border: "1px solid " + (form.seoDescription.length > 155 ? "#e87c5a" : "#2a2a2a") }} />
+            <Field label={"SEO-metabeskrivning " + form.seoDescription.length + "/160"} action={<AiBtn field="seoDescription" label="Generera metabeskrivning" />}>
+              <textarea value={form.seoDescription} onChange={e => setField("seoDescription", e.target.value)} rows={3} placeholder="Beskrivande text för Google..." style={{ ...ta, border: "1px solid " + (form.seoDescription.length > 160 ? "#e87c5a" : "#2a2a2a") }} />
             </Field>
             {(form.seoTitle || form.seoDescription) && (
               <div style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "12px", padding: "18px" }}>
