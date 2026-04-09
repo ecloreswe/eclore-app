@@ -414,20 +414,17 @@ function App() {
         seoTitle:
           (() => {
             const vendor = formRef.current.vendor || "";
-            return `${c}\n\nDu är en SEO-expert för éclore.se. Analysera produkten internt men returnera BARA titeln – ingen förklaring, ingen analys, inga rubriker.\n\n` +
-              `Skriv en SEO-titel för: "${name}". Varumärket är: "${vendor}".\n\n` +
+            return `${c}\n\nSkriv en SEO-titel för produkten med det EXAKTA produktnamnet: "${name}". Varumärket är: "${vendor}".\n\n` +
               `REGLER:\n` +
               `(1) Börja med varumärket "${vendor}" om det inte redan finns i produktnamnet.\n` +
-              `(2) Bevara EXAKT samma versaler som i det ursprungliga produktnamnet – ändra ingenting. "HomeSpa" förblir "HomeSpa", "Fruitfest" förblir "Fruitfest".\n` +
+              `(2) VERSALER: Kopiera EXAKT hur produktnamnet "${name}" är stavat – ändra INTE versaler. Om produktnamnet har "HomeSpa" ska titeln ha "HomeSpa". Om det har "Fruitfest" ska titeln ha "Fruitfest".\n` +
               `(3) Håll dig nära det ursprungliga produktnamnet. Lägg till volym/storlek om det finns och ryms.\n` +
               `(4) Avsluta ALLTID med " | éclore".\n` +
-              `(5) Max 60 tecken INKLUSIVE " | éclore".\n` +
-              `(6) Undvik generiska ord utan specifika fakta.\n\n` +
-              `EXEMPEL:\n` +
-              `Produkt: "HOIA HomeSpa Fruitfest Face Mask, 50 ml" → "HOIA HomeSpa Fruitfest Face Mask – 50 ml | éclore"\n` +
-              `Produkt: "Aphrodite Liposomal Ansiktskräm med Peptider, 30 ml" → "HOIA Aphrodite Liposomal Ansiktskräm med Peptider – 30 ml | éclore"\n` +
-              `Produkt: "Anti-Dandruff Rosemary Shampoo, 250 ml" → "Nurme Mjällschampo med Rosmarin och Tea Tree – 250 ml | éclore"\n\n` +
-              `Returnera BARA titeln. Ingen analys. Inga punktlistor. Ingen förklaring.`;
+              `(5) Max 60 tecken INKLUSIVE " | éclore".\n\n` +
+              `EXEMPEL med rätt versaler:\n` +
+              `Produktnamn: "HOIA HomeSpa Fruitfest Face Mask, 50 ml" → "HOIA HomeSpa Fruitfest Face Mask – 50 ml | éclore"\n` +
+              `Produktnamn: "Nurme Anti-Dandruff Rosemary Shampoo, 250 ml" → "Nurme Mjällschampo med Rosmarin – 250 ml | éclore"\n\n` +
+              `Returnera BARA titeln, ingenting annat.`;
           })(),
 
         handle:
