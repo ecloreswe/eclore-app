@@ -414,16 +414,18 @@ function App() {
         seoTitle:
           (() => {
             const vendor = formRef.current.vendor || "";
-            return `${c}\n\nSkriv en SEO-titel för: "${name}". Varumärket är: "${vendor}". ` +
-              `REGLER: ` +
-              `(1) Börja ALLTID med varumärket "${vendor}" om det inte redan ingår i produktnamnet. ` +
-              `(2) Använd normalt satsfall – stor bokstav bara på första ordet och egennamn. ` +
-              `(3) Bedöm om produktnamnet är på svenska och beskrivande: ` +
-              `VÄG A – Svenska och beskrivande: håll dig nära produktnamnet, lägg till volym/storlek om det finns. Ex: "Nurme torvschampo för lugnande hårbotten – 250 ml | éclore" ` +
-              `VÄG B – Engelska eller otydligt: översätt och beskriv funktionen på svenska. Ex: "Moi Mili sminkväska i set med blommigt mönster | éclore" ` +
-              `(4) Avsluta ALLTID med " | éclore". ` +
-              `(5) Max 65 tecken INKLUSIVE " | éclore". ` +
-              `(6) Naturlig mening – ALDRIG lösa nyckelord. ` +
+            return `${c}\n\nDu är en SEO-expert för den svenska naturliga skönhetsbutiken éclore.se.\n\n` +
+              `Identifiera de 2–3 starkaste differentiatorerna för "${name}" – ingredienser, certifieringar, ursprungsland, prisutmärkelser, unika egenskaper.\n\n` +
+              `Skriv en SEO-titel för produkten. Varumärket är: "${vendor}".\n\n` +
+              `REGLER:\n` +
+              `(1) Börja ALLTID med varumärket "${vendor}" om det inte redan ingår i produktnamnet.\n` +
+              `(2) VERSALER OCH NAMN: Bevara versaler från produktnamnet. Produktnamn och varumärken är egennamn – behandla dem som det. Ex: "HomeSpa", "Aphrodite", "Liposomal" behåller sina versaler. Generiska ord som "med", "för", "och" skrivs med gemen.\n` +
+              `(3) Välj rätt väg:\n` +
+              `VÄG A – Produktnamnet är på svenska och beskrivande: håll dig nära det ursprungliga produktnamnet, lägg till volym/storlek om det finns. Ex: "HOIA Aphrodite Liposomal Ansiktskräm med Peptider – 30 ml | éclore"\n` +
+              `VÄG B – Produktnamnet är på engelska eller otydligt: översätt till svenska men bevara egennamn och lyft fram starkaste differentiatorn. Ex: "Moi Mili Hobo Handväska i Velour med Justerbar Rem | éclore"\n` +
+              `(4) Avsluta ALLTID med " | éclore".\n` +
+              `(5) Max 60 tecken INKLUSIVE " | éclore".\n` +
+              `(6) Undvik generiska ord som "naturlig", "genuint", "kvalitet" om de inte kompletteras av specifika fakta.\n` +
               `Returnera bara titeln, ingenting annat.`;
           })(),
 
@@ -435,16 +437,17 @@ function App() {
           `Returnera BARA slugen, inget annat.`,
 
         seoDescription:
-          `${c}\n\nSkriv en SEO-metabeskrivning (max 160 tecken) för: "${name}". ` +
-          `REGLER: ` +
-          `(1) Börja med varumärket + produkttyp om det passar naturligt. ` +
-          `(2) Lyft produktens mest unika och konkreta egenskap – något som skiljer just denna produkt. ` +
-          `(3) Nämn 1-2 nyckelingredienser eller funktioner med specifik effekt. ` +
-          `(4) Avsluta med "Fri frakt över 599 kr." om det finns utrymme inom 160 tecken, annars hoppa över det. ` +
-          `UNDVIK: "från Europa", "genuint hantverk", "kvalitetsmedvetna", "mogen hud", "passar kvinnor", vaga fraser. ` +
-          `BRA schampo: "Nurme mjällschampo med rosmarin, tea tree och panthenol. Balanserar hårbotten och stärker hårstråt. Fri frakt över 599 kr." ` +
-          `BRA väska: "Moi Mili sminkväska i 2 storlekar med vattentätt foder och innerfickor. Handgjord – perfekt för resor. Fri frakt över 599 kr." ` +
-          `BRA serum: "Berrichi C-vitaminserum med askorbinsyra och hyaluronsyra. Jämnar hudton och ger synlig lyster. Fri frakt över 599 kr." ` +
+          `${c}\n\nDu är en SEO-expert för den svenska naturliga skönhetsbutiken éclore.se.\n\n` +
+          `Identifiera de 2–3 starkaste differentiatorerna för "${name}" – ingredienser, certifieringar, ursprungsland, prisutmärkelser, unika egenskaper.\n\n` +
+          `Skriv en SEO-metabeskrivning (max 160 tecken) som:\n` +
+          `(1) Börjar med varumärket + produkttyp om det passar naturligt.\n` +
+          `(2) Innehåller konkreta nyckelord, volym och de starkaste differentiatorerna.\n` +
+          `(3) Undviker generiska ord som "naturlig", "genuint", "kvalitet" utan specifika fakta.\n` +
+          `(4) Avslutar med "Fri frakt över 599 kr." om det finns utrymme inom 160 tecken.\n` +
+          `UNDVIK: "från Europa", "genuint hantverk", "kvalitetsmedvetna", "mogen hud", "passar kvinnor", vaga fraser.\n` +
+          `BRA schampo: "Nurme mjällschampo 250 ml med rosmarinolja, tea tree och panthenol. Balanserar hårbotten, veganskt. Fri frakt över 599 kr."\n` +
+          `BRA väska: "Moi Mili hoboväska i velour, handgjord i Litauen. Justerbar rem 58–115 cm, maskintvättbar. Fri frakt över 599 kr."\n` +
+          `BRA serum: "Berrichi C-vitaminserum 30 ml med 15% askorbinsyra och hyaluronsyra. Jämnar hudton, minskar pigment. Fri frakt över 599 kr."\n` +
           `Returnera bara texten, max 160 tecken.`,
 
         seoCluster:
