@@ -43,15 +43,15 @@ const BUTIKSPROFIL = `BUTIKSPROFIL – éclore
 
 Varumärke: éclore | Webbplats: eclore.se
 
-SORTIMENT: Ansiktsvård, hudvård, hårvård – naturliga ingredienser, tillverkat i Europa. Handgjorda sminkväskor och necessärer. Doftljus med naturliga ingredienser.
+SORTIMENT: Ansiktsvård, hudvård, hårvård – med fokus på ingredienser och effekt. Handgjorda sminkväskor, necessärer och handväskor – fokus på hantverk, konstruktion och funktion (INTE "naturliga material"). Doftljus.
 
 KÄNSLA: Inte skandinaviskt minimalistiskt – hämtar sin själ från södra Europa. Känslan påminner om ett välsorterat apotek i Provence. Genuint, inte massindustri.
 
-MÅLGRUPP: Kvalitetsmedvetna personer som lockas av historien bakom produkten och värdesätter naturliga ingredienser och hantverk. Skriv ALDRIG ut ålder eller kön explicit i texterna.
+MÅLGRUPP: Kvalitetsmedvetna personer som lockas av historien bakom produkten. Skriv ALDRIG ut ålder eller kön explicit i texterna.
 
-TONALITET: Professionell och varm. Undvik superlativ utan substans. Undvik klichéer som "genuint hantverk", "tillverkat i Europa", "kvalitetsmedvetna kvinnor", "mogen hud" som avslutning.
+TONALITET: Professionell och varm. Undvik superlativ utan substans. För VÄSKOR: skriv ALDRIG "naturligt material", "naturlig bomull" eller liknande som huvudargument – fokusera på hantverk, funktion och design istället.
 
-SEO: Long-tail kombinationer: produkttyp + naturlig/ekologisk + användningsområde.`;
+SEO: Long-tail kombinationer: produkttyp + specifik egenskap + användningsområde.`;
 
 const DEFAULT_FORM = {
   productName: "",
@@ -369,14 +369,18 @@ function App() {
       const name = f.productName || "produkten";
 
       const prompts = {
-        shortDescription:
-          `${c}\n\nSkriv above the fold-texten på svenska för: "${name}". Ca 80 ord. ` +
+        shortDescription: (() => {
+          const productType = (formRef.current.productType || "").toLowerCase();
+          const isVaska = productType.includes("sminkväskor") || productType.includes("handväska") || productType.includes("väska") || productType.includes("necessär");
+          return `${c}\n\nSkriv above the fold-texten på svenska för: "${name}". Ca 80 ord. ` +
           `Skriv som en av Ogilvys bästa copywriters – säljande, konkret och engagerande. ` +
           `Struktur: ` +
           `(1) Börja med en H2-rubrik som är mer beskrivande än produktnamnet – lyft fram den viktigaste fördelen, inkludera primärt sökord naturligt. Returnera som <h2>...</h2>. ` +
           `(2) Sedan ett stycke: öppna med en stark mening som talar direkt till kundens behov eller önskan. Lyft fördelar före egenskaper. Avsluta med en mening som skapar vilja att läsa mer eller köpa. ` +
+          (isVaska ? `VIKTIGT FÖR VÄSKOR: Skriv ALDRIG "naturligt material", "naturlig bomull", "naturliga material" eller liknande. Fokusera på hantverk, funktion, design och praktiska fördelar istället. ` : ``) +
           `UNDVIK: "passar mogna kvinnor", "för dig över 40", "mogen hud", "genuint hantverk", "tillverkat i Europa", vaga klichéer. Tala om behovet eller situationen – inte demografin. ` +
-          `Ton: professionell, varm och övertygande. Returnera bara HTML med <h2> och <p>.`,
+          `Ton: professionell, varm och övertygande. Returnera bara HTML med <h2> och <p>.`;
+        })(),
 
         description: (() => {
           const productType = (formRef.current.productType || "").toLowerCase();
