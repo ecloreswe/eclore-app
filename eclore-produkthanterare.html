@@ -57,6 +57,7 @@ const DEFAULT_FORM = {
   productName: "",
   productType: "",
   vendor: "",
+  price: "",
   description: "",
   shortDescription: "",
   bulletPoints: ["", "", ""],
@@ -351,6 +352,7 @@ function App() {
       f.productName ? "Produktnamn: " + f.productName : "",
       f.productType ? "Produkttyp: " + f.productType : "",
       f.vendor ? "Varumärke: " + f.vendor : "",
+      f.price ? "Pris: " + f.price + " kr" : "",
       f.description ? "Befintlig beskrivning:\n" + f.description.replace(/<[^>]+>/g, "") : "",
       f.inci ? "INCI: " + f.inci : "",
       f.seoCluster?.primary ? "Primärt sökord: " + f.seoCluster.primary : "",
@@ -418,17 +420,32 @@ function App() {
         seoTitle:
           (() => {
             const vendor = formRef.current.vendor || "";
-            return `${c}\n\nSkriv en SEO-titel för produkten med det EXAKTA produktnamnet: "${name}". Varumärket är: "${vendor}".\n\n` +
+            const price = formRef.current.price ? Math.round(formRef.current.price) + "kr" : "";
+            const tags = formRef.current.tags.join(", ");
+            const productType = formRef.current.productType || "";
+            return `Du är en SEO-expert för svensk e-handel som skapar konverterande title tags.\n\n` +
+              `UPPGIFT: Skapa en optimerad title tag för denna produkt.\n\n` +
+              `PRODUKTDATA:\n` +
+              `Produktnamn: ${name}\n` +
+              `Märke: ${vendor}\n` +
+              `Pris: ${price}\n` +
+              `Produkttyp: ${productType}\n` +
+              `Tags: ${tags}\n\n` +
               `REGLER:\n` +
-              `(1) Börja med varumärket "${vendor}" om det inte redan finns i produktnamnet.\n` +
-              `(2) VERSALER: Kopiera EXAKT hur produktnamnet "${name}" är stavat – ändra INTE versaler. Om produktnamnet har "HomeSpa" ska titeln ha "HomeSpa". Om det har "Fruitfest" ska titeln ha "Fruitfest".\n` +
-              `(3) Håll dig nära det ursprungliga produktnamnet. Lägg till volym/storlek om det finns och ryms.\n` +
-              `(4) Avsluta ALLTID med " | éclore".\n` +
-              `(5) Max 60 tecken INKLUSIVE " | éclore".\n\n` +
-              `EXEMPEL med rätt versaler:\n` +
-              `Produktnamn: "HOIA HomeSpa Fruitfest Face Mask, 50 ml" → "HOIA HomeSpa Fruitfest Face Mask – 50 ml | éclore"\n` +
-              `Produktnamn: "Nurme Anti-Dandruff Rosemary Shampoo, 250 ml" → "Nurme Mjällschampo med Rosmarin – 250 ml | éclore"\n\n` +
-              `Returnera BARA titeln, ingenting annat.`;
+              `1. LÄNGD: Exakt 50-60 tecken (kritiskt)\n` +
+              `2. STRUKTUR: {Huvudkeyword} - {Starkaste USP} - {Pris} | éclore\n` +
+              `3. KEYWORD-STRATEGI: Extrahera produkttyp från produktnamn. Lägg keyword FÖRST. Ta INTE med märkesnamn i början.\n` +
+              `4. USP-PRIORITERING (välj högsta): COSMOS ORGANIC > Ekologisk > Vegansk > Naturlig > (utelämna om inget annat)\n` +
+              `5. UNDVIK: Märkesnamn i början, upprepning, fler än 60 tecken, generiska fraser, versaler (utom COSMOS)\n` +
+              `6. OBLIGATORISKT: Pris med "kr", avsluta med " | éclore", bindestreck " - " som separator, keyword i början\n\n` +
+              `EXEMPEL:\n` +
+              `Input: "Tilk Refresh Me Probiotisk Toner med Rosenvatten", Pris: 349kr, Tags: ekologisk\n` +
+              `Output: Probiotisk Toner Rosenvatten - Ekologisk - 349kr | éclore\n\n` +
+              `Input: "LUUV Brun Utan Sol Mousse Mörk COSMOS", Pris: 329kr, Tags: COSMOS\n` +
+              `Output: Brun Utan Sol Mousse Mörk - COSMOS - 329kr | éclore\n\n` +
+              `Input: "Nurme Naturligt Schampo för Torrt Hår 250ml", Pris: 189kr, Tags: naturlig\n` +
+              `Output: Schampo Torrt Hår 250ml - Naturlig - 189kr | éclore\n\n` +
+              `Ge bara title tag, ingen förklaring.`;
           })(),
 
         handle:
@@ -750,6 +767,7 @@ function App() {
         tags: p.tags ? p.tags.split(", ").filter(Boolean) : [],
         productType: p.product_type || "",
         vendor: p.vendor || "",
+        price: p.variants?.[0]?.price || "",
         handle: p.handle || "",
       });
 
