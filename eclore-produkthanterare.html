@@ -922,6 +922,8 @@ function App() {
     console.log("Publish - seoTitle:", formRef.current.seoTitle?.substring(0, 50));
     try {
       const allMfs = [
+        ...(all || opts?.seoTitle ? (f.seoTitle ? [{ namespace: "global", key: "title_tag", value: f.seoTitle, type: "single_line_text_field" }] : []) : []),
+        ...(all || opts?.seoDescription ? (f.seoDescription ? [{ namespace: "global", key: "description_tag", value: f.seoDescription, type: "single_line_text_field" }] : []) : []),
         ...f.metafields.filter(m => m.key && m.value).map(m => ({
           namespace: m.namespace || "custom",
           key: m.key,
@@ -970,10 +972,8 @@ function App() {
       const body = {
         product: {
           id: s.productId,
-          ...(all || opts.description ? { title: f.productName, body_html: f.description } : {}),
-          ...(all || opts.tags ? (f.tags.length > 0 ? { tags: f.tags.join(", ") } : {}) : {}),
-          ...(all || opts.seoTitle ? (f.seoTitle ? { metafields_global_title_tag: f.seoTitle } : {}) : {}),
-          ...(all || opts.seoDescription ? (f.seoDescription ? { metafields_global_description_tag: f.seoDescription } : {}) : {}),
+          ...(all || opts?.description ? { title: f.productName, body_html: f.description } : {}),
+          ...(all || opts?.tags ? (f.tags.length > 0 ? { tags: f.tags.join(", ") } : {}) : {}),
           ...(f.handle ? { handle: f.handle } : {}),
         }
       };
