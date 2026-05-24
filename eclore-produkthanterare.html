@@ -420,7 +420,6 @@ function App() {
         seoTitle:
           (() => {
             const vendor = formRef.current.vendor || "";
-            const price = formRef.current.price ? Math.round(formRef.current.price) + "kr" : "";
             const tags = formRef.current.tags.join(", ");
             const productType = formRef.current.productType || "";
             return `Du är en SEO-expert för svensk e-handel som skapar konverterande title tags.\n\n` +
@@ -428,23 +427,22 @@ function App() {
               `PRODUKTDATA:\n` +
               `Produktnamn: ${name}\n` +
               `Märke: ${vendor}\n` +
-              `Pris: ${price}\n` +
               `Produkttyp: ${productType}\n` +
               `Tags: ${tags}\n\n` +
               `REGLER:\n` +
-              `1. LÄNGD: Exakt 50-60 tecken (kritiskt)\n` +
-              `2. STRUKTUR: {Huvudkeyword} - {Starkaste USP} - {Pris} | éclore\n` +
+              `1. LÄNGD: Exakt 50-60 tecken (kritiskt - längre titles klipps av i Google)\n` +
+              `2. STRUKTUR: {Huvudkeyword} - {Starkaste USP} - {Viktigaste attribut} | éclore\n` +
               `3. KEYWORD-STRATEGI: Extrahera produkttyp från produktnamn. Lägg keyword FÖRST. Ta INTE med märkesnamn i början.\n` +
               `4. USP-PRIORITERING (välj högsta): COSMOS ORGANIC > Ekologisk > Vegansk > Naturlig > (utelämna om inget annat)\n` +
-              `5. UNDVIK: Märkesnamn i början, upprepning, fler än 60 tecken, generiska fraser, versaler (utom COSMOS)\n` +
-              `6. OBLIGATORISKT: Pris med "kr", avsluta med " | éclore", bindestreck " - " som separator, keyword i början\n\n` +
+              `5. UNDVIK: Märkesnamn i början, upprepning, fler än 60 tecken, generiska fraser, versaler (utom COSMOS), pris\n` +
+              `6. OBLIGATORISKT: Avsluta med " | éclore", bindestreck " - " som separator, keyword i början\n\n` +
               `EXEMPEL:\n` +
-              `Input: "Tilk Refresh Me Probiotisk Toner med Rosenvatten", Pris: 349kr, Tags: ekologisk\n` +
-              `Output: Probiotisk Toner Rosenvatten - Ekologisk - 349kr | éclore\n\n` +
-              `Input: "LUUV Brun Utan Sol Mousse Mörk COSMOS", Pris: 329kr, Tags: COSMOS\n` +
-              `Output: Brun Utan Sol Mousse Mörk - COSMOS - 329kr | éclore\n\n` +
-              `Input: "Nurme Naturligt Schampo för Torrt Hår 250ml", Pris: 189kr, Tags: naturlig\n` +
-              `Output: Schampo Torrt Hår 250ml - Naturlig - 189kr | éclore\n\n` +
+              `Input: "Tilk Refresh Me Probiotisk Toner med Rosenvatten", Tags: ekologisk\n` +
+              `Output: Probiotisk Toner Rosenvatten - Ekologisk | éclore\n\n` +
+              `Input: "LUUV Brun Utan Sol Mousse Mörk COSMOS", Tags: COSMOS, vegansk\n` +
+              `Output: Brun Utan Sol Mousse Mörk - COSMOS Naturlig | éclore\n\n` +
+              `Input: "Nurme Naturligt Schampo för Torrt Hår 250ml", Tags: naturlig\n` +
+              `Output: Schampo Torrt Hår 250ml - Naturligt Vegansk | éclore\n\n` +
               `Ge bara title tag, ingen förklaring.`;
           })(),
 
