@@ -920,6 +920,7 @@ function App() {
     const all = !opts;
     console.log("Publish - all:", all, "opts.faq:", opts?.faq, "faq count:", formRef.current.faq.length);
     console.log("Publish - seoTitle:", formRef.current.seoTitle?.substring(0, 50));
+    console.log("Publish - seoDescription:", formRef.current.seoDescription?.substring(0, 50));
     try {
       const allMfs = [
         ...(all || opts?.seoTitle ? (f.seoTitle ? [{ namespace: "global", key: "title_tag", value: f.seoTitle, type: "single_line_text_field" }] : []) : []),
