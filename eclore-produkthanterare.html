@@ -918,9 +918,6 @@ function App() {
     const f = formRef.current;
     // If opts provided (from queue), only publish selected fields. Otherwise publish all.
     const all = !opts;
-    console.log("Publish - all:", all, "opts.faq:", opts?.faq, "faq count:", formRef.current.faq.length);
-    console.log("Publish - seoTitle:", formRef.current.seoTitle?.substring(0, 50));
-    console.log("Publish - seoDescription:", formRef.current.seoDescription?.substring(0, 50));
     try {
       const allMfs = [
         ...(all || opts?.seoTitle ? (f.seoTitle ? [{ namespace: "global", key: "title_tag", value: f.seoTitle, type: "single_line_text_field" }] : []) : []),
@@ -1018,7 +1015,7 @@ function App() {
                 { method: "PUT", headers: mfHeaders2, body: JSON.stringify({ metafield: { id: existingDesc.id, value: descMf.value, type: "single_line_text_field" } }) }
               );
               const d = await r.json();
-              console.log("description_tag update:", d.metafield?.value?.substring(0, 50) || JSON.stringify(d.errors));
+              console.warn("description_tag PUT failed:", JSON.stringify(d.errors));
             }
           }
         }
@@ -1049,7 +1046,6 @@ function App() {
   const runQueue = async () => {
     setQueueRunning(true);
     setQueueLog([]);
-    console.log("runQueue started - autoPublish state:", autoPublish, "autoPublishRef:", autoPublishRef.current);
     for (let i = 0; i < queue.length; i++) {
       if (queue[i].status === "klar") continue;
       setQueueIdx(i);
@@ -1063,10 +1059,8 @@ function App() {
         logQ("Genererar innehåll...");
         await generateAll(queueOptionsRef.current);
         if (autoPublishRef.current) {
-          console.log("AutoPublish is ON - publishing...");
-          await new Promise(r => setTimeout(r, 500)); // Wait for formRef to update
+          await new Promise(r => setTimeout(r, 500));
           setQueue(q => q.map((it, j) => j === i ? { ...it, status: "publicerar..." } : it));
-          console.log("Queue publish - faq length:", formRef.current.faq.length);
           await publish(queueOptionsRef.current);
           setQueue(q => q.map((it, j) => j === i ? { ...it, status: "klar", productName: formRef.current.productName } : it));
           logQ("✓ " + (formRef.current.productName || queue[i].id) + " klar!", "success");
