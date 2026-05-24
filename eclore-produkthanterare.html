@@ -1063,7 +1063,7 @@ function App() {
   const approveNext = async () => {
     if (queueIdx === null) return;
     logQ("Publicerar...");
-    await publish();
+    await publish(queueOptionsRef.current);
     setQueue(q => q.map((it, j) => j === queueIdx ? { ...it, status: "klar" } : it));
     logQ("✓ " + formRef.current.productName + " publicerad!", "success");
     const next = queue.findIndex((it, j) => j > queueIdx && it.status === "väntande");
