@@ -1064,6 +1064,7 @@ function App() {
         await generateAll(queueOptionsRef.current);
         if (autoPublishRef.current) {
           console.log("AutoPublish is ON - publishing...");
+          await new Promise(r => setTimeout(r, 500)); // Wait for formRef to update
           setQueue(q => q.map((it, j) => j === i ? { ...it, status: "publicerar..." } : it));
           console.log("Queue publish - faq length:", formRef.current.faq.length);
           await publish(queueOptionsRef.current);
