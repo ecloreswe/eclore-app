@@ -975,6 +975,8 @@ function App() {
           id: s.productId,
           ...(all || opts?.description ? { title: f.productName, body_html: f.description } : {}),
           ...(all || opts?.tags ? (f.tags.length > 0 ? { tags: f.tags.join(", ") } : {}) : {}),
+          ...(all || opts?.seoTitle ? (f.seoTitle ? { metafields_global_title_tag: f.seoTitle } : {}) : {}),
+          ...(all || opts?.seoDescription ? (f.seoDescription ? { metafields_global_description_tag: f.seoDescription } : {}) : {}),
           ...(f.handle ? { handle: f.handle } : {}),
         }
       };
