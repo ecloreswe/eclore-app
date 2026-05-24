@@ -712,7 +712,11 @@ function App() {
     for (const [field, label] of steps) {
       if (!options[field]) continue;
       setGenAllProgress(label);
-      await generate(field);
+      try {
+        await generate(field);
+      } catch(e) {
+        console.error("generateAll error on field", field, ":", e.message);
+      }
     }
     if (options.images && formRef.current.images.length > 0) {
       setGenAllProgress("Analyserar bilder...");
