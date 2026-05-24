@@ -1002,6 +1002,26 @@ function App() {
           const mfErr = await mfPutRes.json();
           console.warn("Metafields PUT error:", JSON.stringify(mfErr.errors || mfErr));
         }
+
+        // Send description_tag separately via global metafield endpoint
+        if (all || opts?.seoDescription) {
+          const descMf = allMfs.find(m => m.key === "description_tag");
+          if (descMf) {
+            const mfBase2 = "https://" + s.shopifyStore + "/admin/api/2024-01/products/" + s.productId + "/metafields.json";
+            const mfHeaders2 = { "Content-Type": "application/json", "X-Shopify-Access-Token": s.shopifyToken };
+            const existingRes2 = await fetchWithProxy(mfBase2 + "?namespace=global&limit=10", { headers: { "X-Shopify-Access-Token": s.shopifyToken } });
+            const existingData2 = await existingRes2.json();
+            const existingDesc = (existingData2.metafields || []).find(m => m.key === "description_tag");
+            if (existingDesc) {
+              const r = await fetchWithProxy(
+                "https://" + s.shopifyStore + "/admin/api/2024-01/metafields/" + existingDesc.id + ".json",
+                { method: "PUT", headers: mfHeaders2, body: JSON.stringify({ metafield: { id: existingDesc.id, value: descMf.value, type: "single_line_text_field" } }) }
+              );
+              const d = await r.json();
+              console.log("description_tag update:", d.metafield?.value?.substring(0, 50) || JSON.stringify(d.errors));
+            }
+          }
+        }
       }
 
       // Update alt texts only if images option is selected (or publishing all)
