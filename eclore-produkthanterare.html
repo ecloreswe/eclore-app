@@ -459,7 +459,7 @@ function App() {
           `REGLER:\n` +
           `(1) Börja med varumärket + produkttyp.\n` +
           `(2) Inkludera volym, konkreta nyckelingredienser och starkaste differentiatorn (certifiering, pris, unik egenskap).\n` +
-          `(3) Undvik generiska ord som "naturlig", "genuint", "kvalitet" utan specifika fakta.\n` +
+          `(3) Undvik generiska ord som "naturlig", "genuint", "kvalitet" utan specifika fakta. Skriv ALDRIG "mogen hud", "för dig över 40", "passar kvinnor".\n` +
           `(4) Avsluta med "Fri frakt över 599 kr." om det ryms inom 160 tecken.\n\n` +
           `EXEMPEL:\n` +
           `"HOIA ansiktsmask 50 ml med AHA/BHA fruktsyror och hyaluronsyra. Prisbelönt 2024, vegansk utan parfym. Fri frakt över 599 kr."\n` +
@@ -919,6 +919,7 @@ function App() {
     // If opts provided (from queue), only publish selected fields. Otherwise publish all.
     const all = !opts;
     console.log("Publish - all:", all, "opts.faq:", opts?.faq, "faq count:", formRef.current.faq.length);
+    console.log("Publish - seoTitle:", formRef.current.seoTitle?.substring(0, 50));
     try {
       const allMfs = [
         ...f.metafields.filter(m => m.key && m.value).map(m => ({
