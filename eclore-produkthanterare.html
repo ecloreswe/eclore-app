@@ -1026,6 +1026,7 @@ function App() {
   const runQueue = async () => {
     setQueueRunning(true);
     setQueueLog([]);
+    console.log("runQueue started - autoPublish state:", autoPublish, "autoPublishRef:", autoPublishRef.current);
     for (let i = 0; i < queue.length; i++) {
       if (queue[i].status === "klar") continue;
       setQueueIdx(i);
@@ -1039,6 +1040,7 @@ function App() {
         logQ("Genererar innehåll...");
         await generateAll(queueOptionsRef.current);
         if (autoPublishRef.current) {
+          console.log("AutoPublish is ON - publishing...");
           setQueue(q => q.map((it, j) => j === i ? { ...it, status: "publicerar..." } : it));
           console.log("Queue publish - faq length:", formRef.current.faq.length);
           await publish(queueOptionsRef.current);
