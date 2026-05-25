@@ -421,28 +421,27 @@ function App() {
           (() => {
             const vendor = formRef.current.vendor || "";
             const tags = formRef.current.tags.join(", ");
-            const productType = formRef.current.productType || "";
+            const productType = (formRef.current.productType || "").toLowerCase();
+            const isVaska = productType.includes("sminkväskor") || productType.includes("handväska") || productType.includes("väska") || productType.includes("necessär");
             return `Du är en SEO-expert för svensk e-handel som skapar konverterande title tags.\n\n` +
               `UPPGIFT: Skapa en optimerad title tag för denna produkt.\n\n` +
               `PRODUKTDATA:\n` +
               `Produktnamn: ${name}\n` +
               `Märke: ${vendor}\n` +
-              `Produkttyp: ${productType}\n` +
+              `Produkttyp: ${formRef.current.productType || ""}\n` +
               `Tags: ${tags}\n\n` +
               `REGLER:\n` +
               `1. LÄNGD: Exakt 50-60 tecken (kritiskt - längre titles klipps av i Google)\n` +
               `2. STRUKTUR: {Huvudkeyword} - {Starkaste USP} - {Viktigaste attribut} | éclore\n` +
               `3. KEYWORD-STRATEGI: Extrahera produkttyp från produktnamn. Lägg keyword FÖRST. Ta INTE med märkesnamn i början.\n` +
               `4. USP-PRIORITERING (välj högsta): COSMOS ORGANIC > Ekologisk > Vegansk > Naturlig > (utelämna om inget annat)\n` +
-              `5. UNDVIK: Märkesnamn i början, upprepning, fler än 60 tecken, generiska fraser, versaler (utom COSMOS), pris\n` +
-              `6. OBLIGATORISKT: Avsluta med " | éclore", bindestreck " - " som separator, keyword i början\n\n` +
+              (isVaska ? `5. VÄSKOR - VIKTIGT: Skriv ALDRIG "naturlig", "naturligt", "naturliga" – det är irrelevant för väskor. Lyft istället fram mönster, färg, storlek, funktion eller material (velour, bomull, etc). Undvik påhittade egenskaper – håll dig till vad som faktiskt framgår av produktnamnet.\n` : "") +
+              `${isVaska ? "6" : "5"}. UNDVIK: Märkesnamn i början, upprepning, fler än 60 tecken, generiska fraser, versaler (utom COSMOS), pris\n` +
+              `${isVaska ? "7" : "6"}. OBLIGATORISKT: Avsluta med " | éclore", bindestreck " - " som separator, keyword i början\n\n` +
               `EXEMPEL:\n` +
-              `Input: "Tilk Refresh Me Probiotisk Toner med Rosenvatten", Tags: ekologisk\n` +
-              `Output: Probiotisk Toner Rosenvatten - Ekologisk | éclore\n\n` +
-              `Input: "LUUV Brun Utan Sol Mousse Mörk COSMOS", Tags: COSMOS, vegansk\n` +
-              `Output: Brun Utan Sol Mousse Mörk - COSMOS Naturlig | éclore\n\n` +
-              `Input: "Nurme Naturligt Schampo för Torrt Hår 250ml", Tags: naturlig\n` +
-              `Output: Schampo Torrt Hår 250ml - Naturligt Vegansk | éclore\n\n` +
+              (isVaska
+                ? `Input: "Garbanota Little Bird Sminkväska Fågelmotiv"\nOutput: Sminkväska Fågelmotiv - Handgjord Bomull | éclore\n\nInput: "Moi Mili Hobo Handväska Blommor Rosa"\nOutput: Hobo Handväska Rosa Blommor - Handgjord | éclore\n\n`
+                : `Input: "Tilk Refresh Me Probiotisk Toner med Rosenvatten", Tags: ekologisk\nOutput: Probiotisk Toner Rosenvatten - Ekologisk | éclore\n\nInput: "Nurme Naturligt Schampo för Torrt Hår 250ml", Tags: naturlig\nOutput: Schampo Torrt Hår 250ml - Naturligt Vegansk | éclore\n\n`) +
               `Ge bara title tag, ingen förklaring.`;
           })(),
 
@@ -454,17 +453,23 @@ function App() {
           `Returnera BARA slugen, inget annat.`,
 
         seoDescription:
-          `${c}\n\nDu är en SEO-expert för éclore.se. Analysera produkten internt men returnera BARA metabeskrivningen – ingen förklaring, ingen analys.\n\n` +
-          `Skriv en SEO-metabeskrivning (max 160 tecken) för: "${name}".\n\n` +
-          `REGLER:\n` +
-          `(1) Börja med varumärket + produkttyp.\n` +
-          `(2) Inkludera volym, konkreta nyckelingredienser och starkaste differentiatorn (certifiering, pris, unik egenskap).\n` +
-          `(3) Undvik generiska ord som "naturlig", "genuint", "kvalitet" utan specifika fakta. Skriv ALDRIG "mogen hud", "för dig över 40", "passar kvinnor".\n` +
-          `(4) Avsluta med "Fri frakt över 599 kr." om det ryms inom 160 tecken.\n\n` +
-          `EXEMPEL:\n` +
-          `"HOIA ansiktsmask 50 ml med AHA/BHA fruktsyror och hyaluronsyra. Prisbelönt 2024, vegansk utan parfym. Fri frakt över 599 kr."\n` +
-          `"Nurme mjällschampo 250 ml med rosmarinolja och tea tree. Balanserar hårbotten, veganskt. Fri frakt över 599 kr."\n\n` +
-          `Returnera BARA texten, max 160 tecken. Ingen analys. Inga rubriker.`,
+          (() => {
+            const productType = (formRef.current.productType || "").toLowerCase();
+            const isVaska = productType.includes("sminkväskor") || productType.includes("handväska") || productType.includes("väska") || productType.includes("necessär");
+            return `${c}\n\nDu är en SEO-expert för éclore.se. Returnera BARA metabeskrivningen – ingen förklaring, ingen analys.\n\n` +
+              `Skriv en SEO-metabeskrivning (max 160 tecken) för: "${name}".\n\n` +
+              `REGLER:\n` +
+              `(1) Börja med varumärket + produkttyp.\n` +
+              `(2) Använd BARA egenskaper som faktiskt framgår av produktnamnet, beskrivningen eller INCI – hitta INTE på egenskaper.\n` +
+              `(3) ${isVaska ? "För väskor: lyft fram mönster, storlek, material, funktion (fickor, dragkedja etc). Skriv ALDRIG \"naturlig\", \"robust konstruktion\" eller påhittade attribut." : "Inkludera konkreta nyckelingredienser och starkaste differentiatorn (certifiering, unik egenskap)."}\n` +
+              `(4) Undvik: "mogen hud", "för dig över 40", "passar kvinnor", "naturlig" (för väskor), "robust" (om ej bevisat).\n` +
+              `(5) Avsluta med "Fri frakt över 599 kr." om det ryms inom 160 tecken.\n\n` +
+              `EXEMPEL:\n` +
+              (isVaska
+                ? `"Garbanota sminkväska med fågelmotiv, handgjord i Litauen. Bomullstyg med vattentätt foder och innerfickor. Fri frakt över 599 kr."\n`
+                : `"HOIA ansiktsmask 50 ml med AHA/BHA fruktsyror och hyaluronsyra. Prisbelönt 2024, vegansk utan parfym. Fri frakt över 599 kr."\n`) +
+              `\nReturnera BARA texten, max 160 tecken.`;
+          })(),
 
         seoCluster:
           `${c}\n\nSEO-kluster för: "${name}". ` +
