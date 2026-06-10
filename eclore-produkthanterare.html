@@ -437,11 +437,11 @@ function App() {
               `1. LÄNGD: Exakt 50-60 tecken (kritiskt - längre titles klipps av i Google)\n` +
               `2. STRUKTUR: {Huvudkeyword} - {Starkaste USP} - {Viktigaste attribut} | éclore\n` +
               `3. KEYWORD-STRATEGI: Extrahera produkttyp från produktnamn. Lägg keyword FÖRST. Ta INTE med märkesnamn i början.\n` +
-              `4. USP-PRIORITERING (välj högsta): COSMOS ORGANIC > Ekologisk > Vegansk > Naturlig > (utelämna om inget annat)\n` +
+              `4. USP-PRIORITERING (välj högsta SOM FAKTISKT FINNS i tags/produktnamn): COSMOS ORGANIC > Ekologisk > Vegansk > Naturlig. Finns ingen verifierad certifiering – utelämna USP helt och använd mer keyword-info istället.\n` +
               (isVaska ? `5. VÄSKOR - VIKTIGT: Skriv ALDRIG "naturlig", "naturligt", "naturliga" – det är irrelevant för väskor. Lyft istället fram mönster, färg, storlek, funktion eller material (velour, bomull, etc). Undvik påhittade egenskaper – håll dig till vad som faktiskt framgår av produktnamnet.\n` : "") +
               `${isVaska ? "6" : "5"}. UNDVIK: Märkesnamn i början, upprepning, fler än 60 tecken, generiska fraser, versaler (utom COSMOS), pris\n` +
               `${isVaska ? "7" : "6"}. OBLIGATORISKT: Avsluta med " | éclore", bindestreck " - " som separator, keyword i början\n` +
-              `${isVaska ? "8" : "7"}. KÄLLTROHET: Basera alltid titeln på leverantörens faktiska produktbeskrivning. Gör inga antaganden. Ange INTE certifieringar (COSMOS, ekologisk, vegansk) om de inte framgår av produktnamnet, tags eller beskrivningen.\n\n` +
+              `${isVaska ? "8" : "7"}. KÄLLTROHET: Basera alltid titeln på leverantörens faktiska produktbeskrivning. Gör inga antaganden. KRITISKT: Använd ENDAST certifieringar (COSMOS, ekologisk, vegansk) om ordet bokstavligen står i produktnamnet "${name}" eller i Tags. Står det inte där – nämn det INTE. Vid tveksamhet, utelämna certifieringen helt.\n\n` +
               `EXEMPEL:\n` +
               (isVaska
                 ? `Input: "Garbanota Little Bird Sminkväska Fågelmotiv"\nOutput: Sminkväska Fågelmotiv - Handgjord Bomull | éclore\n\nInput: "Moi Mili Hobo Handväska Blommor Rosa"\nOutput: Hobo Handväska Rosa Blommor - Handgjord | éclore\n\n`
@@ -464,7 +464,7 @@ function App() {
               `Skriv en SEO-metabeskrivning (max 160 tecken) för: "${name}".\n\n` +
               `REGLER:\n` +
               `(1) Börja med varumärket + produkttyp.\n` +
-              `(2) Använd BARA egenskaper som faktiskt framgår av produktnamnet, beskrivningen eller INCI – hitta INTE på egenskaper. Ange INTE certifieringar (COSMOS, ekologisk, vegansk) om de inte är verifierade i källmaterialet.\n` +
+              `(2) Använd BARA egenskaper som faktiskt framgår av produktnamnet, beskrivningen eller INCI – hitta INTE på egenskaper. KRITISKT: Använd ENDAST certifieringar (COSMOS, ekologisk, vegansk) om ordet bokstavligen står i produktnamnet, tags eller beskrivningen. Vid tveksamhet, utelämna certifieringen helt.\n` +
               `(3) ${isVaska ? "För väskor: lyft fram mönster, storlek, material, funktion (fickor, dragkedja etc). Skriv ALDRIG \"naturlig\", \"robust konstruktion\" eller påhittade attribut." : "Inkludera konkreta nyckelingredienser och starkaste differentiatorn (certifiering, unik egenskap)."}\n` +
               `(4) Undvik: "mogen hud", "för dig över 40", "passar kvinnor", "naturlig" (för väskor), "robust" (om ej bevisat).\n` +
               `(5) Avsluta med "Fri frakt över 599 kr." om det ryms inom 160 tecken.\n\n` +
