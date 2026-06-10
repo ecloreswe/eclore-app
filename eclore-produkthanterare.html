@@ -381,6 +381,7 @@ function App() {
           `(2) Sedan ett stycke: öppna med en stark mening som talar direkt till kundens behov eller önskan. Lyft fördelar före egenskaper. Avsluta med en mening som skapar vilja att läsa mer eller köpa. ` +
           (isVaska ? `VIKTIGT FÖR VÄSKOR: Skriv ALDRIG "naturligt material", "naturlig bomull", "naturliga material" eller liknande. Fokusera på hantverk, funktion, design och praktiska fördelar istället. ` : ``) +
           `UNDVIK: "passar mogna kvinnor", "för dig över 40", "mogen hud", "genuint hantverk", "tillverkat i Europa", vaga klichéer. Tala om behovet eller situationen – inte demografin. ` +
+          `KÄLLTROHET: Basera texten på leverantörens faktiska produktbeskrivning. Hitta INTE på egenskaper, effekter eller claims som inte är bekräftade i källmaterialet. Ange INTE certifieringar (COSMOS, ekologisk, vegansk) om de inte är verifierade. ` +
           `Ton: professionell, varm och övertygande. Returnera bara HTML med <h2> och <p>.`;
         })(),
 
@@ -404,6 +405,7 @@ function App() {
             `<h2>För vem passar [produkttyp]?</h2>\n<p>Beskriv användningssituationen eller behovet – INTE demografin. Skriv ALDRIG "passar kvinnor 40+", "mogen hud" eller liknande. Tala istället om livsstil, behov eller situation. Long-tail sökord naturligt. Avsluta med en subtil uppmaning.</p>\n\n` +
             (isVaska ? `VIKTIGT FÖR VÄSKOR: Fokusera på att väskan är handgjord, praktisk och välkonstruerad. Lyft fram organisation, förvaring, material och användningsområden. Undvik att "naturligt material" är huvudargumentet. Länka ALDRIG till hudvårdskategorier – det är irrelevant för en väska.\n\n` : "") +
             `UNDVIK: "genuint hantverk", "tillverkat i Europa", "mogen hud", "kvalitetsmedvetna kvinnor", klichéer utan substans. Variera avslutningen – den ska vara unik för just denna produkt.\n\n` +
+            `KÄLLTROHET: Basera hela beskrivningen på leverantörens faktiska produktbeskrivning. Hitta INTE på ingredienser, effekter, material eller claims som inte är bekräftade i källmaterialet. Ange INTE certifieringar (COSMOS, ekologisk, vegansk) om de inte är verifierade.\n\n` +
             `VIKTIGT: Väv in 2-3 naturliga interna länkar i texten (ej i rubriker). Välj BARA länkar som är relevanta för produkttypen:\n` +
             (isVaska
               ? `Sminkväskor: <a href="https://www.eclore.se/collections/sminkvaskor">sminkväskor och necessärer</a>\nHandgjorda väskor: <a href="https://www.eclore.se/collections/sminkvaskor">handgjorda väskor</a>\nDoftljus: <a href="https://www.eclore.se/collections/doftljus">doftljus</a>\néclore: <a href="https://www.eclore.se">éclore</a>`
@@ -415,6 +417,7 @@ function App() {
 
         bulletPoints:
           `${c}\n\nGenerera 5 korta USP:er på svenska för: "${name}". Max 10 ord per punkt. ` +
+          `KÄLLTROHET: Basera punkterna på leverantörens faktiska produktbeskrivning. Hitta INTE på egenskaper eller claims. Ange INTE certifieringar (COSMOS, ekologisk, vegansk) om de inte är verifierade i källmaterialet. ` +
           `Börja VARJE punkt med ✓ och mellanslag. Returnera BARA JSON-array: ["✓ ...","✓ ...","✓ ...","✓ ...","✓ ..."]`,
 
         seoTitle:
@@ -437,7 +440,8 @@ function App() {
               `4. USP-PRIORITERING (välj högsta): COSMOS ORGANIC > Ekologisk > Vegansk > Naturlig > (utelämna om inget annat)\n` +
               (isVaska ? `5. VÄSKOR - VIKTIGT: Skriv ALDRIG "naturlig", "naturligt", "naturliga" – det är irrelevant för väskor. Lyft istället fram mönster, färg, storlek, funktion eller material (velour, bomull, etc). Undvik påhittade egenskaper – håll dig till vad som faktiskt framgår av produktnamnet.\n` : "") +
               `${isVaska ? "6" : "5"}. UNDVIK: Märkesnamn i början, upprepning, fler än 60 tecken, generiska fraser, versaler (utom COSMOS), pris\n` +
-              `${isVaska ? "7" : "6"}. OBLIGATORISKT: Avsluta med " | éclore", bindestreck " - " som separator, keyword i början\n\n` +
+              `${isVaska ? "7" : "6"}. OBLIGATORISKT: Avsluta med " | éclore", bindestreck " - " som separator, keyword i början\n` +
+              `${isVaska ? "8" : "7"}. KÄLLTROHET: Basera alltid titeln på leverantörens faktiska produktbeskrivning. Gör inga antaganden. Ange INTE certifieringar (COSMOS, ekologisk, vegansk) om de inte framgår av produktnamnet, tags eller beskrivningen.\n\n` +
               `EXEMPEL:\n` +
               (isVaska
                 ? `Input: "Garbanota Little Bird Sminkväska Fågelmotiv"\nOutput: Sminkväska Fågelmotiv - Handgjord Bomull | éclore\n\nInput: "Moi Mili Hobo Handväska Blommor Rosa"\nOutput: Hobo Handväska Rosa Blommor - Handgjord | éclore\n\n`
@@ -460,7 +464,7 @@ function App() {
               `Skriv en SEO-metabeskrivning (max 160 tecken) för: "${name}".\n\n` +
               `REGLER:\n` +
               `(1) Börja med varumärket + produkttyp.\n` +
-              `(2) Använd BARA egenskaper som faktiskt framgår av produktnamnet, beskrivningen eller INCI – hitta INTE på egenskaper.\n` +
+              `(2) Använd BARA egenskaper som faktiskt framgår av produktnamnet, beskrivningen eller INCI – hitta INTE på egenskaper. Ange INTE certifieringar (COSMOS, ekologisk, vegansk) om de inte är verifierade i källmaterialet.\n` +
               `(3) ${isVaska ? "För väskor: lyft fram mönster, storlek, material, funktion (fickor, dragkedja etc). Skriv ALDRIG \"naturlig\", \"robust konstruktion\" eller påhittade attribut." : "Inkludera konkreta nyckelingredienser och starkaste differentiatorn (certifiering, unik egenskap)."}\n` +
               `(4) Undvik: "mogen hud", "för dig över 40", "passar kvinnor", "naturlig" (för väskor), "robust" (om ej bevisat).\n` +
               `(5) Avsluta med "Fri frakt över 599 kr." om det ryms inom 160 tecken.\n\n` +
