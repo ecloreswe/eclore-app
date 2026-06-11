@@ -13,7 +13,7 @@
 <body>
 <div id="root"></div>
 <script type="text/babel" data-presets="react">
-const { useState, useMemo } = React;
+const { useState, useMemo, useEffect } = React;
 
 /* ───────────────────────── Kunskapsbas ───────────────────────── */
 
@@ -296,13 +296,125 @@ const dumpProduct = (p) => [
   `\nTAGGAR: ${(p.tags || []).join(", ")}`,
 ].filter(Boolean).join("\n");
 
+
+/* ───────────── Shopify rich text (RTF) ↔ HTML ───────────── */
+
+const escHtml = (t) => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+const richNodeToHtml = (n) => {
+  if (!n) return "";
+  if (n.type === "text") {
+    let t = escHtml(n.value || "");
+    if (n.bold) t = `<strong>${t}</strong>`;
+    if (n.italic) t = `<em>${t}</em>`;
+    return t;
+  }
+  const kids = (n.children || []).map(richNodeToHtml).join("");
+  switch (n.type) {
+    case "root": return kids;
+    case "paragraph": return `<p>${kids}</p>`;
+    case "heading": return `<h${n.level || 2}>${kids}</h${n.level || 2}>`;
+    case "link": return `<a href="${escHtml(n.url || "")}">${kids}</a>`;
+    case "list": return n.listType === "ordered" ? `<ol>${kids}</ol>` : `<ul>${kids}</ul>`;
+    case "list-item": return `<li>${kids}</li>`;
+    default: return kids;
+  }
+};
+
+const richTextToHtml = (raw) => {
+  if (!raw) return "";
+  try {
+    const j = JSON.parse(raw);
+    if (j && j.type === "root") return richNodeToHtml(j);
+  } catch {}
+  return raw; // var redan HTML/vanlig text
+};
+
+const inlineToRich = (el) => {
+  const out = [];
+  el.childNodes.forEach((c) => {
+    if (c.nodeType === 3) { if (c.textContent) out.push({ type: "text", value: c.textContent }); return; }
+    const tag = (c.tagName || "").toLowerCase();
+    if (tag === "strong" || tag === "b") {
+      inlineToRich(c).forEach((n) => out.push(n.type === "text" ? { ...n, bold: true } : n));
+    } else if (tag === "em" || tag === "i") {
+      inlineToRich(c).forEach((n) => out.push(n.type === "text" ? { ...n, italic: true } : n));
+    } else if (tag === "a") {
+      out.push({ type: "link", url: c.getAttribute("href") || "", children: inlineToRich(c) });
+    } else if (tag === "br") {
+      out.push({ type: "text", value: " " });
+    } else {
+      inlineToRich(c).forEach((n) => out.push(n));
+    }
+  });
+  return out.length ? out : [{ type: "text", value: "" }];
+};
+
+const htmlToRichText = (html) => {
+  if (!html || !html.trim()) return "";
+  const doc = new DOMParser().parseFromString(`<div>${html}</div>`, "text/html");
+  const rootEl = doc.body.firstChild;
+  const children = [];
+  rootEl.childNodes.forEach((c) => {
+    if (c.nodeType === 3) {
+      if (c.textContent.trim()) children.push({ type: "paragraph", children: [{ type: "text", value: c.textContent.trim() }] });
+      return;
+    }
+    const tag = (c.tagName || "").toLowerCase();
+    const m = tag.match(/^h([1-6])$/);
+    if (m) children.push({ type: "heading", level: Number(m[1]), children: inlineToRich(c) });
+    else if (tag === "ul" || tag === "ol") {
+      children.push({ type: "list", listType: tag === "ol" ? "ordered" : "unordered",
+        children: Array.from(c.children).map((li) => ({ type: "list-item", children: inlineToRich(li) })) });
+    } else {
+      children.push({ type: "paragraph", children: inlineToRich(c) });
+    }
+  });
+  if (!children.length) return "";
+  return JSON.stringify({ type: "root", children });
+};
+
+const keyIngredientsToRich = (list) =>
+  JSON.stringify({ type: "root", children: (list || []).map((k) => ({
+    type: "paragraph",
+    children: [{ type: "text", value: k.name || "", bold: true }, { type: "text", value: ` – ${k.effect || ""}` }],
+  })) });
+
+const parseKeyIngredients = (raw) => {
+  try {
+    const j = JSON.parse(raw);
+    if (Array.isArray(j)) return j.map((x) => ({ name: x.name || "", effect: x.effect || x.benefit || "" }));
+    if (j && j.type === "root") {
+      return (j.children || []).map((p) => {
+        const texts = (p.children || []).filter((c) => c.type === "text");
+        const name = texts.filter((t) => t.bold).map((t) => t.value).join("").trim();
+        const rest = texts.filter((t) => !t.bold).map((t) => t.value).join("").replace(/^[\s\u2013\-:]+/, "").trim();
+        if (name) return { name, effect: rest };
+        if (rest) {
+          const m = rest.match(/^(.+?)\s*[\u2013\-:]\s*(.+)$/);
+          return m ? { name: m[1], effect: m[2] } : { name: rest, effect: "" };
+        }
+        return null;
+      }).filter(Boolean);
+    }
+  } catch {}
+  return raw.split("\n").map((l) => l.trim()).filter(Boolean).map((l) => {
+    const m = l.match(/^(.+?)\s*[\u2013\-:]\s*(.+)$/);
+    return m ? { name: m[1], effect: m[2] } : { name: l, effect: "" };
+  });
+};
+
 /* ───────────────────────── Shopify Admin API ───────────────────────── */
 
 const sfHeaders = (s) => ({ "X-Shopify-Access-Token": s.shopifyToken });
 const sfWriteHeaders = (s) => ({ ...sfHeaders(s), "Content-Type": "application/json" });
 const sfBase = (s) => {
   const store = s.shopifyStore.replace(/^https?:\/\//, "").replace(/\/$/, "");
-  if (s.proxyUrl) return `${s.proxyUrl.replace(/\/$/, "")}/${store}/admin/api/2024-01`;
+  if (s.proxyUrl) {
+    let proxy = s.proxyUrl.trim().replace(/\/$/, "");
+    if (!/^https?:\/\//.test(proxy)) proxy = "https://" + proxy;
+    return `${proxy}/${store}/admin/api/2024-01`;
+  }
   return `https://${store}/admin/api/2024-01`;
 };
 
@@ -325,13 +437,20 @@ const fetchFromShopify = async (s, productId) => {
     if (mfRes.ok) {
       const mfs = (await mfRes.json()).metafields || [];
       const get = (k) => mfs.find((m) => m.key === k && m.namespace === "custom")?.value || "";
-      if (get("ingredients")) patch.inci = get("ingredients");
+      patch._mfKeys = mfs.map((m) => m.namespace + "." + m.key);
+      const inciKey = ["ingredienser", "ingredients", "inci"].find((k) => get(k));
+      if (inciKey) { patch.inci = get(inciKey); patch._inciKey = inciKey; }
       patch.seoTitle = mfs.find((m) => m.key === "title_tag")?.value || "";
       patch.seoDescription = mfs.find((m) => m.key === "description_tag")?.value || "";
-      if (get("short_description")) patch.shortDescription = get("short_description");
-      const bp = get("bullet_points");
-      if (bp) patch.bulletPoints = [...bp.split("\n").filter(Boolean), "", "", "", "", ""].slice(0, 5);
-      const faq = [1, 2, 3, 4, 5].map((i) => ({ q: get(`faq_q${i}`), a: get(`faq_a${i}`) })).filter((x) => x.q || x.a);
+      const ingressKey = ["beskrivning", "short_description"].find((k) => get(k));
+      if (ingressKey) { patch.shortDescription = richTextToHtml(get(ingressKey)); patch._ingressKey = ingressKey; }
+      const bulletsKey = ["bullet_points_1", "bullet_points"].find((k) => get(k));
+      if (bulletsKey) {
+        patch.bulletPoints = [...get(bulletsKey).split("\n").map((l) => l.replace(/^[\u2713\u2714]\s*/, "").trim()).filter(Boolean), "", "", "", "", ""].slice(0, 5);
+        patch._bulletsKey = bulletsKey;
+      }
+      patch._faqQPrefix = get("faq_fraga_1") ? "faq_fraga_" : "faq_q";
+      const faq = [1, 2, 3, 4, 5].map((i) => ({ q: get(`faq_fraga_${i}`) || get(`faq_q${i}`), a: richTextToHtml(get(`faq_a${i}`)) })).filter((x) => x.q || x.a);
       if (faq.length) patch.faq = faq;
       const u = get("usage_instructions");
       if (u) {
@@ -339,7 +458,7 @@ const fetchFromShopify = async (s, productId) => {
         patch.usage = { intro: parts[0] || "", steps: (parts[1] || "").split("\n").map((x) => x.replace(/^\d+\.\s*/, "")).filter(Boolean) };
       }
       const ki = get("key_ingredients");
-      if (ki) { try { patch.keyIngredients = JSON.parse(ki).map((x) => ({ name: x.name || "", effect: x.effect || x.benefit || "" })); } catch {} }
+      if (ki) { const parsed = parseKeyIngredients(ki); if (parsed.length) patch.keyIngredients = parsed; }
     }
   } catch {}
   try {
@@ -388,14 +507,14 @@ const publishProduct = async (s, p, onStep) => {
   const mfs = [
     { namespace: "global", key: "title_tag", value: p.seoTitle, type: "single_line_text_field" },
     { namespace: "global", key: "description_tag", value: p.seoDescription, type: "single_line_text_field" },
-    { namespace: "custom", key: "ingredients", value: p.inci, type: "multi_line_text_field" },
-    { namespace: "custom", key: "short_description", value: p.shortDescription, type: "multi_line_text_field" },
-    { namespace: "custom", key: "bullet_points", value: (p.bulletPoints || []).filter(Boolean).join("\n"), type: "multi_line_text_field" },
+    { namespace: "custom", key: p._inciKey || "ingredienser", value: p.inci, type: "multi_line_text_field" },
+    { namespace: "custom", key: p._ingressKey || "beskrivning", value: htmlToRichText(p.shortDescription), type: "rich_text_field" },
+    { namespace: "custom", key: p._bulletsKey || "bullet_points_1", value: (p.bulletPoints || []).filter(Boolean).map((b) => "\u2713 " + b).join("\n"), type: "multi_line_text_field" },
     { namespace: "custom", key: "usage_instructions", value: p.usage ? `${p.usage.intro}\n\n${(p.usage.steps || []).map((x, i) => `${i + 1}. ${x}`).join("\n")}` : "", type: "multi_line_text_field" },
-    { namespace: "custom", key: "key_ingredients", value: (p.keyIngredients || []).length ? JSON.stringify(p.keyIngredients.map((k) => ({ name: k.name, benefit: k.effect }))) : "", type: "json" },
+    { namespace: "custom", key: "key_ingredients", value: (p.keyIngredients || []).length ? keyIngredientsToRich(p.keyIngredients) : "", type: "rich_text_field" },
     ...(p.faq || []).flatMap((f, i) => [
-      { namespace: "custom", key: `faq_q${i + 1}`, value: f.q, type: "single_line_text_field" },
-      { namespace: "custom", key: `faq_a${i + 1}`, value: f.a, type: "multi_line_text_field" },
+      { namespace: "custom", key: `${p._faqQPrefix || "faq_fraga_"}${i + 1}`, value: f.q, type: "single_line_text_field" },
+      { namespace: "custom", key: `faq_a${i + 1}`, value: htmlToRichText(f.a), type: "rich_text_field" },
     ]),
   ].filter((m) => m.value);
   for (const mf of mfs) await upsertMetafield(s, pid, existing, mf);
@@ -440,7 +559,13 @@ function EcloreProduktstudio() {
   const [editId, setEditId] = useState(null);
 
   // Shopify
-  const [settings, setSettings] = useState({ shopifyStore: "", shopifyToken: "", anthropicKey: "", proxyUrl: "" });
+  const [settings, setSettings] = useState(() => {
+    const base = { shopifyStore: "", shopifyToken: "", anthropicKey: "", proxyUrl: "" };
+    try { return { ...base, ...JSON.parse(localStorage.getItem("eclore_settings") || "{}") }; } catch { return base; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem("eclore_settings", JSON.stringify(settings)); } catch {}
+  }, [settings]);
   const [showSettings, setShowSettings] = useState(false);
   const [singleId, setSingleId] = useState("");
   const [queueIds, setQueueIds] = useState("");
@@ -716,7 +841,7 @@ function EcloreProduktstudio() {
             <label style={S.label}>CORS-proxy URL (valfritt – behövs om Shopify blockerar direktanrop)</label>
             <input style={S.input} value={settings.proxyUrl} onChange={(e) => setSettings((s) => ({ ...s, proxyUrl: e.target.value }))} placeholder="https://eclore-proxy.dittkonto.workers.dev" />
           </div>
-          <p style={S.small}>Nycklarna sparas bara i minnet – de försvinner när sidan laddas om. Shopify-token kräver read_products + write_products (+ write_content för redirects).</p>
+          <p style={S.small}>Nycklarna sparas lokalt i din webbläsare på den här enheten – du slipper fylla i dem igen. Shopify-token kräver read_products + write_products (+ write_content för redirects).</p>
         </div>
       )}
       {sfError && <p style={{ color: "#9B3B2E", fontSize: 13, marginTop: 8 }}>{sfError}</p>}
@@ -967,6 +1092,9 @@ function EcloreProduktstudio() {
             </button>
           </div>
           <p style={{ ...S.small, marginTop: 6 }}>Fyller i namn, beskrivning, INCI, befintliga metafält, URL och bilder. Bocka sedan i certifieringar och välj varumärke manuellt.</p>
+          {form._mfKeys && (
+            <p style={{ ...S.small, marginTop: 4 }}>Metafält på produkten: {form._mfKeys.length ? form._mfKeys.join(", ") : "inga"}</p>
+          )}
         </section>
         <section style={S.card}>
           <h2 style={S.h2}>1 · Produktfakta</h2>
