@@ -144,7 +144,8 @@ HÅRDA REGLER:
 3. Nämn certifieringar/egenskaper ENDAST om de står i listan ovan. Skriv aldrig "ekologisk", "COSMOS", "parfymfri" etc. om det inte är angivet.
 4. Nämn utmärkelser endast om de anges – och då gärna tidigt.
 5. H2-rubriker = sökord och kundnytta, inte varumärkesupprepning.
-6. Påstå inget medicinskt (botar, läker, behandlar eksem etc.) – skriv "kan lugna", "återfuktar", "stödjer".`;
+6. Påstå inget medicinskt (botar, läker, behandlar eksem etc.) – skriv "kan lugna", "återfuktar", "stödjer".
+7. Fetstil skrivs ALLTID som <strong>...</strong> i HTML – ALDRIG markdown-asterisker (**ord**).`;
 };
 
 const buildPrompts = (p, storeProfile) => {
@@ -199,6 +200,8 @@ const callClaude = async (prompt, apiKey) => {
 
 /* Genererar ett fält och returnerar de uppdaterade egenskaperna.
    autoPick=true (kö): valda namn/titlar sätts automatiskt. */
+const mdToHtml = (s) => String(s || "").replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>").replace(/\*\*/g, "");
+
 const genField = async (p, field, storeProfile, autoPick, apiKey) => {
   const raw = stripFences(await callClaude(buildPrompts(p, storeProfile)[field], apiKey));
   switch (field) {
@@ -237,10 +240,10 @@ const genField = async (p, field, storeProfile, autoPick, apiKey) => {
       return { usage: JSON.parse(raw) };
     case "faq": {
       const j = JSON.parse(raw);
-      return { faq: [1, 2, 3, 4, 5].map((i) => ({ q: j[`faq_q${i}`] || "", a: j[`faq_a${i}`] || "" })) };
+      return { faq: [1, 2, 3, 4, 5].map((i) => ({ q: j[`faq_q${i}`] || "", a: mdToHtml(j[`faq_a${i}`] || "") })) };
     }
     default:
-      return { [field]: raw };
+      return { [field]: mdToHtml(raw) };
   }
 };
 
