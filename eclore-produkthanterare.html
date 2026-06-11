@@ -179,38 +179,53 @@ const buildPrompts = (p, storeProfile) => {
 };
 
 const callClaude = async (prompt, apiKey) => {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-      "anthropic-dangerous-direct-browser-access": "true",
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1000,
-      messages: [{ role: "user", content: prompt }],
-    }),
-  });
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message || "API-fel");
-  return (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("\n");
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        messages: [{ role: "user", content: prompt }],
+      }),
+    });
+    const data = await res.json();
+    if (data.error) {
+      const msg = data.error.message || "API-fel";
+      const retryable = res.status === 429 || res.status >= 500 || /rate|overload/i.test(msg);
+      if (retryable && attempt < 2) { await new Promise((r) => setTimeout(r, 3000 * (attempt + 1))); continue; }
+      throw new Error(msg);
+    }
+    return (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("\n");
+  }
+  throw new Error("API-fel efter flera försök");
 };
 
 /* Genererar ett fält och returnerar de uppdaterade egenskaperna.
    autoPick=true (kö): valda namn/titlar sätts automatiskt. */
+const safeParse = (raw) => {
+  try { return JSON.parse(raw); } catch {}
+  const m = String(raw).match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+  if (m) return JSON.parse(m[0]);
+  throw new Error("Kunde inte tolka AI-svaret");
+};
+
 const mdToHtml = (s) => String(s || "").replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>").replace(/\*\*/g, "");
 
 const genField = async (p, field, storeProfile, autoPick, apiKey) => {
   const raw = stripFences(await callClaude(buildPrompts(p, storeProfile)[field], apiKey));
   switch (field) {
     case "keywords": {
-      const j = JSON.parse(raw);
+      const j = safeParse(raw);
       return { primaryKeyword: j.primary || "", secondaryKeywords: (j.secondary || []).join(", ") };
     }
     case "productNames": {
-      const j = JSON.parse(raw);
+      const j = safeParse(raw);
       const names = j.names || [];
       const pick = Math.min(Math.max((j.pick || 1) - 1, 0), names.length - 1);
       const out = { nameVariants: names };
@@ -221,7 +236,7 @@ const genField = async (p, field, storeProfile, autoPick, apiKey) => {
       return out;
     }
     case "seoTitle": {
-      const j = JSON.parse(raw);
+      const j = safeParse(raw);
       const v = j.variants || [];
       let pick = Math.min(Math.max((j.pick || 1) - 1, 0), v.length - 1);
       const valid = v.filter((t) => t.length <= 60 && /\|\s*éclore\s*$/i.test(t));
@@ -229,17 +244,17 @@ const genField = async (p, field, storeProfile, autoPick, apiKey) => {
       return { titleVariants: v, seoTitle: v[pick] || v[0] || "", titleWhy: j.why || "" };
     }
     case "urlHandle": {
-      const v = JSON.parse(raw);
+      const v = safeParse(raw);
       const out = { handleVariants: v };
       if (!p.currentHandle && autoPick && v[0]) out.handle = v[0]; // byt aldrig befintlig URL automatiskt
       return out;
     }
     case "bulletPoints": case "tags": case "keyIngredients":
-      return { [field]: JSON.parse(raw) };
+      return { [field]: safeParse(raw) };
     case "usage":
-      return { usage: JSON.parse(raw) };
+      return { usage: safeParse(raw) };
     case "faq": {
-      const j = JSON.parse(raw);
+      const j = safeParse(raw);
       return { faq: [1, 2, 3, 4, 5].map((i) => ({ q: j[`faq_q${i}`] || "", a: mdToHtml(j[`faq_a${i}`] || "") })) };
     }
     default:
@@ -643,6 +658,7 @@ function EcloreProduktstudio() {
     if (!settings.anthropicKey) { setError("Lägg in din Anthropic API-nyckel under Inställningar."); setShowSettings(true); return; }
     setError("");
     let cur = { ...form };
+    const failed = [];
     for (const [field, label] of PIPELINE) {
       if (field === "keywords" && cur.primaryKeyword) continue;
       if (field === "productNames") continue; // manuellt val i enskilt läge
@@ -651,7 +667,12 @@ function EcloreProduktstudio() {
         const patch = await genField(cur, field, storeProfile, false, settings.anthropicKey);
         cur = { ...cur, ...patch };
         setForm(cur);
-      } catch (e) { console.error(e); }
+      } catch (e) { console.error(e); failed.push(label); }
+    }
+    if (failed.length) {
+      setError(`Kunde inte generera: ${failed.join(", ")}. Tryck Generera på respektive fält för att försöka igen.`);
+      setAllProgress("");
+      return;
     }
     setAllProgress("✓ Klart");
     setTimeout(() => setAllProgress(""), 3000);
@@ -677,19 +698,18 @@ function EcloreProduktstudio() {
     for (let i = 0; i < items.length; i++) {
       let cur = { ...items[i], status: "genererar" };
       updateQueueItem(cur.id, { status: "genererar" });
-      try {
-        for (const [field, label] of PIPELINE) {
-          if (field === "keywords" && cur.primaryKeyword) continue;
-          setQueueProgress(`Produkt ${i + 1}/${items.length} · ${cur.productName.slice(0, 28)} · ${label}...`);
+      const failed = [];
+      for (const [field, label] of PIPELINE) {
+        if (field === "keywords" && cur.primaryKeyword) continue;
+        setQueueProgress(`Produkt ${i + 1}/${items.length} · ${cur.productName.slice(0, 28)} · ${label}...`);
+        try {
           const patch = await genField(cur, field, storeProfile, true, settings.anthropicKey);
           cur = { ...cur, ...patch };
           updateQueueItem(cur.id, patch);
-        }
-        updateQueueItem(cur.id, { status: "klar" });
-      } catch (e) {
-        console.error(e);
-        updateQueueItem(cur.id, { status: "fel" });
+        } catch (e) { console.error(e); failed.push(label); }
       }
+      updateQueueItem(cur.id, { status: failed.length ? "fel" : "klar" });
+      if (failed.length) setQueueProgress(`${cur.productName.slice(0, 28)}: kunde inte generera ${failed.join(", ")} – kör kön igen för nytt försök.`);
     }
     setQueueProgress("✓ Kön klar – dags att granska");
     setQueueRunning(false);
