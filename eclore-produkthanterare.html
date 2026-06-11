@@ -468,7 +468,7 @@ const fetchFromShopify = async (s, productId) => {
         patch.bulletPoints = [...get(bulletsKey).split("\n").map((l) => l.replace(/^[\u2713\u2714]\s*/, "").trim()).filter(Boolean), "", "", "", "", ""].slice(0, 5);
         patch._bulletsKey = bulletsKey;
       }
-      patch._faqQPrefix = get("faq_fraga_1") ? "faq_fraga_" : "faq_q";
+      patch._faqQPrefix = !get("faq_fraga_1") && get("faq_q1") ? "faq_q" : "faq_fraga_";
       const faq = [1, 2, 3, 4, 5].map((i) => ({ q: get(`faq_fraga_${i}`) || get(`faq_q${i}`), a: richTextToHtml(get(`faq_a${i}`)) })).filter((x) => x.q || x.a);
       if (faq.length) patch.faq = faq;
       const u = get("usage_instructions");
