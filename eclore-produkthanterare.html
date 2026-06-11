@@ -498,7 +498,7 @@ const fetchFromShopify = async (s, productId) => {
 
 const upsertMetafield = async (s, productId, existing, mf) => {
   const found0 = existing.find((m) => m.namespace === mf.namespace && m.key === mf.key);
-  if (found0 && String(found0.value) === String(mf.value)) return null; // oförändrat – rör inte
+  if (found0 && String(found0.value) === String(mf.value)) return { key: `${mf.namespace}.${mf.key}`, status: "oförändrad" };
   const send = async (value, type) => {
     const found = existing.find((m) => m.namespace === mf.namespace && m.key === mf.key);
     if (found) {
@@ -524,9 +524,9 @@ const upsertMetafield = async (s, productId, existing, mf) => {
   }
   if (!res.ok) {
     let msg = ""; try { msg = JSON.stringify((await res.json()).errors); } catch {}
-    return `${mf.namespace}.${mf.key} (${msg || res.status})`;
+    return { key: `${mf.namespace}.${mf.key}`, status: "fel", msg: msg || String(res.status) };
   }
-  return null;
+  return { key: `${mf.namespace}.${mf.key}`, status: found0 ? "uppdaterad" : "skapad" };
 };
 
 const publishProduct = async (s, p, onStep) => {
@@ -563,11 +563,11 @@ const publishProduct = async (s, p, onStep) => {
       { namespace: "custom", key: `faq_fraga_${i + 1}`, value: f.q, type: "single_line_text_field" },
       { namespace: "custom", key: `faq_a${i + 1}`, value: htmlToRichText(f.a), type: "rich_text_field" },
     ]),
-  ].filter((m) => m.value);
-  const mfErrors = [];
+  ];
+  const log = [];
   for (const mf of mfs) {
-    const err = await upsertMetafield(s, pid, existing, mf);
-    if (err) mfErrors.push(err);
+    if (!mf.value) { log.push({ key: `${mf.namespace}.${mf.key}`, status: "tom – skickades inte" }); continue; }
+    log.push(await upsertMetafield(s, pid, existing, mf));
   }
   const imgsToUpdate = (p.images || []).filter((i) => i.shopifyImageId && i.altText);
   if (imgsToUpdate.length) {
@@ -586,7 +586,7 @@ const publishProduct = async (s, p, onStep) => {
       body: JSON.stringify({ redirect: { path: `/products/${p.currentHandle}`, target: `/products/${p.handle}` } }),
     });
   }
-  return { handleChanged, mfErrors };
+  return { handleChanged, log };
 };
 
 /* ───────────────────────── App ───────────────────────── */
@@ -623,6 +623,7 @@ function EcloreProduktstudio() {
   const [sfBusy, setSfBusy] = useState("");
   const [sfError, setSfError] = useState("");
   const [publishState, setPublishState] = useState({});
+  const [publishLog, setPublishLog] = useState({});
 
   const sfReady = settings.shopifyStore && settings.shopifyToken;
 
@@ -656,8 +657,10 @@ function EcloreProduktstudio() {
     setPublishState((s) => ({ ...s, [p.id]: "Publicerar..." }));
     try {
       const result = await publishProduct(settings, p, (step) => setPublishState((s) => ({ ...s, [p.id]: step })));
+      setPublishLog((s) => ({ ...s, [p.id]: result.log }));
+      const errCount = result.log.filter((l) => l.status === "fel").length;
       let msg = result.handleChanged ? "✓ Publicerad + 301-redirect skapad" : "✓ Publicerad";
-      if (result.mfErrors.length) msg = `⚠ Publicerad, men dessa fält nekades av Shopify: ${result.mfErrors.join(" · ")}`;
+      if (errCount) msg = `⚠ Publicerad, men ${errCount} fält nekades – se loggen nedan`;
       setPublishState((s) => ({ ...s, [p.id]: msg }));
       if (source === "queue") updateQueueItem(p.id, { currentHandle: p.handle });
       else setForm((f) => ({ ...f, currentHandle: f.handle }));
@@ -872,6 +875,24 @@ function EcloreProduktstudio() {
 
   const TITLE_STRATEGIES = ["Sökord först", "Varumärke + sökord", "Behov först"];
 
+  const PubLog = ({ id }) => {
+    const log = publishLog[id];
+    if (!log) return null;
+    const errs = log.filter((l) => l.status === "fel").length;
+    return (
+      <details style={{ marginTop: 8 }} open={errs > 0}>
+        <summary style={{ ...S.small, cursor: "pointer", fontWeight: 700 }}>Publiceringslogg ({log.length} fält{errs ? `, ${errs} fel` : ""})</summary>
+        <div style={{ marginTop: 6 }}>
+          {log.map((l, i) => (
+            <div key={i} style={{ fontSize: 12, marginBottom: 2, color: l.status === "fel" ? "#9B3B2E" : l.status === "skapad" || l.status === "uppdaterad" ? "#46522F" : "#7A8468" }}>
+              {l.status === "fel" ? "✕" : "•"} {l.key}: {l.status}{l.msg ? ` – ${l.msg}` : ""}
+            </div>
+          ))}
+        </div>
+      </details>
+    );
+  };
+
   const ShopifyCard = () => (
     <div style={S.card}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -1029,6 +1050,7 @@ function EcloreProduktstudio() {
             <button style={S.btnGhost} onClick={() => doCopy(`desc_${p.id}`, p.description)}>{copied === `desc_${p.id}` ? "✓" : "Kopiera beskrivning (HTML)"}</button>
           </div>
           {publishState[p.id] && <p style={{ fontSize: 13, marginTop: 8, color: publishState[p.id].startsWith("✕") ? "#9B3B2E" : "#46522F" }}>{publishState[p.id]}</p>}
+          <PubLog id={p.id} />
         </div>
 
         <ChecksPanel p={p} />
@@ -1307,6 +1329,7 @@ function EcloreProduktstudio() {
               Publicera till Shopify
             </button>
             {publishState[form.id] && <p style={{ fontSize: 13, marginTop: 8, color: publishState[form.id].startsWith("✕") ? "#9B3B2E" : "#46522F" }}>{publishState[form.id]}</p>}
+            <PubLog id={form.id} />
           </section>
         )}
       </div>
