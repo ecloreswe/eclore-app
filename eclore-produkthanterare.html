@@ -161,7 +161,7 @@ const buildPrompts = (p, storeProfile) => {
 
     urlHandle: `${ctx}\n\nNuvarande URL-handle: "${p.currentHandle || "(ny produkt)"}".\nFöreslå 3 URL-handles (slug) för produktsidan. Regler: lowercase, endast a-z, 0-9 och bindestreck (å/ä→a, ö→o, é→e), max 60 tecken, primärt sökord eller produkttyp först, inget varumärke om det inte tillför sökvärde, inga stoppord (och, med, för i onödan). Variera: 1 = sökord + variant/doft, 2 = produkttyp + behov, 3 = kortast möjliga. Svara BARA med JSON-array: ["...","...","..."]`,
 
-    shortDescription: `${ctx}\n\nSkriv en ingress (above the fold, under priset) på ca 60–80 ord. Primärt sökord i första meningen. Lyft den starkaste USP:n (utmärkelse > certifiering > nyckelingrediens). Avsluta med vad kunden får ut av produkten. Returnera BARA texten, ingen HTML.`,
+    shortDescription: `${ctx}\n\nSkriv en ingress (above the fold, under priset) i HTML med exakt denna struktur:\n<h2>Sökordsrik rubrik med en ANNAN vinkel än produktnamnet – t.ex. nytta, resultat eller tidsaspekt (max 70 tecken)</h2>\n<p>50–70 ord. Primärt sökord i första meningen. Lyft den starkaste USP:n (utmärkelse > certifiering > nyckelingrediens). Avsluta med vad kunden får ut av produkten.</p>\nRubriken får INTE vara identisk med produktnamn, H1 eller title-tagg. Returnera BARA HTML.`,
 
     bulletPoints: `${ctx}\n\nSkriv exakt 5 bullet points (max 9 ord vardera) för produktsidan. Ordning: 1) viktigaste effekten/resultatet, 2) nyckelingrediens + effekt, 3) certifiering/egenskap från listan ELLER andra effekt, 4) passar-för (hudtyp/behov), 5) ursprung/hantverk eller storlek/räckvidd. Inga punkter i slutet. Svara BARA med JSON-array: ["...","...","...","...","..."]`,
 
@@ -298,7 +298,8 @@ const dumpProduct = (p) => [
 
 /* ───────────────────────── Shopify Admin API ───────────────────────── */
 
-const sfHeaders = (s) => ({ "X-Shopify-Access-Token": s.shopifyToken, "Content-Type": "application/json" });
+const sfHeaders = (s) => ({ "X-Shopify-Access-Token": s.shopifyToken });
+const sfWriteHeaders = (s) => ({ ...sfHeaders(s), "Content-Type": "application/json" });
 const sfBase = (s) => `https://${s.shopifyStore.replace(/^https?:\/\//, "").replace(/\/$/, "")}/admin/api/2024-01`;
 
 const fetchFromShopify = async (s, productId) => {
@@ -355,12 +356,12 @@ const upsertMetafield = async (s, productId, existing, mf) => {
   const found = existing.find((m) => m.namespace === mf.namespace && m.key === mf.key);
   if (found) {
     return fetch(`${sfBase(s)}/metafields/${found.id}.json`, {
-      method: "PUT", headers: sfHeaders(s),
+      method: "PUT", headers: sfWriteHeaders(s),
       body: JSON.stringify({ metafield: { id: found.id, value: mf.value, type: found.type || mf.type } }),
     });
   }
   return fetch(`${sfBase(s)}/products/${productId}/metafields.json`, {
-    method: "POST", headers: sfHeaders(s),
+    method: "POST", headers: sfWriteHeaders(s),
     body: JSON.stringify({ metafield: { ...mf, owner_resource: "product" } }),
   });
 };
@@ -372,7 +373,7 @@ const publishProduct = async (s, p, onStep) => {
   onStep("Uppdaterar produkt (namn, beskrivning, taggar)...");
   const body = { product: { id: Number(pid), title: p.productName, body_html: p.description, tags: (p.tags || []).join(", ") } };
   if (p.handle) body.product.handle = p.handle;
-  const res = await fetch(`${sfBase(s)}/products/${pid}.json`, { method: "PUT", headers: sfHeaders(s), body: JSON.stringify(body) });
+  const res = await fetch(`${sfBase(s)}/products/${pid}.json`, { method: "PUT", headers: sfWriteHeaders(s), body: JSON.stringify(body) });
   if (!res.ok) {
     let err = ""; try { err = JSON.stringify((await res.json()).errors); } catch {}
     throw new Error(`Shopify-fel ${res.status}: ${err || "kontrollera write_products-behörighet"}`);
@@ -399,7 +400,7 @@ const publishProduct = async (s, p, onStep) => {
     onStep("Uppdaterar alt-texter...");
     for (const img of imgsToUpdate) {
       await fetch(`${sfBase(s)}/products/${pid}/images/${img.shopifyImageId}.json`, {
-        method: "PUT", headers: sfHeaders(s),
+        method: "PUT", headers: sfWriteHeaders(s),
         body: JSON.stringify({ image: { id: img.shopifyImageId, alt: img.altText } }),
       });
     }
@@ -407,7 +408,7 @@ const publishProduct = async (s, p, onStep) => {
   if (handleChanged) {
     onStep("Skapar 301-redirect för gamla URL:en...");
     await fetch(`${sfBase(s)}/redirects.json`, {
-      method: "POST", headers: sfHeaders(s),
+      method: "POST", headers: sfWriteHeaders(s),
       body: JSON.stringify({ redirect: { path: `/products/${p.currentHandle}`, target: `/products/${p.handle}` } }),
     });
   }
