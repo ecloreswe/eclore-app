@@ -1,1587 +1,1150 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>éclore Produkthanterare</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>éclore produktstudio</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
-<style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: #0a0a0a; color: #f0ede8; font-family: 'DM Sans', sans-serif; }
-@keyframes spin { to { transform: rotate(360deg); } }
-.spin { animation: spin 1s linear infinite; display: inline-block; }
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #111; }
-::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-input, textarea, select, button { font-family: 'DM Sans', sans-serif; }
-details summary::-webkit-details-marker { display: none; }
-a { color: #8ab4f8; }
-</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<style>body{margin:0}</style>
 </head>
 <body>
 <div id="root"></div>
-<script type="text/babel">
+<script type="text/babel" data-presets="react">
+const { useState, useMemo } = React;
 
-const { useState, useRef, useEffect, useCallback } = React;
+/* ───────────────────────── Kunskapsbas ───────────────────────── */
 
-// ─── Constants ───────────────────────────────────────────────────────────────
-
-const WORKER_PROXY = "https://eclore-proxy.little-glitter-97a2.workers.dev/?url=";
-
-const fetchWithProxy = async (url, options = {}) => {
-  const res = await fetch(WORKER_PROXY + encodeURIComponent(url), options);
-  return res;
-};
-const PROXY = WORKER_PROXY;
-
-const TABS = ["Produkt", "Bilder", "SEO & Meta", "FAQ", "Användning", "Ingredienser & Taggar"];
-
-const BUTIKSPROFIL = `BUTIKSPROFIL – éclore
-
-Varumärke: éclore | Webbplats: eclore.se
-
-SORTIMENT: Ansiktsvård, hudvård, hårvård – med fokus på ingredienser och effekt. Handgjorda sminkväskor, necessärer och handväskor – fokus på hantverk, konstruktion och funktion (INTE "naturliga material"). Doftljus.
-
-KÄNSLA: Inte skandinaviskt minimalistiskt – hämtar sin själ från södra Europa. Känslan påminner om ett välsorterat apotek i Provence. Genuint, inte massindustri.
-
-MÅLGRUPP: Kvalitetsmedvetna personer som lockas av historien bakom produkten. Skriv ALDRIG ut ålder eller kön explicit i texterna.
-
-TONALITET: Professionell och varm. Undvik superlativ utan substans. För VÄSKOR: skriv ALDRIG "naturligt material", "naturlig bomull" eller liknande som huvudargument – fokusera på hantverk, funktion och design istället.
-
-SEO: Long-tail kombinationer: produkttyp + specifik egenskap + användningsområde.`;
-
-const DEFAULT_FORM = {
-  productName: "",
-  productType: "",
-  vendor: "",
-  price: "",
-  description: "",
-  shortDescription: "",
-  bulletPoints: ["", "", ""],
-  images: [],
-  seoTitle: "",
-  handle: "",
-  seoDescription: "",
-  seoCluster: { primary: "", secondary: [], longTail: [] },
-  faq: [],
-  usage: { intro: "", steps: [""] },
-  inci: "",
-  keyIngredients: [{ name: "", benefit: "" }],
-  tags: [],
-  metafields: [],
+const PRODUCT_TYPES = {
+  "Ansiktsserum": { kw: ["ansiktsserum", "naturligt serum", "veganskt serum", "serum för känslig hud", "anti-age serum"], concerns: "när i rutinen serumet används (före kräm), morgon eller kväll, kombination med andra aktiva ingredienser, hur snabbt resultat syns, passar det känslig hud", coll: "https://www.eclore.se/collections/ansiktsvard" },
+  "Ansiktskräm": { kw: ["ansiktskräm", "naturlig ansiktskräm", "ansiktskräm torr hud", "ansiktskräm känslig hud", "vegansk ansiktskräm"], concerns: "passar den min hudtyp, dag eller natt, hur mycket man använder, fungerar den under smink, parfymfri eller inte", coll: "https://www.eclore.se/collections/ansiktskram" },
+  "Ansiktsolja": { kw: ["ansiktsolja", "naturlig ansiktsolja", "ansiktsolja torr hud"], concerns: "blir huden fet, komedogen eller inte, före eller efter kräm, hur många droppar", coll: "https://www.eclore.se/collections/ansiktsvard" },
+  "Ansiktsrengöring": { kw: ["ansiktsrengöring", "naturlig ansiktsrengöring", "mild rengöring känslig hud"], concerns: "torkar den ut huden, tar den bort smink, morgon och kväll, passar känslig hud", coll: "https://www.eclore.se/collections/ansiktsvard" },
+  "Ansiktsvatten / Toner": { kw: ["ansiktsvatten", "toner", "probiotisk toner", "naturligt ansiktsvatten"], concerns: "vad gör en toner, när i rutinen, behöver man skölja av, alkoholfri eller inte", coll: "https://www.eclore.se/collections/ansiktsvard" },
+  "Ansiktsmask": { kw: ["ansiktsmask", "naturlig ansiktsmask", "återfuktande mask"], concerns: "hur ofta, hur länge ska den sitta, sköljs den av, passar känslig hud", coll: "https://www.eclore.se/collections/ansiktsvard" },
+  "Ögonkräm": { kw: ["ögonkräm", "naturlig ögonkräm", "ögonkräm mot påsar"], concerns: "hjälper den mot mörka ringar och påsar, morgon eller kväll, hur appliceras den", coll: "https://www.eclore.se/collections/ansiktsvard" },
+  "Läppbalsam": { kw: ["läppbalsam", "naturligt läppbalsam", "veganskt läppbalsam"], concerns: "hur länge håller effekten, innehåller den bivax (veganskt?), smak och doft", coll: "https://www.eclore.se/collections/ansiktsvard" },
+  "Schampo": { kw: ["naturligt schampo", "schampo utan sulfater", "veganskt schampo", "schampo torrt hår", "schampo fett hår"], concerns: "löddrar det utan sulfater, passar färgat hår, övergångsperiod från vanligt schampo, hur ofta man tvättar, silikonfritt", coll: "https://www.eclore.se/collections/schampo-och-balsam" },
+  "Balsam": { kw: ["naturligt balsam", "balsam utan silikoner", "balsam torrt hår"], concerns: "tynger det håret, passar fint hår, balsammetoden, färgat hår", coll: "https://www.eclore.se/collections/schampo-och-balsam" },
+  "Hårmask": { kw: ["hårmask", "naturlig hårmask", "hårinpackning torrt hår"], concerns: "hur ofta, hur länge ska den verka, ersätter den balsam", coll: "https://www.eclore.se/collections/harvard" },
+  "Hårolja": { kw: ["hårolja", "naturlig hårolja", "hårolja torra toppar"], concerns: "i torrt eller fuktigt hår, blir håret flottigt, hur mycket man använder", coll: "https://www.eclore.se/collections/harvard" },
+  "Brun utan sol": { kw: ["brun utan sol", "brun utan sol mousse", "naturlig brun utan sol", "self tan", "streckfri brun utan sol"], concerns: "blir det streck eller fläckar, hur länge håller färgen, hur länge innan dusch, luktar den self tan, förberedelse med skrubb, applicering med handske", coll: "https://www.eclore.se/collections/brun-utan-sol" },
+  "Kroppsskrubb": { kw: ["kroppsskrubb", "body scrub", "naturlig kroppsskrubb", "sockerskrubb", "saltskrubb"], concerns: "hur ofta man skrubbar, före brun utan sol, känslig hud, skillnad socker och salt", coll: "https://www.eclore.se/collections/kroppsvard" },
+  "Kroppslotion": { kw: ["kroppslotion", "naturlig kroppslotion", "kroppslotion torr hud"], concerns: "drar den in snabbt, kladdar den, doft, mycket torr hud", coll: "https://www.eclore.se/collections/kroppsvard" },
+  "Kroppsolja": { kw: ["kroppsolja", "naturlig kroppsolja", "kroppsolja torr hud"], concerns: "på fuktig eller torr hud, kladdar den, bristningar och ärr", coll: "https://www.eclore.se/collections/kroppsvard" },
+  "Duschtvål / Tvål": { kw: ["naturlig tvål", "handgjord tvål", "duschtvål naturlig", "fast tvål"], concerns: "torkar den ut huden, hur länge räcker en fast tvål, förvaring, ansikte och kropp", coll: "https://www.eclore.se/collections/kroppsvard" },
+  "Deodorant": { kw: ["naturlig deodorant", "deodorant utan aluminium", "vegansk deodorant"], concerns: "fungerar den verkligen, aluminiumfri, övergångsperiod, vita märken på kläder, känslig hud efter rakning", coll: "https://www.eclore.se/collections/kroppsvard" },
+  "Handkräm": { kw: ["handkräm", "naturlig handkräm", "handkräm torra händer"], concerns: "drar den in snabbt, kladdar den vid tangentbord, nariga händer vinter", coll: "https://www.eclore.se/collections/kroppsvard" },
+  "Accessoar / Necessär": { kw: ["necessär", "sminkväska", "handgjord necessär", "kosmetikväska"], concerns: "material och skötsel, storlek och vad som får plats, handgjort hantverk, tål den fukt", coll: "https://www.eclore.se" },
+  "Annan produkt": { kw: [], concerns: "ingredienser, användning, hudtyp, ursprung, förvaring", coll: "https://www.eclore.se" },
 };
 
-const DEFAULT_SETTINGS = {
-  shopifyStore: "e3m0qu-sn.myshopify.com",
-  shopifyToken: "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",
-  productId: "",
-  anthropicKey: "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",
+const BRANDS = {
+  "LUUV": "Naturlig hår- och kroppsvård samt brun utan sol. Produktnamn följer formatet: produkttyp + ingrediens/doft – egenskaper – storlek (t.ex. '50 ml' med mellanslag). Lyft naturliga ingredienser och resultat.",
+  "BONOBO": "Naturlig hudvård i små batcher, framtagen i samarbete med örtkunnig expertis. Lyft grundarhistorien, hantverket och small-batch-produktionen. Använd INTE ursprungsland som säljargument – fokusera på hantverk och europeisk kvalitet.",
+  "Tilk!": "Naturlig hudvård med ovanliga aktiva ingredienser, tillverkad med hantverkstradition. Flera produkter är prisbelönta – ange ev. utmärkelser i fältet Utmärkelser så vävs de in i texterna.",
+  "Magrada": "Naturlig hudvård med växtbaserade aktiva ingredienser och hög andel ekologiskt. Lyft ingredienserna och deras konkreta effekt.",
+  "Nurme": "Handgjorda naturliga tvålar och kroppsvård. Lyft hantverket, de rena ingredienslistorna och plastfri/minimal förpackning om det stämmer.",
+  "Garbanota": "Naturlig hår- och kroppsvård i små batcher med växtbaserade ingredienser.",
+  "HOIA": "Handgjord naturlig hudvård i små batcher. Lyft hantverk och noggrant utvalda ingredienser.",
+  "Moi Mili": "Handgjorda accessoarer och textilier med illustrerade mönster. Lyft design, hantverk och material – inte hudvårdsargument.",
+  "Zelma Kraft": "Handgjorda produkter med fokus på hantverk och naturliga material.",
+  "Annat": "",
 };
 
-// ─── Small components ─────────────────────────────────────────────────────────
+const CERTS = ["Vegansk", "Cruelty-free", "Naturliga ingredienser", "Ekologiska ingredienser", "COSMOS Organic", "Ecocert", "Handgjord", "Parfymfri", "Utan sulfater", "Silikonfri", "Utan parabener", "Aluminiumfri", "Plastfri förpackning"];
 
-function Spinner() {
-  return (
-    <svg className="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-    </svg>
+const CERT_SCAN = [
+  { word: /ekologisk/i, cert: ["Ekologiska ingredienser", "COSMOS Organic", "Ecocert"] },
+  { word: /cosmos/i, cert: ["COSMOS Organic"] },
+  { word: /ecocert/i, cert: ["Ecocert"] },
+  { word: /vegansk|veganskt/i, cert: ["Vegansk"] },
+  { word: /cruelty.?free|djurtestad/i, cert: ["Cruelty-free"] },
+  { word: /parfymfri/i, cert: ["Parfymfri"] },
+  { word: /sulfatfri|utan sulfater/i, cert: ["Utan sulfater"] },
+  { word: /silikonfri/i, cert: ["Silikonfri"] },
+  { word: /parabenfri|utan parabener/i, cert: ["Utan parabener"] },
+  { word: /aluminiumfri|utan aluminium/i, cert: ["Aluminiumfri"] },
+];
+
+const DEFAULT_PROFILE = `TONALITET: Varm auktoritet – som en kunnig vän som ger råd. Undvik hype, superlativ utan substans och ungdomligt slang. Använd gärna: "hantverk", "naturliga ingredienser", "tillverkat i Europa", "genuint", "noggrant utvalt".
+
+KONVERTERING: Lyft ursprung och hantverk tidigt. Nämn konkreta ingredienser och deras effekt. Avsluta beskrivningen med en tydlig användningssituation. Bullet points = konkret nytta, inte floskler.
+
+SEO: Primärt sökord naturligt i första meningen, i title och i meta. Long-tail-fokus (produkttyp + naturlig/vegansk + behov). Ingen keyword stuffing. H2-rubriker fokuserar på sökord och nytta – stapla inte varumärkesnamn i rubriker.`;
+
+/* ───────────────────────── Hjälpfunktioner ───────────────────────── */
+
+const detectType = (name) => {
+  const n = (name || "").toLowerCase();
+  const map = [
+    ["brun utan sol", "Brun utan sol"], ["self tan", "Brun utan sol"], ["mousse", "Brun utan sol"],
+    ["serum", "Ansiktsserum"], ["ansiktskräm", "Ansiktskräm"], ["face cream", "Ansiktskräm"],
+    ["ansiktsolja", "Ansiktsolja"], ["rengöring", "Ansiktsrengöring"], ["cleanser", "Ansiktsrengöring"],
+    ["toner", "Ansiktsvatten / Toner"], ["ansiktsvatten", "Ansiktsvatten / Toner"],
+    ["ansiktsmask", "Ansiktsmask"], ["ögonkräm", "Ögonkräm"], ["läppbalsam", "Läppbalsam"], ["lip balm", "Läppbalsam"],
+    ["schampo", "Schampo"], ["shampoo", "Schampo"], ["balsam", "Balsam"], ["conditioner", "Balsam"],
+    ["hårmask", "Hårmask"], ["hair mask", "Hårmask"], ["hårolja", "Hårolja"], ["hair oil", "Hårolja"],
+    ["skrubb", "Kroppsskrubb"], ["scrub", "Kroppsskrubb"],
+    ["kroppslotion", "Kroppslotion"], ["body lotion", "Kroppslotion"], ["kroppsolja", "Kroppsolja"], ["body oil", "Kroppsolja"],
+    ["tvål", "Duschtvål / Tvål"], ["soap", "Duschtvål / Tvål"], ["deo", "Deodorant"],
+    ["handkräm", "Handkräm"], ["hand cream", "Handkräm"], ["necessär", "Accessoar / Necessär"], ["väska", "Accessoar / Necessär"], ["bag", "Accessoar / Necessär"],
+  ];
+  for (const [k, t] of map) if (n.includes(k)) return t;
+  return "";
+};
+
+const stripFences = (s) => s.replace(/```json|```/g, "").trim();
+const typeInfoOf = (p) => PRODUCT_TYPES[p.productType] || PRODUCT_TYPES["Annan produkt"];
+
+const emptyProduct = () => ({
+  id: Date.now() + Math.random(),
+  shopifyId: "", handle: "", currentHandle: "", handleVariants: [],
+  productName: "", originalName: "", brand: "", brandNote: "", productType: "", audience: "",
+  size: "", price: "", inci: "", certs: [], awards: "", usp: "",
+  primaryKeyword: "", secondaryKeywords: "",
+  nameVariants: [], seoTitle: "", titleVariants: [], titleWhy: "",
+  description: "", shortDescription: "", bulletPoints: ["", "", "", "", ""],
+  seoDescription: "", faq: [], usage: null, keyIngredients: [], tags: [],
+  images: [], status: "väntar", approved: false,
+});
+
+/* ───────────────────────── Kontext & prompts ───────────────────────── */
+
+const buildCtx = (p, storeProfile) => {
+  const ti = typeInfoOf(p);
+  const certs = p.certs.length ? p.certs.join(", ") : "Inga angivna";
+  return `Du skriver produkttexter för éclore (eclore.se) – svensk e-handel för naturlig och vegansk hudvård, hårvård och kroppsvård, tillverkad i Europa.
+
+${storeProfile}
+
+PRODUKTFAKTA – använd ENDAST dessa fakta. Hitta ALDRIG på certifieringar, utmärkelser, ingredienser eller egenskaper som inte anges här:
+- Produktnamn: ${p.productName || "(saknas)"}${p.originalName && p.originalName !== p.productName ? ` (originalnamn: ${p.originalName})` : ""}
+- Varumärke: ${p.brand || "(ej angivet)"}${p.brandNote ? `. Om varumärket: ${p.brandNote}` : ""}
+- Produkttyp: ${p.productType || "(ej angiven)"}
+- Målgrupp / hud- eller hårtyp: ${p.audience || "alla"}
+- Storlek: ${p.size || "(ej angiven)"}${p.price ? `, Pris: ${p.price} kr` : ""}
+- Certifieringar och egenskaper (de ENDA som får nämnas): ${certs}
+- Utmärkelser: ${p.awards || "Inga – nämn inga utmärkelser"}
+- INCI / ingredienser: ${p.inci || "(ej angiven)"}
+- Övrig USP/info: ${p.usp || "—"}
+
+SÖKORD:
+- Primärt sökord: ${p.primaryKeyword || "(ej valt – utgå från produkttypen)"}
+- Sekundära sökord: ${p.secondaryKeywords || "—"}
+- Typiska svenska sökningar för produkttypen: ${ti.kw.join(", ") || "—"}
+
+KÖPARENS VANLIGASTE FRÅGOR för denna produkttyp: ${ti.concerns}
+
+HÅRDA REGLER:
+1. Svenska. Naturligt språk, ingen keyword stuffing.
+2. Primärt sökord ska finnas naturligt i första meningen av beskrivning och ingress.
+3. Nämn certifieringar/egenskaper ENDAST om de står i listan ovan. Skriv aldrig "ekologisk", "COSMOS", "parfymfri" etc. om det inte är angivet.
+4. Nämn utmärkelser endast om de anges – och då gärna tidigt.
+5. H2-rubriker = sökord och kundnytta, inte varumärkesupprepning.
+6. Påstå inget medicinskt (botar, läker, behandlar eksem etc.) – skriv "kan lugna", "återfuktar", "stödjer".`;
+};
+
+const buildPrompts = (p, storeProfile) => {
+  const ctx = buildCtx(p, storeProfile);
+  const ti = typeInfoOf(p);
+  return {
+    keywords: `${ctx}\n\nFöreslå sökord för denna produkt baserat på produkttyp, ingredienser och målgrupp. Primärt sökord = mest köpnära long-tail (2–4 ord, svenska, realistisk sökvolym). 5 sekundära sökord som varierar behov/egenskap. Svara BARA med JSON: {"primary":"...","secondary":["...","...","...","...","..."]}`,
+
+    productNames: `${ctx}\n\nProduktens nuvarande (ofta engelska) namn: "${p.originalName || p.productName}".\n\nFöreslå 3 svenska produktnamn enligt éclores namnkonvention:\n[Produkttyp] [Ingrediens/Doft] – [Viktigaste egenskap] – [Storlek]\nExempel: "Deodorant Lavendel – Aluminiumfri – 50 ml", "Ansiktsserum Svart Vitlök – Anti-age – 30 ml".\n\nRegler:\n- Inget varumärkesnamn först (namnet blir H1 och ska vara sökordsfokuserat)\n- Storlek med mellanslag: "50 ml", "100 g"\n- Behåll ev. känt produktnamn som mellandel ENDAST om det tillför sökvärde\n- Variera: 1 = ingrediens/doft-fokus, 2 = behov/egenskap-fokus, 3 = enklast möjliga\nVälj också den bästa (pick = 1, 2 eller 3) utifrån sökbarhet och tydlighet.\nSvara BARA med JSON: {"names":["...","...","..."],"pick":1}`,
+
+    seoTitle: `${ctx}\n\nSkriv 3 olika title-taggar med olika strategier:\n1. SÖKORD FÖRST: primärt sökord + mest särskiljande detalj (doft, variant eller certifiering).\n2. VARUMÄRKE + SÖKORD: varumärke/produktnamn + produkttyp eller sökord.\n3. BEHOV FÖRST: målgruppens problem/behov + lösning, t.ex. "Schampo för torrt hår – naturligt & sulfatfritt".\n\nVälj sedan den bästa enligt regeln:\n- Varumärket har egen sökvolym ELLER produkten har en utmärkelse → välj 2\n- Tydligt problem/målgrupp angiven → välj 3\n- Annars → välj 1\n\nRegler för ALLA tre:\n- Max 60 tecken TOTALT, ska sluta med " | éclore"\n- Naturlig svensk versalisering (inte Stor Bokstav På Varje Ord)\n- Inga utfyllnadsord ("köp", "bästa", "online") och inget pris\nSvara BARA med JSON: {"variants":["...","...","..."],"pick":1,"why":"max 12 ord om varför"}`,
+
+    seoDescription: `${ctx}\n\nSkriv en meta-beskrivning på max 150 tecken. Primärt sökord tidigt, en konkret nytta eller USP, avsluta med mjuk uppmaning (t.ex. "Upptäck hos éclore."). Returnera BARA texten.`,
+
+    urlHandle: `${ctx}\n\nNuvarande URL-handle: "${p.currentHandle || "(ny produkt)"}".\nFöreslå 3 URL-handles (slug) för produktsidan. Regler: lowercase, endast a-z, 0-9 och bindestreck (å/ä→a, ö→o, é→e), max 60 tecken, primärt sökord eller produkttyp först, inget varumärke om det inte tillför sökvärde, inga stoppord (och, med, för i onödan). Variera: 1 = sökord + variant/doft, 2 = produkttyp + behov, 3 = kortast möjliga. Svara BARA med JSON-array: ["...","...","..."]`,
+
+    shortDescription: `${ctx}\n\nSkriv en ingress (above the fold, under priset) på ca 60–80 ord. Primärt sökord i första meningen. Lyft den starkaste USP:n (utmärkelse > certifiering > nyckelingrediens). Avsluta med vad kunden får ut av produkten. Returnera BARA texten, ingen HTML.`,
+
+    bulletPoints: `${ctx}\n\nSkriv exakt 5 bullet points (max 9 ord vardera) för produktsidan. Ordning: 1) viktigaste effekten/resultatet, 2) nyckelingrediens + effekt, 3) certifiering/egenskap från listan ELLER andra effekt, 4) passar-för (hudtyp/behov), 5) ursprung/hantverk eller storlek/räckvidd. Inga punkter i slutet. Svara BARA med JSON-array: ["...","...","...","...","..."]`,
+
+    description: `${ctx}\n\nSkriv en strukturerad produktbeskrivning (max 350 ord) i HTML med exakt denna struktur:\n<h2>[Primärt sökord/produkttyp] – [kort nyttofras]</h2>\n<p>2–3 meningar: vad produkten är, primärt sökord i första meningen, ursprung/hantverk om relevant, ev. utmärkelse.</p>\n<h2>Ingredienser & effekter</h2>\n<p>3–4 nyckelingredienser ur INCI med konkret effekt, ingrediensnamn i <strong>fetstil</strong>.</p>\n<h2>Resultat & fördelar</h2>\n<ul><li>3–4 konkreta fördelar kopplade till köparens frågor ovan</li></ul>\n<h2>För vem passar ${p.productType ? p.productType.toLowerCase() : "produkten"}?</h2>\n<p>Målgrupp/hudtyp + avsluta med en konkret användningssituation.</p>\n\nReturnera BARA HTML.`,
+
+    faq: `${ctx}\n\nSkriv exakt 5 FAQ på svenska som matchar VERKLIGA köparfrågor för produkttypen (se listan ovan) – inte generiska hudvårdsfrågor. Minst en fråga om produktens nyckelingrediens(er), och en om ursprung/certifiering/utmärkelse (endast angivna fakta). Svar 40–70 ord i HTML med <p>, och i ETT av svaren en intern länk: <a href="${ti.coll}">relevant ankartext</a>. Svara BARA med JSON: {"faq_q1":"...","faq_a1":"<p>...</p>","faq_q2":"...","faq_a2":"<p>...</p>","faq_q3":"...","faq_a3":"<p>...</p>","faq_q4":"...","faq_a4":"<p>...</p>","faq_q5":"...","faq_a5":"<p>...</p>"}`,
+
+    usage: `${ctx}\n\nSkriv användningsinstruktioner anpassade till produkttypen ${p.productType || ""} (t.ex. brun utan sol: skrubb först, applicering, väntetid; schampo: mängd, massera, övergångsperiod). Svara BARA med JSON: {"intro":"2–3 meningar om när och hur produkten används","steps":["Steg som börjar med verb","...","..."]}`,
+
+    keyIngredients: `${ctx}\n\nVälj 3–5 nyckelingredienser ur INCI-listan (eller produktfakta om INCI saknas) och beskriv varje med konkret effekt på 8–15 ord. Använd svenska namn (t.ex. "Havtornsolja" istället för "Hippophae Rhamnoides"). Svara BARA med JSON-array: [{"name":"...","effect":"..."}]`,
+
+    tags: `${ctx}\n\nSkapa 8–12 Shopify-produkttaggar på svenska: produkttyp, varumärke, hudtyp/behov, nyckelingredienser, angivna certifieringar. Lowercase. Svara BARA med JSON-array: ["...","..."]`,
+  };
+};
+
+const callClaude = async (prompt, apiKey) => {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true",
+    },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 1000,
+      messages: [{ role: "user", content: prompt }],
+    }),
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message || "API-fel");
+  return (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("\n");
+};
+
+/* Genererar ett fält och returnerar de uppdaterade egenskaperna.
+   autoPick=true (kö): valda namn/titlar sätts automatiskt. */
+const genField = async (p, field, storeProfile, autoPick, apiKey) => {
+  const raw = stripFences(await callClaude(buildPrompts(p, storeProfile)[field], apiKey));
+  switch (field) {
+    case "keywords": {
+      const j = JSON.parse(raw);
+      return { primaryKeyword: j.primary || "", secondaryKeywords: (j.secondary || []).join(", ") };
+    }
+    case "productNames": {
+      const j = JSON.parse(raw);
+      const names = j.names || [];
+      const pick = Math.min(Math.max((j.pick || 1) - 1, 0), names.length - 1);
+      const out = { nameVariants: names };
+      if (autoPick && names[pick]) {
+        out.originalName = p.originalName || p.productName;
+        out.productName = names[pick];
+      }
+      return out;
+    }
+    case "seoTitle": {
+      const j = JSON.parse(raw);
+      const v = j.variants || [];
+      let pick = Math.min(Math.max((j.pick || 1) - 1, 0), v.length - 1);
+      const valid = v.filter((t) => t.length <= 60 && /\|\s*éclore\s*$/i.test(t));
+      if (v[pick] && (v[pick].length > 60) && valid.length) pick = v.indexOf(valid[0]);
+      return { titleVariants: v, seoTitle: v[pick] || v[0] || "", titleWhy: j.why || "" };
+    }
+    case "urlHandle": {
+      const v = JSON.parse(raw);
+      const out = { handleVariants: v };
+      if (!p.currentHandle && autoPick && v[0]) out.handle = v[0]; // byt aldrig befintlig URL automatiskt
+      return out;
+    }
+    case "bulletPoints": case "tags": case "keyIngredients":
+      return { [field]: JSON.parse(raw) };
+    case "usage":
+      return { usage: JSON.parse(raw) };
+    case "faq": {
+      const j = JSON.parse(raw);
+      return { faq: [1, 2, 3, 4, 5].map((i) => ({ q: j[`faq_q${i}`] || "", a: j[`faq_a${i}`] || "" })) };
+    }
+    default:
+      return { [field]: raw };
+  }
+};
+
+const PIPELINE = [
+  ["keywords", "Föreslår sökord"],
+  ["productNames", "Föreslår svenskt namn"],
+  ["seoTitle", "Skriver title-tagg"],
+  ["urlHandle", "Föreslår URL"],
+  ["seoDescription", "Skriver meta"],
+  ["shortDescription", "Skriver ingress"],
+  ["bulletPoints", "Bullet points"],
+  ["description", "Produktbeskrivning"],
+  ["faq", "FAQ"],
+  ["usage", "Användning"],
+  ["keyIngredients", "Nyckelingredienser"],
+  ["tags", "Taggar"],
+];
+
+const runChecks = (p) => {
+  const out = [];
+  const kw = (p.primaryKeyword || "").toLowerCase().trim();
+  if (p.seoTitle) {
+    out.push({ ok: p.seoTitle.length <= 60, label: `Title ${p.seoTitle.length}/60 tecken` });
+    out.push({ ok: /\|\s*éclore\s*$/i.test(p.seoTitle), label: 'Title slutar med "| éclore"' });
+    if (kw) out.push({ ok: p.seoTitle.toLowerCase().includes(kw), label: "Sökord i title" });
+  }
+  if (p.seoDescription) {
+    out.push({ ok: p.seoDescription.length <= 155, label: `Meta ${p.seoDescription.length}/155 tecken` });
+    if (kw) out.push({ ok: p.seoDescription.toLowerCase().includes(kw), label: "Sökord i meta" });
+  }
+  if (kw && p.shortDescription) out.push({ ok: p.shortDescription.toLowerCase().includes(kw), label: "Sökord i ingress" });
+  if (kw && p.description) out.push({ ok: p.description.toLowerCase().includes(kw), label: "Sökord i beskrivning" });
+  const allText = [p.description, p.shortDescription, (p.bulletPoints || []).join(" "), p.seoTitle, p.seoDescription, (p.faq || []).map((f) => f.q + " " + f.a).join(" ")].join(" ");
+  if (allText.trim()) {
+    const leaks = CERT_SCAN.filter((c) => c.word.test(allText) && !c.cert.some((x) => (p.certs || []).includes(x))).map((c) => c.cert[0]);
+    [...new Set(leaks)].forEach((l) => out.push({ ok: false, label: `Texten nämner "${l}" – inte ibockad. Kontrollera!` }));
+  }
+  return out;
+};
+
+const dumpProduct = (p) => [
+  `PRODUKTNAMN: ${p.productName}`,
+  p.originalName && p.originalName !== p.productName ? `ORIGINALNAMN: ${p.originalName}` : "",
+  `TITLE: ${p.seoTitle}`,
+  `META: ${p.seoDescription}`,
+  p.handle ? `URL: /products/${p.handle}` : "",
+  `\nINGRESS:\n${p.shortDescription}`,
+  `\nBULLETS:\n${(p.bulletPoints || []).filter(Boolean).map((b) => `• ${b}`).join("\n")}`,
+  `\nBESKRIVNING (HTML):\n${p.description}`,
+  `\nFAQ:\n${(p.faq || []).map((f) => `${f.q}\n${f.a}`).join("\n\n")}`,
+  p.usage ? `\nANVÄNDNING:\n${p.usage.intro}\n${(p.usage.steps || []).map((s, i) => `${i + 1}. ${s}`).join("\n")}` : "",
+  `\nNYCKELINGREDIENSER:\n${(p.keyIngredients || []).map((k) => `${k.name} – ${k.effect}`).join("\n")}`,
+  `\nTAGGAR: ${(p.tags || []).join(", ")}`,
+].filter(Boolean).join("\n");
+
+/* ───────────────────────── Shopify Admin API ───────────────────────── */
+
+const sfHeaders = (s) => ({ "X-Shopify-Access-Token": s.shopifyToken, "Content-Type": "application/json" });
+const sfBase = (s) => `https://${s.shopifyStore.replace(/^https?:\/\//, "").replace(/\/$/, "")}/admin/api/2024-01`;
+
+const fetchFromShopify = async (s, productId) => {
+  const res = await fetch(`${sfBase(s)}/products/${productId}.json`, { headers: sfHeaders(s) });
+  if (!res.ok) throw new Error(`Shopify svarade ${res.status} – kontrollera butik, token (read_products) och produkt-ID.`);
+  const { product } = await res.json();
+  const patch = {
+    shopifyId: String(product.id),
+    productName: product.title || "",
+    originalName: product.title || "",
+    description: product.body_html || "",
+    tags: product.tags ? product.tags.split(", ").filter(Boolean) : [],
+    handle: product.handle || "",
+    currentHandle: product.handle || "",
+    productType: detectType(product.title) || "",
+  };
+  try {
+    const mfRes = await fetch(`${sfBase(s)}/products/${productId}/metafields.json`, { headers: sfHeaders(s) });
+    if (mfRes.ok) {
+      const mfs = (await mfRes.json()).metafields || [];
+      const get = (k) => mfs.find((m) => m.key === k && m.namespace === "custom")?.value || "";
+      if (get("ingredients")) patch.inci = get("ingredients");
+      patch.seoTitle = mfs.find((m) => m.key === "title_tag")?.value || "";
+      patch.seoDescription = mfs.find((m) => m.key === "description_tag")?.value || "";
+      if (get("short_description")) patch.shortDescription = get("short_description");
+      const bp = get("bullet_points");
+      if (bp) patch.bulletPoints = [...bp.split("\n").filter(Boolean), "", "", "", "", ""].slice(0, 5);
+      const faq = [1, 2, 3, 4, 5].map((i) => ({ q: get(`faq_q${i}`), a: get(`faq_a${i}`) })).filter((x) => x.q || x.a);
+      if (faq.length) patch.faq = faq;
+      const u = get("usage_instructions");
+      if (u) {
+        const parts = u.split(/\n\n/);
+        patch.usage = { intro: parts[0] || "", steps: (parts[1] || "").split("\n").map((x) => x.replace(/^\d+\.\s*/, "")).filter(Boolean) };
+      }
+      const ki = get("key_ingredients");
+      if (ki) { try { patch.keyIngredients = JSON.parse(ki).map((x) => ({ name: x.name || "", effect: x.effect || x.benefit || "" })); } catch {} }
+    }
+  } catch {}
+  try {
+    const imgRes = await fetch(`${sfBase(s)}/products/${productId}/images.json`, { headers: sfHeaders(s) });
+    if (imgRes.ok) {
+      const imgs = (await imgRes.json()).images || [];
+      patch.images = imgs.map((img) => ({
+        shopifyImageId: img.id, url: img.src,
+        filename: img.src.split("/").pop().split("?")[0],
+        suggestedFilename: "", altText: img.alt || "",
+      }));
+    }
+  } catch {}
+  return patch;
+};
+
+const upsertMetafield = async (s, productId, existing, mf) => {
+  const found = existing.find((m) => m.namespace === mf.namespace && m.key === mf.key);
+  if (found) {
+    return fetch(`${sfBase(s)}/metafields/${found.id}.json`, {
+      method: "PUT", headers: sfHeaders(s),
+      body: JSON.stringify({ metafield: { id: found.id, value: mf.value, type: found.type || mf.type } }),
+    });
+  }
+  return fetch(`${sfBase(s)}/products/${productId}/metafields.json`, {
+    method: "POST", headers: sfHeaders(s),
+    body: JSON.stringify({ metafield: { ...mf, owner_resource: "product" } }),
+  });
+};
+
+const publishProduct = async (s, p, onStep) => {
+  if (!p.shopifyId) throw new Error("Produkten saknar Shopify-ID – hämta den från Shopify först.");
+  const pid = p.shopifyId;
+  const handleChanged = p.handle && p.currentHandle && p.handle !== p.currentHandle;
+  onStep("Uppdaterar produkt (namn, beskrivning, taggar)...");
+  const body = { product: { id: Number(pid), title: p.productName, body_html: p.description, tags: (p.tags || []).join(", ") } };
+  if (p.handle) body.product.handle = p.handle;
+  const res = await fetch(`${sfBase(s)}/products/${pid}.json`, { method: "PUT", headers: sfHeaders(s), body: JSON.stringify(body) });
+  if (!res.ok) {
+    let err = ""; try { err = JSON.stringify((await res.json()).errors); } catch {}
+    throw new Error(`Shopify-fel ${res.status}: ${err || "kontrollera write_products-behörighet"}`);
+  }
+  onStep("Uppdaterar metafält (SEO, FAQ, bullets, ingredienser)...");
+  const mfRes = await fetch(`${sfBase(s)}/products/${pid}/metafields.json`, { headers: sfHeaders(s) });
+  const existing = mfRes.ok ? (await mfRes.json()).metafields || [] : [];
+  const mfs = [
+    { namespace: "global", key: "title_tag", value: p.seoTitle, type: "single_line_text_field" },
+    { namespace: "global", key: "description_tag", value: p.seoDescription, type: "single_line_text_field" },
+    { namespace: "custom", key: "ingredients", value: p.inci, type: "multi_line_text_field" },
+    { namespace: "custom", key: "short_description", value: p.shortDescription, type: "multi_line_text_field" },
+    { namespace: "custom", key: "bullet_points", value: (p.bulletPoints || []).filter(Boolean).join("\n"), type: "multi_line_text_field" },
+    { namespace: "custom", key: "usage_instructions", value: p.usage ? `${p.usage.intro}\n\n${(p.usage.steps || []).map((x, i) => `${i + 1}. ${x}`).join("\n")}` : "", type: "multi_line_text_field" },
+    { namespace: "custom", key: "key_ingredients", value: (p.keyIngredients || []).length ? JSON.stringify(p.keyIngredients.map((k) => ({ name: k.name, benefit: k.effect }))) : "", type: "json" },
+    ...(p.faq || []).flatMap((f, i) => [
+      { namespace: "custom", key: `faq_q${i + 1}`, value: f.q, type: "single_line_text_field" },
+      { namespace: "custom", key: `faq_a${i + 1}`, value: f.a, type: "multi_line_text_field" },
+    ]),
+  ].filter((m) => m.value);
+  for (const mf of mfs) await upsertMetafield(s, pid, existing, mf);
+  const imgsToUpdate = (p.images || []).filter((i) => i.shopifyImageId && i.altText);
+  if (imgsToUpdate.length) {
+    onStep("Uppdaterar alt-texter...");
+    for (const img of imgsToUpdate) {
+      await fetch(`${sfBase(s)}/products/${pid}/images/${img.shopifyImageId}.json`, {
+        method: "PUT", headers: sfHeaders(s),
+        body: JSON.stringify({ image: { id: img.shopifyImageId, alt: img.altText } }),
+      });
+    }
+  }
+  if (handleChanged) {
+    onStep("Skapar 301-redirect för gamla URL:en...");
+    await fetch(`${sfBase(s)}/redirects.json`, {
+      method: "POST", headers: sfHeaders(s),
+      body: JSON.stringify({ redirect: { path: `/products/${p.currentHandle}`, target: `/products/${p.handle}` } }),
+    });
+  }
+  return handleChanged;
+};
+
+/* ───────────────────────── App ───────────────────────── */
+
+function EcloreProduktstudio() {
+  const [mode, setMode] = useState("single");
+  const [form, setForm] = useState(emptyProduct());
+  const [storeProfile, setStoreProfile] = useState(DEFAULT_PROFILE);
+  const [generating, setGenerating] = useState({});
+  const [allProgress, setAllProgress] = useState("");
+  const [copied, setCopied] = useState("");
+  const [error, setError] = useState("");
+  const [showProfile, setShowProfile] = useState(false);
+
+  // Kö
+  const [queue, setQueue] = useState([]);
+  const [draft, setDraft] = useState(null); // produkt som håller på att läggas till
+  const [queueRunning, setQueueRunning] = useState(false);
+  const [queueProgress, setQueueProgress] = useState("");
+  const [reviewIdx, setReviewIdx] = useState(-1); // -1 = listvy
+  const [editId, setEditId] = useState(null);
+
+  // Shopify
+  const [settings, setSettings] = useState({ shopifyStore: "", shopifyToken: "", anthropicKey: "" });
+  const [showSettings, setShowSettings] = useState(false);
+  const [singleId, setSingleId] = useState("");
+  const [queueIds, setQueueIds] = useState("");
+  const [sfBusy, setSfBusy] = useState("");
+  const [sfError, setSfError] = useState("");
+  const [publishState, setPublishState] = useState({});
+
+  const sfReady = settings.shopifyStore && settings.shopifyToken;
+
+  const fetchSingle = async () => {
+    if (!sfReady || !singleId.trim()) { setSfError("Fyll i butik, token och produkt-ID."); return; }
+    setSfError(""); setSfBusy("single");
+    try {
+      const patch = await fetchFromShopify(settings, singleId.trim());
+      setForm((f) => ({ ...f, ...patch, brandNote: f.brandNote }));
+    } catch (e) { setSfError(e.message); }
+    setSfBusy("");
+  };
+
+  const fetchToQueue = async () => {
+    const ids = queueIds.split(/[\n,;]+/).map((x) => x.trim()).filter(Boolean);
+    if (!sfReady || !ids.length) { setSfError("Fyll i butik, token och minst ett produkt-ID."); return; }
+    setSfError(""); setSfBusy("queue");
+    for (let i = 0; i < ids.length; i++) {
+      setQueueProgress(`Hämtar produkt ${i + 1}/${ids.length} från Shopify...`);
+      try {
+        const patch = await fetchFromShopify(settings, ids[i]);
+        setQueue((q) => [...q, { ...emptyProduct(), ...patch, status: "väntar" }]);
+      } catch (e) { setSfError(`ID ${ids[i]}: ${e.message}`); }
+    }
+    setQueueProgress(""); setQueueIds(""); setSfBusy("");
+  };
+
+  const publish = async (p, source) => {
+    if (!sfReady) { setSfError("Fyll i Shopify-inställningarna först."); return; }
+    setSfError("");
+    setPublishState((s) => ({ ...s, [p.id]: "Publicerar..." }));
+    try {
+      const handleChanged = await publishProduct(settings, p, (step) => setPublishState((s) => ({ ...s, [p.id]: step })));
+      const msg = handleChanged ? "✓ Publicerad + 301-redirect skapad" : "✓ Publicerad";
+      setPublishState((s) => ({ ...s, [p.id]: msg }));
+      if (source === "queue") updateQueueItem(p.id, { currentHandle: p.handle });
+      else setForm((f) => ({ ...f, currentHandle: f.handle }));
+    } catch (e) {
+      setPublishState((s) => ({ ...s, [p.id]: `✕ ${e.message}` }));
+    }
+  };
+
+  const setField = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+  const updateQueueItem = (id, patch) =>
+    setQueue((q) => q.map((p) => (p.id === id ? { ...p, ...(typeof patch === "function" ? patch(p) : patch) } : p)));
+
+  const doCopy = async (key, txt) => {
+    try { await navigator.clipboard.writeText(txt); setCopied(key); setTimeout(() => setCopied(""), 1500); } catch {}
+  };
+
+  /* ── Enskilt läge ── */
+  const generateField = async (field) => {
+    if (!form.productName) { setError("Fyll i produktnamn först."); return; }
+    if (!settings.anthropicKey) { setError("Lägg in din Anthropic API-nyckel under Inställningar."); setShowSettings(true); return; }
+    setError("");
+    setGenerating((g) => ({ ...g, [field]: true }));
+    try {
+      const patch = await genField(form, field, storeProfile, false, settings.anthropicKey);
+      setForm((f) => ({ ...f, ...patch }));
+    } catch (e) { console.error(e); setError(`Kunde inte generera ${field}. Försök igen.`); }
+    setGenerating((g) => ({ ...g, [field]: false }));
+  };
+
+  const generateAllSingle = async () => {
+    if (!form.productName) { setError("Fyll i produktnamn först."); return; }
+    if (!settings.anthropicKey) { setError("Lägg in din Anthropic API-nyckel under Inställningar."); setShowSettings(true); return; }
+    setError("");
+    let cur = { ...form };
+    for (const [field, label] of PIPELINE) {
+      if (field === "keywords" && cur.primaryKeyword) continue;
+      if (field === "productNames") continue; // manuellt val i enskilt läge
+      setAllProgress(label + "...");
+      try {
+        const patch = await genField(cur, field, storeProfile, false, settings.anthropicKey);
+        cur = { ...cur, ...patch };
+        setForm(cur);
+      } catch (e) { console.error(e); }
+    }
+    setAllProgress("✓ Klart");
+    setTimeout(() => setAllProgress(""), 3000);
+  };
+
+  const generateImageMeta = async (idx) => {
+    setGenerating((g) => ({ ...g, [`img_${idx}`]: true }));
+    try {
+      const prompt = `${buildCtx(form, storeProfile)}\n\nFör produktbild ${idx + 1}, nuvarande filnamn: "${form.images[idx]?.filename || ""}". Generera:\n1. SEO-filnamn på svenska (lowercase, bindestreck, .jpg, max 60 tecken, primärt sökord eller produkttyp + varumärke)\n2. Alt-text på svenska (max 125 tecken, beskriv bilden + produktnamn)\nSvara BARA med JSON: {"suggestedFilename":"...","altText":"..."}`;
+      const j = JSON.parse(stripFences(await callClaude(prompt, settings.anthropicKey)));
+      const imgs = [...form.images];
+      imgs[idx] = { ...imgs[idx], suggestedFilename: j.suggestedFilename, altText: j.altText };
+      setField("images", imgs);
+    } catch (e) { console.error(e); }
+    setGenerating((g) => ({ ...g, [`img_${idx}`]: false }));
+  };
+
+  /* ── Köläge ── */
+  const runQueue = async () => {
+    if (!settings.anthropicKey) { setSfError("Lägg in din Anthropic API-nyckel under Inställningar."); setShowSettings(true); return; }
+    setQueueRunning(true);
+    const items = queue.filter((p) => p.status === "väntar" || p.status === "fel");
+    for (let i = 0; i < items.length; i++) {
+      let cur = { ...items[i], status: "genererar" };
+      updateQueueItem(cur.id, { status: "genererar" });
+      try {
+        for (const [field, label] of PIPELINE) {
+          if (field === "keywords" && cur.primaryKeyword) continue;
+          setQueueProgress(`Produkt ${i + 1}/${items.length} · ${cur.productName.slice(0, 28)} · ${label}...`);
+          const patch = await genField(cur, field, storeProfile, true, settings.anthropicKey);
+          cur = { ...cur, ...patch };
+          updateQueueItem(cur.id, patch);
+        }
+        updateQueueItem(cur.id, { status: "klar" });
+      } catch (e) {
+        console.error(e);
+        updateQueueItem(cur.id, { status: "fel" });
+      }
+    }
+    setQueueProgress("✓ Kön klar – dags att granska");
+    setQueueRunning(false);
+  };
+
+  /* ── Stilar ── */
+  const S = {
+    page: { fontFamily: "'Avenir Next','Segoe UI',system-ui,sans-serif", background: "#EFF1EA", minHeight: "100vh", color: "#22281F" },
+    wrap: { maxWidth: 880, margin: "0 auto", padding: "20px 14px 80px" },
+    card: { background: "#FFFFFF", borderRadius: 12, padding: 16, marginBottom: 14, border: "1px solid #DDE2D3" },
+    h2: { fontSize: 14, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#46522F", margin: "0 0 12px" },
+    label: { display: "block", fontSize: 12, fontWeight: 600, color: "#5A6450", marginBottom: 4 },
+    input: { width: "100%", boxSizing: "border-box", padding: "9px 10px", borderRadius: 8, border: "1px solid #C9D0BC", fontSize: 14, background: "#FBFCF8", color: "#22281F", outline: "none" },
+    ta: { width: "100%", boxSizing: "border-box", padding: "9px 10px", borderRadius: 8, border: "1px solid #C9D0BC", fontSize: 13, background: "#FBFCF8", color: "#22281F", fontFamily: "inherit", resize: "vertical", outline: "none" },
+    row: { display: "flex", gap: 10, flexWrap: "wrap" },
+    col: { flex: "1 1 160px", marginBottom: 10 },
+    btn: { background: "#46522F", color: "#FBFCF8", border: "none", borderRadius: 8, padding: "9px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer" },
+    btnGhost: { background: "transparent", color: "#46522F", border: "1px solid #B8C2A4", borderRadius: 8, padding: "7px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer" },
+    chip: (on) => ({ padding: "6px 10px", borderRadius: 999, border: on ? "1.5px solid #46522F" : "1px solid #C9D0BC", background: on ? "#E4EAD6" : "#FBFCF8", fontSize: 12, fontWeight: 600, color: on ? "#33401E" : "#5A6450", cursor: "pointer" }),
+    out: { background: "#F7F8F3", border: "1px solid #E2E6D8", borderRadius: 8, padding: 12, fontSize: 13, lineHeight: 1.55, whiteSpace: "pre-wrap", wordBreak: "break-word" },
+    outHead: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 },
+    small: { fontSize: 11, color: "#7A8468" },
+    tab: (on) => ({ padding: "9px 16px", borderRadius: 8, border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", background: on ? "#46522F" : "transparent", color: on ? "#FBFCF8" : "#46522F" }),
+    status: (s) => ({ fontSize: 11, fontWeight: 700, padding: "3px 8px", borderRadius: 999, background: s === "klar" ? "#E4EAD6" : s === "genererar" ? "#FDF3D7" : s === "fel" ? "#F6E0DB" : "#EDEFE6", color: s === "klar" ? "#33401E" : s === "genererar" ? "#7A5B12" : s === "fel" ? "#9B3B2E" : "#5A6450" }),
+  };
+
+  /* ── Delade fältblock för produktfakta (används av singel + kö-utkast) ── */
+  const FactFields = ({ p, set }) => (
+    <>
+      <div style={{ marginBottom: 10 }}>
+        <label style={S.label}>Produktnamn (gärna originalnamnet, även engelskt)</label>
+        <input style={S.input} value={p.productName}
+          onChange={(e) => { const v = e.target.value; set((x) => ({ ...x, productName: v, productType: x.productType || detectType(v) })); }}
+          placeholder="t.ex. Stimulate Me Face Serum" />
+      </div>
+      <div style={S.row}>
+        <div style={S.col}>
+          <label style={S.label}>Varumärke</label>
+          <select style={S.input} value={p.brand}
+            onChange={(e) => set((x) => ({ ...x, brand: e.target.value, brandNote: BRANDS[e.target.value] || "" }))}>
+            <option value="">Välj...</option>
+            {Object.keys(BRANDS).map((b) => <option key={b} value={b}>{b}</option>)}
+          </select>
+        </div>
+        <div style={S.col}>
+          <label style={S.label}>Produkttyp</label>
+          <select style={S.input} value={p.productType} onChange={(e) => set((x) => ({ ...x, productType: e.target.value }))}>
+            <option value="">Välj...</option>
+            {Object.keys(PRODUCT_TYPES).map((t) => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </div>
+      </div>
+      <div style={S.row}>
+        <div style={S.col}>
+          <label style={S.label}>Målgrupp / hud- eller hårtyp</label>
+          <input style={S.input} value={p.audience} onChange={(e) => set((x) => ({ ...x, audience: e.target.value }))} placeholder="t.ex. torr och känslig hud" />
+        </div>
+        <div style={S.col}>
+          <label style={S.label}>Storlek</label>
+          <input style={S.input} value={p.size} onChange={(e) => set((x) => ({ ...x, size: e.target.value }))} placeholder="50 ml" />
+        </div>
+        <div style={S.col}>
+          <label style={S.label}>Pris (kr)</label>
+          <input style={S.input} value={p.price} onChange={(e) => set((x) => ({ ...x, price: e.target.value }))} placeholder="349" />
+        </div>
+      </div>
+      <div style={{ marginBottom: 10 }}>
+        <label style={S.label}>INCI / ingredienslista</label>
+        <textarea style={{ ...S.ta, minHeight: 60 }} value={p.inci} onChange={(e) => set((x) => ({ ...x, inci: e.target.value }))} placeholder="Klistra in INCI – styr nyckelingredienser, beskrivning och FAQ" />
+      </div>
+      <div style={{ marginBottom: 10 }}>
+        <label style={S.label}>Certifieringar & egenskaper (endast ibockade får nämnas)</label>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+          {CERTS.map((c) => (
+            <span key={c} style={S.chip(p.certs.includes(c))}
+              onClick={() => set((x) => ({ ...x, certs: x.certs.includes(c) ? x.certs.filter((y) => y !== c) : [...x.certs, c] }))}>
+              {c}
+            </span>
+          ))}
+        </div>
+      </div>
+      <div style={S.row}>
+        <div style={S.col}>
+          <label style={S.label}>Utmärkelser</label>
+          <input style={S.input} value={p.awards} onChange={(e) => set((x) => ({ ...x, awards: e.target.value }))} placeholder="t.ex. Global Makeup Awards 2023 (Winner)" />
+        </div>
+        <div style={S.col}>
+          <label style={S.label}>Övrig USP / info</label>
+          <input style={S.input} value={p.usp} onChange={(e) => set((x) => ({ ...x, usp: e.target.value }))} placeholder="t.ex. ovanlig kombination av ingredienser" />
+        </div>
+      </div>
+    </>
   );
-}
 
-function CopyBtn({ text }) {
-  const [ok, setOk] = useState(false);
-  return (
-    <button
-      onClick={() => { navigator.clipboard.writeText(text); setOk(true); setTimeout(() => setOk(false), 2000); }}
-      style={{ background: ok ? "rgba(52,168,83,0.15)" : "rgba(138,180,248,0.1)", border: "1px solid " + (ok ? "rgba(52,168,83,0.4)" : "rgba(138,180,248,0.25)"), borderRadius: "5px", padding: "3px 8px", color: ok ? "#34a853" : "#8ab4f8", fontSize: "10px", cursor: "pointer" }}
-    >{ok ? "✓ Kopierat" : "Kopiera"}</button>
+  const VariantPicker = ({ label, variants, current, why, onPick, strategies }) => (
+    variants.length > 0 ? (
+      <div style={{ marginTop: 8 }}>
+        <span style={S.small}>{label}{why ? ` · Claudes motivering: ${why}` : ""}</span>
+        {variants.map((t, i) => (
+          <div key={i} style={{ ...S.chip(current === t), display: "block", marginTop: 5, textAlign: "left" }} onClick={() => onPick(t)}>
+            {strategies && (
+              <span style={{ ...S.small, display: "block", color: "inherit", opacity: 0.7 }}>
+                {strategies[i] || "Variant"} · {t.length} tecken{t.length > 60 ? " ⚠ för lång" : ""}
+              </span>
+            )}
+            {t}
+          </div>
+        ))}
+      </div>
+    ) : null
   );
-}
 
-function Tag({ label, onRemove }) {
-  return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: "5px", background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "20px", padding: "4px 10px", fontSize: "12px", color: "#ccc" }}>
-      {label}
-      <button onClick={onRemove} style={{ background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: "13px", lineHeight: 1, padding: 0 }}>×</button>
-    </span>
+  const ChecksPanel = ({ p }) => {
+    const checks = runChecks(p);
+    return checks.length ? (
+      <div style={{ ...S.card, borderLeft: "4px solid #46522F" }}>
+        <h2 style={S.h2}>SEO-kontroll</h2>
+        {checks.map((c, i) => (
+          <div key={i} style={{ fontSize: 13, marginBottom: 4, color: c.ok ? "#46522F" : "#9B3B2E" }}>
+            {c.ok ? "✓" : "✕"} {c.label}
+          </div>
+        ))}
+      </div>
+    ) : null;
+  };
+
+  const TITLE_STRATEGIES = ["Sökord först", "Varumärke + sökord", "Behov först"];
+
+  const ShopifyCard = () => (
+    <div style={S.card}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <h2 style={{ ...S.h2, margin: 0 }}>Inställningar {settings.anthropicKey ? "✓ AI" : ""} {sfReady ? "✓ Shopify" : ""}</h2>
+        <button style={S.btnGhost} onClick={() => setShowSettings(!showSettings)}>{showSettings ? "Dölj" : sfReady ? "Ändra" : "Anslut"}</button>
+      </div>
+      {showSettings && (
+        <div style={{ marginTop: 10 }}>
+          <div style={S.row}>
+            <div style={S.col}>
+              <label style={S.label}>Butik (xxx.myshopify.com)</label>
+              <input style={S.input} value={settings.shopifyStore} onChange={(e) => setSettings((s) => ({ ...s, shopifyStore: e.target.value }))} placeholder="eclore.myshopify.com" />
+            </div>
+            <div style={S.col}>
+              <label style={S.label}>Shopify Admin API access token</label>
+              <input style={S.input} type="password" value={settings.shopifyToken} onChange={(e) => setSettings((s) => ({ ...s, shopifyToken: e.target.value }))} placeholder="shpat_..." />
+            </div>
+            <div style={S.col}>
+              <label style={S.label}>Anthropic API-nyckel</label>
+              <input style={S.input} type="password" value={settings.anthropicKey} onChange={(e) => setSettings((s) => ({ ...s, anthropicKey: e.target.value }))} placeholder="sk-ant-..." />
+            </div>
+          </div>
+          <p style={S.small}>Nycklarna sparas bara i minnet – de försvinner när sidan laddas om. Shopify-token kräver read_products + write_products (+ write_content för redirects).</p>
+        </div>
+      )}
+      {sfError && <p style={{ color: "#9B3B2E", fontSize: 13, marginTop: 8 }}>{sfError}</p>}
+    </div>
   );
-}
 
-function TagInput({ onAdd, placeholder }) {
-  const [val, setVal] = useState("");
-  return (
-    <input
-      value={val}
-      onChange={e => setVal(e.target.value)}
-      onKeyDown={e => { if (e.key === "Enter" && val.trim()) { onAdd(val.trim()); setVal(""); } }}
-      placeholder={placeholder || "Skriv och tryck Enter"}
-      style={{ width: "100%", background: "#111", border: "1px solid #2a2a2a", borderRadius: "8px", padding: "9px 12px", color: "#f0ede8", fontSize: "13px", outline: "none" }}
-    />
-  );
-}
+  const UrlBlock = ({ p, set, onGenerate, busy }) => {
+    const changed = p.handle && p.currentHandle && p.handle !== p.currentHandle;
+    return (
+      <div style={{ marginBottom: 16 }}>
+        <div style={S.outHead}>
+          <span style={{ fontSize: 13, fontWeight: 700 }}>URL (handle)</span>
+          {onGenerate && <button style={S.btnGhost} onClick={onGenerate} disabled={busy}>{busy ? "Genererar..." : "Generera"}</button>}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <span style={{ ...S.small, whiteSpace: "nowrap" }}>/products/</span>
+          <input style={S.input} value={p.handle} onChange={(e) => set({ handle: e.target.value })} />
+        </div>
+        {changed && <p style={{ fontSize: 12, color: "#7A5B12", margin: "6px 0 0" }}>⚠ URL:en ändras från /products/{p.currentHandle} – en 301-redirect skapas automatiskt vid publicering.</p>}
+        <VariantPicker label="Förslag – klicka för att byta:" variants={p.handleVariants || []} current={p.handle} onPick={(t) => set({ handle: t })} />
+      </div>
+    );
+  };
 
-function Field({ label, hint, children, action }) {
-  return (
+  /* ───────────── Granskningsvy (kö) ───────────── */
+  const ReviewView = () => {
+    const p = queue[reviewIdx];
+    if (!p) return null;
+    const set = (patch) => updateQueueItem(p.id, patch);
+    const doneCount = queue.filter((x) => x.approved).length;
+    return (
+      <div>
+        <div style={{ ...S.card, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+          <div>
+            <strong style={{ fontSize: 15 }}>Granskar {reviewIdx + 1} av {queue.length}</strong>
+            <div style={S.small}>{doneCount} godkända · {p.approved ? "✓ denna är godkänd" : "ej godkänd ännu"}</div>
+          </div>
+          <div style={{ display: "flex", gap: 6 }}>
+            <button style={S.btnGhost} onClick={() => setReviewIdx(-1)}>← Kölista</button>
+            <button style={S.btnGhost} disabled={reviewIdx === 0} onClick={() => setReviewIdx(reviewIdx - 1)}>Föregående</button>
+            <button style={S.btn} onClick={() => {
+              set({ approved: true });
+              const next = queue.findIndex((x, i) => i > reviewIdx && x.status === "klar" && !x.approved);
+              setReviewIdx(next !== -1 ? next : -1);
+            }}>Godkänn & nästa</button>
+          </div>
+        </div>
+
+        <div style={S.card}>
+          <h2 style={S.h2}>Produktnamn</h2>
+          <input style={{ ...S.input, fontWeight: 700 }} value={p.productName} onChange={(e) => set({ productName: e.target.value })} />
+          {p.originalName && <p style={S.small}>Original: {p.originalName}</p>}
+          <VariantPicker label="Alternativ (texterna är skrivna utifrån det valda namnet):" variants={p.nameVariants} current={p.productName}
+            onPick={(t) => set({ productName: t })} />
+        </div>
+
+        <div style={S.card}>
+          <h2 style={S.h2}>Title-tagg & URL</h2>
+          <input style={S.input} value={p.seoTitle} onChange={(e) => set({ seoTitle: e.target.value })} />
+          <span style={{ ...S.small, color: p.seoTitle.length > 60 ? "#9B3B2E" : "#7A8468" }}>{p.seoTitle.length}/60 tecken</span>
+          <VariantPicker label="Tre strategier – klicka för att byta:" variants={p.titleVariants} current={p.seoTitle} why={p.titleWhy}
+            onPick={(t) => set({ seoTitle: t })} strategies={TITLE_STRATEGIES} />
+          <div style={{ marginTop: 14 }}>
+            <UrlBlock p={p} set={set} />
+          </div>
+        </div>
+
+        <div style={S.card}>
+          <h2 style={S.h2}>Meta & ingress</h2>
+          <label style={S.label}>Meta-beskrivning</label>
+          <textarea style={{ ...S.ta, minHeight: 54 }} value={p.seoDescription} onChange={(e) => set({ seoDescription: e.target.value })} />
+          <span style={{ ...S.small, color: p.seoDescription.length > 155 ? "#9B3B2E" : "#7A8468" }}>{p.seoDescription.length}/155 tecken</span>
+          <label style={{ ...S.label, marginTop: 10 }}>Ingress</label>
+          <textarea style={{ ...S.ta, minHeight: 80 }} value={p.shortDescription} onChange={(e) => set({ shortDescription: e.target.value })} />
+        </div>
+
+        <div style={S.card}>
+          <h2 style={S.h2}>Övrigt innehåll</h2>
+          <details style={{ marginBottom: 8 }}>
+            <summary style={{ cursor: "pointer", fontWeight: 600, fontSize: 13 }}>Bullet points ({(p.bulletPoints || []).filter(Boolean).length})</summary>
+            <div style={{ ...S.out, marginTop: 6 }}>{(p.bulletPoints || []).filter(Boolean).map((b, i) => <div key={i}>• {b}</div>)}</div>
+          </details>
+          <details style={{ marginBottom: 8 }}>
+            <summary style={{ cursor: "pointer", fontWeight: 600, fontSize: 13 }}>Produktbeskrivning</summary>
+            <div style={{ ...S.out, marginTop: 6 }} dangerouslySetInnerHTML={{ __html: p.description }} />
+          </details>
+          <details style={{ marginBottom: 8 }}>
+            <summary style={{ cursor: "pointer", fontWeight: 600, fontSize: 13 }}>FAQ ({(p.faq || []).length})</summary>
+            <div style={{ ...S.out, marginTop: 6 }}>
+              {(p.faq || []).map((f, i) => (
+                <div key={i} style={{ marginBottom: 8 }}>
+                  <strong>{f.q}</strong>
+                  <div dangerouslySetInnerHTML={{ __html: f.a }} />
+                </div>
+              ))}
+            </div>
+          </details>
+          <details style={{ marginBottom: 8 }}>
+            <summary style={{ cursor: "pointer", fontWeight: 600, fontSize: 13 }}>Användning, ingredienser & taggar</summary>
+            <div style={{ ...S.out, marginTop: 6 }}>
+              {p.usage && (<><p style={{ marginTop: 0 }}>{p.usage.intro}</p><ol style={{ margin: "0 0 10px", paddingLeft: 18 }}>{(p.usage.steps || []).map((s, i) => <li key={i}>{s}</li>)}</ol></>)}
+              {(p.keyIngredients || []).map((k, i) => <div key={i}><strong>{k.name}</strong> – {k.effect}</div>)}
+              <div style={{ marginTop: 8 }}>{(p.tags || []).join(", ")}</div>
+            </div>
+          </details>
+          {(p.images || []).length > 0 && (
+            <details style={{ marginBottom: 8 }}>
+              <summary style={{ cursor: "pointer", fontWeight: 600, fontSize: 13 }}>Bilder & alt-texter ({p.images.length})</summary>
+              <div style={{ ...S.out, marginTop: 6 }}>
+                {p.images.map((img, i) => (
+                  <div key={i} style={{ marginBottom: 8 }}>
+                    <div style={S.small}>{img.filename}</div>
+                    <input style={{ ...S.input, marginTop: 4 }} value={img.altText} placeholder="Alt-text"
+                      onChange={(e) => { const arr = [...p.images]; arr[i] = { ...arr[i], altText: e.target.value }; set({ images: arr }); }} />
+                  </div>
+                ))}
+              </div>
+            </details>
+          )}
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {p.shopifyId && (
+              <button style={{ ...S.btn, background: "#33401E" }} onClick={() => publish(p, "queue")} disabled={!sfReady}>
+                Publicera till Shopify
+              </button>
+            )}
+            <button style={S.btn} onClick={() => doCopy(`dump_${p.id}`, dumpProduct(p))}>{copied === `dump_${p.id}` ? "✓ Kopierad" : "Kopiera allt"}</button>
+            <button style={S.btnGhost} onClick={() => doCopy(`title_${p.id}`, p.seoTitle)}>{copied === `title_${p.id}` ? "✓" : "Kopiera title"}</button>
+            <button style={S.btnGhost} onClick={() => doCopy(`desc_${p.id}`, p.description)}>{copied === `desc_${p.id}` ? "✓" : "Kopiera beskrivning (HTML)"}</button>
+          </div>
+          {publishState[p.id] && <p style={{ fontSize: 13, marginTop: 8, color: publishState[p.id].startsWith("✕") ? "#9B3B2E" : "#46522F" }}>{publishState[p.id]}</p>}
+        </div>
+
+        <ChecksPanel p={p} />
+      </div>
+    );
+  };
+
+  /* ───────────── Kölista ───────────── */
+  const QueueView = () => (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-        <label style={{ fontSize: "11px", letterSpacing: "0.1em", color: "#888", textTransform: "uppercase" }}>
-          {label} {hint && <span style={{ color: "#555", fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>{hint}</span>}
-        </label>
-        {action}
+      <ShopifyCard />
+      <div style={S.card}>
+        <h2 style={S.h2}>Hämta produkter från Shopify till kön</h2>
+        <textarea style={{ ...S.ta, minHeight: 60 }} value={queueIds} onChange={(e) => setQueueIds(e.target.value)} placeholder={"Produkt-ID:n, ett per rad eller kommaseparerade\n8123456789\n8123456790"} />
+        <button style={{ ...S.btn, marginTop: 8 }} onClick={fetchToQueue} disabled={sfBusy === "queue"}>
+          {sfBusy === "queue" ? "Hämtar..." : "Hämta & lägg till i kön"}
+        </button>
+        <p style={{ ...S.small, marginTop: 6 }}>Tips: bocka i certifieringar och varumärke per produkt innan du kör kön – öppna produkten via Granska eller redigera i utkastet.</p>
+      </div>
+      <div style={S.card}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+          <h2 style={{ ...S.h2, margin: 0 }}>Produktkö ({queue.length})</h2>
+          <div style={{ display: "flex", gap: 6 }}>
+            {!draft && <button style={S.btnGhost} onClick={() => setDraft(emptyProduct())}>+ Lägg till produkt</button>}
+            <button style={S.btn} onClick={runQueue} disabled={queueRunning || queue.every((p) => p.status !== "väntar" && p.status !== "fel")}>
+              {queueRunning ? "Kör..." : "⚡ Kör kön"}
+            </button>
+          </div>
+        </div>
+        {queueProgress && <p style={{ fontSize: 13, color: "#46522F", marginTop: 8 }}>{queueProgress}</p>}
+
+        {queue.length === 0 && !draft && (
+          <p style={{ ...S.small, marginTop: 10 }}>Kön är tom. Lägg till produkter med namn, INCI och certifieringar – kör sedan allt i ett svep och granska efteråt.</p>
+        )}
+
+        {queue.map((p, i) => (
+          <div key={p.id} style={{ ...S.out, marginTop: 10 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <div style={{ minWidth: 0 }}>
+                <strong style={{ fontSize: 13 }}>{p.productName || "(namnlös)"}</strong>
+                <div style={S.small}>{[p.brand, p.productType, p.certs.length ? `${p.certs.length} cert` : ""].filter(Boolean).join(" · ") || "—"}</div>
+              </div>
+              <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+                <span style={S.status(p.status)}>{p.approved ? "✓ godkänd" : p.status}</span>
+                {(p.status === "väntar" || p.status === "fel") && !queueRunning && (
+                  <button style={S.btnGhost} onClick={() => setEditId(editId === p.id ? null : p.id)}>{editId === p.id ? "Stäng" : "Redigera fakta"}</button>
+                )}
+                {p.status === "klar" && <button style={S.btnGhost} onClick={() => setReviewIdx(i)}>Granska</button>}
+                {!queueRunning && <button style={{ ...S.btnGhost, color: "#9B3B2E", borderColor: "#D8B4AC" }} onClick={() => setQueue((q) => q.filter((x) => x.id !== p.id))}>Ta bort</button>}
+              </div>
+            </div>
+            {editId === p.id && (
+              <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid #E2E6D8" }}>
+                <FactFields p={p} set={(fn) => updateQueueItem(p.id, fn)} />
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {draft && (
+        <div style={{ ...S.card, borderLeft: "4px solid #46522F" }}>
+          <h2 style={S.h2}>Ny produkt till kön</h2>
+          <FactFields p={draft} set={setDraft} />
+          <div style={{ display: "flex", gap: 6 }}>
+            <button style={S.btn} disabled={!draft.productName}
+              onClick={() => { setQueue((q) => [...q, { ...draft, originalName: draft.productName }]); setDraft(emptyProduct()); }}>
+              Lägg till i kön
+            </button>
+            <button style={S.btn} disabled={!draft.productName}
+              onClick={() => { setQueue((q) => [...q, { ...draft, originalName: draft.productName }]); setDraft(null); }}>
+              Lägg till & stäng
+            </button>
+            <button style={S.btnGhost} onClick={() => setDraft(null)}>Avbryt</button>
+          </div>
+        </div>
+      )}
+
+      {queue.some((p) => p.approved) && (
+        <div style={S.card}>
+          <button style={S.btn} onClick={() => doCopy("dump_all", queue.filter((p) => p.approved).map(dumpProduct).join("\n\n══════════════════\n\n"))}>
+            {copied === "dump_all" ? "✓ Kopierad" : `Kopiera alla godkända (${queue.filter((p) => p.approved).length})`}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
+  /* ───────────── Enskilt läge ───────────── */
+  const OutBlock = ({ title, field, children, copyValue }) => (
+    <div style={{ marginBottom: 16 }}>
+      <div style={S.outHead}>
+        <span style={{ fontSize: 13, fontWeight: 700 }}>{title}</span>
+        <span style={{ display: "flex", gap: 6 }}>
+          <button style={S.btnGhost} onClick={() => generateField(field)} disabled={!!generating[field]}>
+            {generating[field] ? "Genererar..." : "Generera"}
+          </button>
+          {copyValue ? (
+            <button style={S.btnGhost} onClick={() => doCopy(field, copyValue)}>{copied === field ? "✓ Kopierad" : "Kopiera"}</button>
+          ) : null}
+        </span>
       </div>
       {children}
     </div>
   );
-}
 
-// ─── Settings panel ───────────────────────────────────────────────────────────
+  const SingleView = () => {
+    const ti = typeInfoOf(form);
+    return (
+      <div>
+        <ShopifyCard />
+        <section style={S.card}>
+          <h2 style={S.h2}>Hämta från Shopify</h2>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <input style={{ ...S.input, flex: "1 1 160px" }} value={singleId} onChange={(e) => setSingleId(e.target.value)} placeholder="Produkt-ID" />
+            <button style={S.btn} onClick={fetchSingle} disabled={sfBusy === "single"}>
+              {sfBusy === "single" ? "Hämtar..." : "Hämta produkt"}
+            </button>
+          </div>
+          <p style={{ ...S.small, marginTop: 6 }}>Fyller i namn, beskrivning, INCI, befintliga metafält, URL och bilder. Bocka sedan i certifieringar och välj varumärke manuellt.</p>
+        </section>
+        <section style={S.card}>
+          <h2 style={S.h2}>1 · Produktfakta</h2>
+          <FactFields p={form} set={setForm} />
+          <div style={{ marginTop: 4 }}>
+            <button style={S.btnGhost} onClick={() => generateField("productNames")} disabled={!!generating.productNames}>
+              {generating.productNames ? "Föreslår..." : "Föreslå svenskt produktnamn"}
+            </button>
+            <VariantPicker label="Klicka för att använda som produktnamn:" variants={form.nameVariants} current={form.productName}
+              onPick={(t) => setForm((f) => ({ ...f, originalName: f.originalName || f.productName, productName: t }))} />
+          </div>
+          {form.brandNote ? (
+            <div style={{ marginTop: 10 }}>
+              <label style={S.label}>Varumärkesprofil (redigerbar – styr tonen)</label>
+              <textarea style={{ ...S.ta, minHeight: 54 }} value={form.brandNote} onChange={(e) => setField("brandNote", e.target.value)} />
+            </div>
+          ) : null}
+          <button style={{ ...S.btnGhost, marginTop: 10 }} onClick={() => setShowProfile(!showProfile)}>
+            {showProfile ? "Dölj butiksprofil" : "Visa/redigera butiksprofil"}
+          </button>
+          {showProfile && <textarea style={{ ...S.ta, minHeight: 140, marginTop: 8 }} value={storeProfile} onChange={(e) => setStoreProfile(e.target.value)} />}
+        </section>
 
-function SettingsPanel({ settings, onSave, onClose }) {
-  const [local, setLocal] = useState(settings);
-  const set = (k, v) => setLocal(s => ({ ...s, [k]: v }));
-  return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.75)" }}>
-      <div style={{ background: "#0f0f0f", border: "1px solid #2a2a2a", borderRadius: "16px", width: "500px", maxWidth: "95vw", padding: "32px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-          <span style={{ fontFamily: "'Playfair Display',serif", fontSize: "20px" }}>Inställningar</span>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: "#666", cursor: "pointer", fontSize: "22px" }}>×</button>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-          {[
-            { label: "Shopify butikens domän", key: "shopifyStore", placeholder: "minbutik.myshopify.com" },
-            { label: "Shopify Admin API-token", key: "shopifyToken", placeholder: "shpat_...", type: "password" },
-            { label: "Produkt-ID", key: "productId", placeholder: "8123456789012" },
-            { label: "Anthropic API-nyckel (för AI-generering)", key: "anthropicKey", placeholder: "sk-ant-...", type: "password" },
-          ].map(f => (
-            <div key={f.key}>
-              <div style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#888", marginBottom: "6px", textTransform: "uppercase" }}>{f.label}</div>
-              <input
-                type={f.type || "text"}
-                value={local[f.key]}
-                onChange={e => set(f.key, e.target.value)}
-                placeholder={f.placeholder}
-                style={{ width: "100%", background: "#1a1a1a", border: "1px solid #333", borderRadius: "8px", padding: "10px 14px", color: "#f0ede8", fontSize: "14px", outline: "none" }}
-              />
+        <section style={S.card}>
+          <h2 style={S.h2}>2 · Sökord</h2>
+          <div style={S.row}>
+            <div style={S.col}>
+              <label style={S.label}>Primärt sökord</label>
+              <input style={S.input} value={form.primaryKeyword} onChange={(e) => setField("primaryKeyword", e.target.value)} placeholder="t.ex. naturlig deodorant utan aluminium" />
+            </div>
+            <div style={{ ...S.col, flexBasis: "100%" }}>
+              <label style={S.label}>Sekundära sökord (kommaseparerade)</label>
+              <input style={S.input} value={form.secondaryKeywords} onChange={(e) => setField("secondaryKeywords", e.target.value)} />
+            </div>
+          </div>
+          <button style={S.btn} onClick={() => generateField("keywords")} disabled={!!generating.keywords}>
+            {generating.keywords ? "Föreslår..." : "Föreslå sökord från produktfakta"}
+          </button>
+          {ti.kw.length > 0 && <p style={{ ...S.small, marginTop: 8 }}>Typiska sökningar för {form.productType}: {ti.kw.join(" · ")}</p>}
+        </section>
+
+        <section style={S.card}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+            <h2 style={{ ...S.h2, margin: 0 }}>3 · Innehåll</h2>
+            <button style={{ ...S.btn, background: "#33401E" }} onClick={generateAllSingle} disabled={!!allProgress && allProgress !== "✓ Klart"}>
+              {allProgress && allProgress !== "✓ Klart" ? allProgress : "⚡ Generera allt"}
+            </button>
+          </div>
+          {error && <p style={{ color: "#9B3B2E", fontSize: 13, marginTop: 8 }}>{error}</p>}
+          {allProgress === "✓ Klart" && <p style={{ color: "#46522F", fontSize: 13, marginTop: 8 }}>✓ Allt genererat – granska och kopiera nedan.</p>}
+
+          <div style={{ marginTop: 14 }}>
+            <OutBlock title="Title-tagg" field="seoTitle" copyValue={form.seoTitle}>
+              <input style={S.input} value={form.seoTitle} onChange={(e) => setField("seoTitle", e.target.value)} />
+              <span style={{ ...S.small, color: form.seoTitle.length > 60 ? "#9B3B2E" : "#7A8468" }}>{form.seoTitle.length}/60 tecken</span>
+              <VariantPicker label="Tre strategier – klicka för att välja:" variants={form.titleVariants} current={form.seoTitle} why={form.titleWhy}
+                onPick={(t) => setField("seoTitle", t)} strategies={TITLE_STRATEGIES} />
+            </OutBlock>
+
+            <UrlBlock p={form} set={(patch) => setForm((f) => ({ ...f, ...patch }))}
+              onGenerate={() => generateField("urlHandle")} busy={!!generating.urlHandle} />
+
+            <OutBlock title="Meta-beskrivning" field="seoDescription" copyValue={form.seoDescription}>
+              <textarea style={{ ...S.ta, minHeight: 54 }} value={form.seoDescription} onChange={(e) => setField("seoDescription", e.target.value)} />
+              <span style={{ ...S.small, color: form.seoDescription.length > 155 ? "#9B3B2E" : "#7A8468" }}>{form.seoDescription.length}/155 tecken</span>
+            </OutBlock>
+
+            <OutBlock title="Ingress (above the fold)" field="shortDescription" copyValue={form.shortDescription}>
+              <textarea style={{ ...S.ta, minHeight: 80 }} value={form.shortDescription} onChange={(e) => setField("shortDescription", e.target.value)} />
+            </OutBlock>
+
+            <OutBlock title="Bullet points" field="bulletPoints" copyValue={form.bulletPoints.filter(Boolean).join("\n")}>
+              {form.bulletPoints.map((b, i) => (
+                <input key={i} style={{ ...S.input, marginBottom: 6 }} value={b}
+                  onChange={(e) => { const arr = [...form.bulletPoints]; arr[i] = e.target.value; setField("bulletPoints", arr); }} />
+              ))}
+            </OutBlock>
+
+            <OutBlock title="Produktbeskrivning (HTML)" field="description" copyValue={form.description}>
+              <textarea style={{ ...S.ta, minHeight: 180, fontFamily: "ui-monospace,monospace", fontSize: 12 }} value={form.description} onChange={(e) => setField("description", e.target.value)} />
+              {form.description && (
+                <details style={{ marginTop: 6 }}>
+                  <summary style={{ ...S.small, cursor: "pointer" }}>Förhandsgranska</summary>
+                  <div style={{ ...S.out, marginTop: 6 }} dangerouslySetInnerHTML={{ __html: form.description }} />
+                </details>
+              )}
+            </OutBlock>
+
+            <OutBlock title="FAQ (5 st)" field="faq" copyValue={form.faq.map((f) => `${f.q}\n${f.a}`).join("\n\n")}>
+              {form.faq.length === 0 ? <div style={S.out}>Inte genererad ännu.</div> :
+                form.faq.map((f, i) => (
+                  <div key={i} style={{ marginBottom: 8 }}>
+                    <input style={{ ...S.input, fontWeight: 600, marginBottom: 4 }} value={f.q}
+                      onChange={(e) => { const arr = [...form.faq]; arr[i] = { ...arr[i], q: e.target.value }; setField("faq", arr); }} />
+                    <textarea style={{ ...S.ta, minHeight: 60, fontSize: 12 }} value={f.a}
+                      onChange={(e) => { const arr = [...form.faq]; arr[i] = { ...arr[i], a: e.target.value }; setField("faq", arr); }} />
+                  </div>
+                ))}
+            </OutBlock>
+
+            <OutBlock title="Användningsinstruktioner" field="usage"
+              copyValue={form.usage ? `${form.usage.intro}\n\n${(form.usage.steps || []).map((s, i) => `${i + 1}. ${s}`).join("\n")}` : ""}>
+              {form.usage ? (
+                <div style={S.out}>
+                  <p style={{ marginTop: 0 }}>{form.usage.intro}</p>
+                  <ol style={{ margin: 0, paddingLeft: 18 }}>{(form.usage.steps || []).map((s, i) => <li key={i}>{s}</li>)}</ol>
+                </div>
+              ) : <div style={S.out}>Inte genererad ännu.</div>}
+            </OutBlock>
+
+            <OutBlock title="Nyckelingredienser" field="keyIngredients" copyValue={form.keyIngredients.map((k) => `${k.name} – ${k.effect}`).join("\n")}>
+              {form.keyIngredients.length === 0 ? <div style={S.out}>Inte genererade ännu.</div> : (
+                <div style={S.out}>{form.keyIngredients.map((k, i) => <div key={i} style={{ marginBottom: 4 }}><strong>{k.name}</strong> – {k.effect}</div>)}</div>
+              )}
+            </OutBlock>
+
+            <OutBlock title="Produkttaggar" field="tags" copyValue={form.tags.join(", ")}>
+              {form.tags.length === 0 ? <div style={S.out}>Inte genererade ännu.</div> : (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{form.tags.map((t, i) => <span key={i} style={S.chip(true)}>{t}</span>)}</div>
+              )}
+            </OutBlock>
+          </div>
+        </section>
+
+        <section style={S.card}>
+          <h2 style={S.h2}>4 · Bilder (filnamn + alt-text)</h2>
+          {form.images.map((img, i) => (
+            <div key={i} style={{ ...S.out, marginBottom: 8 }}>
+              <label style={S.label}>Nuvarande filnamn</label>
+              <input style={S.input} value={img.filename}
+                onChange={(e) => { const arr = [...form.images]; arr[i] = { ...arr[i], filename: e.target.value }; setField("images", arr); }} />
+              {img.suggestedFilename && <p style={{ margin: "4px 0", fontSize: 12 }}><strong>Förslag:</strong> {img.suggestedFilename}</p>}
+              {img.altText && <p style={{ margin: "4px 0", fontSize: 12 }}><strong>Alt-text:</strong> {img.altText}</p>}
+              <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
+                <button style={S.btnGhost} onClick={() => generateImageMeta(i)} disabled={!!generating[`img_${i}`]}>
+                  {generating[`img_${i}`] ? "Genererar..." : "Generera"}
+                </button>
+                {img.altText && <button style={S.btnGhost} onClick={() => doCopy(`img_${i}`, `${img.suggestedFilename}\n${img.altText}`)}>{copied === `img_${i}` ? "✓" : "Kopiera"}</button>}
+                <button style={{ ...S.btnGhost, color: "#9B3B2E", borderColor: "#D8B4AC" }} onClick={() => setField("images", form.images.filter((_, x) => x !== i))}>Ta bort</button>
+              </div>
             </div>
           ))}
-        </div>
-        <div style={{ display: "flex", gap: "10px", marginTop: "24px" }}>
-          <button onClick={onClose} style={{ flex: 1, padding: "12px", background: "none", border: "1px solid #333", borderRadius: "8px", color: "#888", cursor: "pointer" }}>Avbryt</button>
-          <button onClick={() => { onSave(local); onClose(); }} style={{ flex: 1, padding: "12px", background: "#c8a96e", border: "none", borderRadius: "8px", color: "#0f0f0f", cursor: "pointer", fontWeight: "600" }}>Spara</button>
-        </div>
+          <button style={S.btnGhost} onClick={() => setField("images", [...form.images, { filename: "", suggestedFilename: "", altText: "" }])}>+ Lägg till bild</button>
+        </section>
+
+        <ChecksPanel p={form} />
+
+        {form.shopifyId && (
+          <section style={{ ...S.card, borderLeft: "4px solid #46522F" }}>
+            <h2 style={S.h2}>Publicera till Shopify</h2>
+            <p style={S.small}>Uppdaterar produktnamn, beskrivning, taggar, URL, SEO-metafält, ingress, bullets, FAQ, användning, nyckelingredienser och alt-texter.</p>
+            <button style={{ ...S.btn, marginTop: 8 }} onClick={() => publish(form, "single")} disabled={!sfReady}>
+              Publicera till Shopify
+            </button>
+            {publishState[form.id] && <p style={{ fontSize: 13, marginTop: 8, color: publishState[form.id].startsWith("✕") ? "#9B3B2E" : "#46522F" }}>{publishState[form.id]}</p>}
+          </section>
+        )}
       </div>
-    </div>
-  );
-}
-
-// ─── Main App ─────────────────────────────────────────────────────────────────
-
-function App() {
-
-  // All state at top
-  const [tab, setTab] = useState(0);
-  const [form, setForm] = useState(DEFAULT_FORM);
-  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
-  const [aiContext, setAiContext] = useState(BUTIKSPROFIL);
-  const [showSettings, setShowSettings] = useState(false);
-  const [generating, setGenerating] = useState({});
-  const [generatingAll, setGeneratingAll] = useState(false);
-  const [genAllProgress, setGenAllProgress] = useState("");
-  const [publishing, setPublishing] = useState(false);
-  const [publishResult, setPublishResult] = useState(null);
-  const [fetchingProduct, setFetchingProduct] = useState(false);
-  const [fetchError, setFetchError] = useState(null);
-  const [productLoaded, setProductLoaded] = useState(false);
-  const [apiError, setApiError] = useState(null);
-  const [showQueue, setShowQueue] = useState(false);
-  const [queue, setQueue] = useState([]);
-  const [queueInput, setQueueInput] = useState("");
-  const [queueRunning, setQueueRunning] = useState(false);
-  const [queueLog, setQueueLog] = useState([]);
-  const [autoPublish, setAutoPublish] = useState(false);
-  const autoPublishRef = useRef(false);
-  const [queueOptions, setQueueOptions] = useState({
-    description: true, shortDescription: true, bulletPoints: true,
-    seoTitle: true, seoDescription: true, seoCluster: true,
-    faq: true, usage: true, keyIngredients: true, tags: true, images: false,
-  });
-  const toggleQueueOption = (key) => setQueueOptions(o => ({ ...o, [key]: !o[key] }));
-  const [queueIdx, setQueueIdx] = useState(null);
-
-  // Refs
-  const formRef = useRef(form);
-  const settingsRef = useRef(settings);
-  const queueOptionsRef = useRef(queueOptions);
-  useEffect(() => { formRef.current = form; }, [form]);
-  useEffect(() => { settingsRef.current = settings; }, [settings]);
-  useEffect(() => { queueOptionsRef.current = queueOptions; }, [queueOptions]);
-  useEffect(() => { autoPublishRef.current = autoPublish; }, [autoPublish]);
-
-  // ─── Helpers ───────────────────────────────────────────────────────────────
-
-  const setField = (key, val) => setForm(f => ({ ...f, [key]: val }));
-
-  const saveSettings = (s) => {
-    setSettings(s);
-    settingsRef.current = s;
-  };
-
-  const stripMd = (text) => {
-    return text
-      .replace(/\*\*([\s\S]+?)\*\*/g, "$1")
-      .replace(/\*([\s\S]+?)\*/g, "$1")
-      .replace(/^#{1,6}\s+/gm, "")
-      .replace(/`([^`]+)`/g, "$1")
-      .replace(/^```[a-z]*\n?/gim, "")
-      .replace(/\n?```\s*$/gim, "")
-      .trim();
-  };
-
-  // Parse inline HTML into Shopify rich text inline nodes
-  const parseInlineHtml = (html) => {
-    const nodes = [];
-    // Tokenize HTML into tags and text
-    const re = /<([a-z]+)([^>]*)>([\s\S]*?)<\/\1>|([^<]+)/gi;
-    let m;
-    while ((m = re.exec(html)) !== null) {
-      const tag = (m[1] || "").toLowerCase();
-      const attrs = m[2] || "";
-      const inner = m[3] || "";
-      const text = m[4];
-      if (text && text.trim()) {
-        nodes.push({ type: "text", value: text });
-      } else if (tag === "a") {
-        const hrefMatch = attrs.match(/href=["']([^"']*)["']/i);
-        const url = hrefMatch ? hrefMatch[1] : "";
-        const linkText = inner.replace(/<[^>]+>/g, "").trim();
-        if (url && linkText) nodes.push({ type: "link", url, children: [{ type: "text", value: linkText }] });
-        else if (linkText) nodes.push({ type: "text", value: linkText });
-      } else if (tag === "strong" || tag === "b") {
-        nodes.push({ type: "text", value: inner.replace(/<[^>]+>/g, ""), bold: true });
-      } else if (tag === "em" || tag === "i") {
-        nodes.push({ type: "text", value: inner.replace(/<[^>]+>/g, ""), italic: true });
-      } else if (inner.trim()) {
-        nodes.push({ type: "text", value: inner.replace(/<[^>]+>/g, "") });
-      }
-    }
-    return nodes.length ? nodes : [{ type: "text", value: html.replace(/<[^>]+>/g, "") }];
-  };
-
-  // Convert HTML or plain text to Shopify rich_text_field JSON
-  const toRichText = (input) => {
-    // Strip markdown bold/italic first
-    const text = input
-      .replace(/\*\*([\s\S]+?)\*\*/g, "<strong>$1</strong>")
-      .replace(/\*([\s\S]+?)\*/g, "<em>$1</em>")
-      .replace(/^#{1,6}\s+/gm, "");
-
-    // Parse into blocks preserving h2/h3
-    const rawBlocks = [];
-    const temp = text
-      .replace(/<\/p>\s*/gi, "\n__PBREAK__\n")
-      .replace(/<p[^>]*>/gi, "__PSTART__")
-      .replace(/<br\s*\/?>/gi, "\n")
-      .replace(/<\/(li|div)>/gi, "\n")
-      .replace(/<(li|div)[^>]*>/gi, "");
-
-    // Split on heading tags specially
-    const parts = temp.split(/(<h[1-6][^>]*>[\s\S]*?<\/h[1-6]>)/gi);
-    for (const part of parts) {
-      const hMatch = part.match(/^<h([1-6])[^>]*>([\s\S]*?)<\/h[1-6]>$/i);
-      if (hMatch) {
-        const level = parseInt(hMatch[1]);
-        const headingText = hMatch[2].replace(/<[^>]+>/g, "").trim();
-        if (headingText) rawBlocks.push({ type: "heading", level, text: headingText });
-      } else {
-        const lines = part.replace(/__PBREAK__/g, "\n").replace(/__PSTART__/g, "").split(/\n+/).map(s => s.trim()).filter(Boolean);
-        for (const line of lines) rawBlocks.push({ type: "paragraph", text: line });
-      }
-    }
-
-    return JSON.stringify({
-      type: "root",
-      children: rawBlocks.map(block => {
-        if (block.type === "heading") {
-          return {
-            type: "heading",
-            level: block.level,
-            children: [{ type: "text", value: block.text }]
-          };
-        }
-        return {
-          type: "paragraph",
-          children: parseInlineHtml(block.text)
-        };
-      })
-    });
-  };
-
-  // ─── Claude API ────────────────────────────────────────────────────────────
-
-  const callClaude = async (messages, maxTokens = 2000) => {
-    const key = settingsRef.current.anthropicKey;
-    if (!key) throw new Error("Anthropic API-nyckel saknas – fyll i under ⚙ Inställningar");
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "anthropic-version": "2023-06-01",
-        "anthropic-dangerous-direct-browser-access": "true",
-        "x-api-key": key,
-      },
-      body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: maxTokens, messages }),
-    });
-    if (!res.ok) {
-      const txt = await res.text();
-      let msg = "HTTP " + res.status;
-      try { const j = JSON.parse(txt); msg = j.error?.message || msg; } catch(e) {}
-      throw new Error(msg);
-    }
-    const data = await res.json();
-    if (data.error) throw new Error(data.error.message);
-    return data.content?.[0]?.text || "";
-  };
-
-  const ctx = () => {
-    const f = formRef.current;
-    const parts = [
-      aiContext,
-      f.productName ? "Produktnamn: " + f.productName : "",
-      f.productType ? "Produkttyp: " + f.productType : "",
-      f.vendor ? "Varumärke: " + f.vendor : "",
-      f.price ? "Pris: " + f.price + " kr" : "",
-      f.description ? "Befintlig beskrivning:\n" + f.description.replace(/<[^>]+>/g, "") : "",
-      f.inci ? "INCI: " + f.inci : "",
-      f.seoCluster?.primary ? "Primärt sökord: " + f.seoCluster.primary : "",
-    ];
-    return parts.filter(Boolean).join("\n\n");
-  };
-
-  // ─── Generate single field ─────────────────────────────────────────────────
-
-  const generate = async (field) => {
-    setGenerating(g => ({ ...g, [field]: true }));
-    setApiError(null);
-    try {
-      const f = formRef.current;
-      const c = ctx();
-      const name = f.productName || "produkten";
-
-      const prompts = {
-        shortDescription: (() => {
-          const productType = (formRef.current.productType || "").toLowerCase();
-          const isVaska = productType.includes("sminkväskor") || productType.includes("handväska") || productType.includes("väska") || productType.includes("necessär");
-          return `${c}\n\nSkriv above the fold-texten på svenska för: "${name}". Ca 80 ord. ` +
-          `Skriv som en av Ogilvys bästa copywriters – säljande, konkret och engagerande. ` +
-          `Struktur: ` +
-          `(1) Börja med en H2-rubrik som är mer beskrivande än produktnamnet – lyft fram den viktigaste fördelen, inkludera primärt sökord naturligt. Returnera som <h2>...</h2>. ` +
-          `(2) Sedan ett stycke: öppna med en stark mening som talar direkt till kundens behov eller önskan. Lyft fördelar före egenskaper. Avsluta med en mening som skapar vilja att läsa mer eller köpa. ` +
-          (isVaska ? `VIKTIGT FÖR VÄSKOR: Skriv ALDRIG "naturligt material", "naturlig bomull", "naturliga material" eller liknande. Fokusera på hantverk, funktion, design och praktiska fördelar istället. ` : ``) +
-          `UNDVIK: "passar mogna kvinnor", "för dig över 40", "mogen hud", "genuint hantverk", "tillverkat i Europa", vaga klichéer. Tala om behovet eller situationen – inte demografin. ` +
-          `KÄLLTROHET: Basera texten på leverantörens faktiska produktbeskrivning. Hitta INTE på egenskaper, effekter eller claims som inte är bekräftade i källmaterialet. Ange INTE certifieringar (COSMOS, ekologisk, vegansk) om de inte är verifierade. ` +
-          `Ton: professionell, varm och övertygande. Returnera bara HTML med <h2> och <p>.`;
-        })(),
-
-        description: (() => {
-          const productType = (formRef.current.productType || "").toLowerCase();
-          const isVaska = productType.includes("sminkväskor") || productType.includes("handväska") || productType.includes("väska") || productType.includes("necessär");
-          const isDoftljus = productType.includes("doftljus");
-          const h2mid = isVaska ? "Material & hantverk" : isDoftljus ? "Doft & material" : "Ingredienser & effekter";
-          const h2result = isVaska ? "Funktion & detaljer" : isDoftljus ? "Varför välja vårt doftljus?" : "Resultat & fördelar";
-          const midContent = isVaska
-            ? "<p>Fokusera på hantverk, konstruktion och praktiska detaljer (fickor, dragkedjor, storlek, foder) – namn i <strong>fetstil</strong>. Undvik att lyfta fram \"naturligt material\" som huvudargument.</p>"
-            : isDoftljus
-            ? "<p>Doftnoter, vaxtyp, brinntid, tillverkningsland – namn i <strong>fetstil</strong>.</p>"
-            : "<p>3-4 ingredienser med effekt, namn i <strong>fetstil</strong>.</p>";
-          return `${c}\n\nSkriv en strukturerad produktbeskrivning på svenska för: "${name}". Max 350 ord. Returnera bara HTML.\n\n` +
-            `Skriv som en av Ogilvys bästa copywriters – säljande, konkret och engagerande. Fördelar före egenskaper. Varje sektion ska bygga på den förra och leda läsaren mot ett köpbeslut.\n\n` +
-            `Exakt struktur:\n` +
-            `<h2>[Produktnamn] – [säljande fras med primärt sökord]</h2>\n<p>2-3 meningar. Öppna starkt – tala direkt till kundens behov eller önskan. Sökord i mening 1.</p>\n` +
-            `<h2>${h2mid}</h2>\n${midContent}\n` +
-            `<h2>${h2result}</h2>\n<ul><li>Konkret fördel 1</li><li>Konkret fördel 2</li><li>Konkret fördel 3</li></ul>\n` +
-            `<h2>För vem passar [produkttyp]?</h2>\n<p>Beskriv användningssituationen eller behovet – INTE demografin. Skriv ALDRIG "passar kvinnor 40+", "mogen hud" eller liknande. Tala istället om livsstil, behov eller situation. Long-tail sökord naturligt. Avsluta med en subtil uppmaning.</p>\n\n` +
-            (isVaska ? `VIKTIGT FÖR VÄSKOR: Fokusera på att väskan är handgjord, praktisk och välkonstruerad. Lyft fram organisation, förvaring, material och användningsområden. Undvik att "naturligt material" är huvudargumentet. Länka ALDRIG till hudvårdskategorier – det är irrelevant för en väska.\n\n` : "") +
-            `UNDVIK: "genuint hantverk", "tillverkat i Europa", "mogen hud", "kvalitetsmedvetna kvinnor", klichéer utan substans. Variera avslutningen – den ska vara unik för just denna produkt.\n\n` +
-            `KÄLLTROHET: Basera hela beskrivningen på leverantörens faktiska produktbeskrivning. Hitta INTE på ingredienser, effekter, material eller claims som inte är bekräftade i källmaterialet. Ange INTE certifieringar (COSMOS, ekologisk, vegansk) om de inte är verifierade.\n\n` +
-            `VIKTIGT: Väv in 2-3 naturliga interna länkar i texten (ej i rubriker). Välj BARA länkar som är relevanta för produkttypen:\n` +
-            (isVaska
-              ? `Sminkväskor: <a href="https://www.eclore.se/collections/sminkvaskor">sminkväskor och necessärer</a>\nHandgjorda väskor: <a href="https://www.eclore.se/collections/sminkvaskor">handgjorda väskor</a>\nDoftljus: <a href="https://www.eclore.se/collections/doftljus">doftljus</a>\néclore: <a href="https://www.eclore.se">éclore</a>`
-              : isDoftljus
-              ? `Doftljus: <a href="https://www.eclore.se/collections/doftljus">doftljus</a>\nNaturlig hudvård: <a href="https://www.eclore.se">naturlig hudvård</a>\nAnsiktsvård: <a href="https://www.eclore.se/collections/ansiktsvard">ansiktsvård</a>`
-              : `Ansiktsvård: <a href="https://www.eclore.se/collections/ansiktsvard">ansiktsvård</a>\nSerum: <a href="https://www.eclore.se/collections/serum">serum</a>\nAnti-age: <a href="https://www.eclore.se/collections/anti-age">anti-age</a>\nHårvård: <a href="https://www.eclore.se/collections/harvard">hårvård</a>\nKroppsvård: <a href="https://www.eclore.se/collections/kroppsvard">kroppsvård</a>\nSminkväskor: <a href="https://www.eclore.se/collections/sminkvaskor">sminkväskor</a>\nDoftljus: <a href="https://www.eclore.se/collections/doftljus">doftljus</a>\nBody scrub: <a href="https://www.eclore.se/collections/bodyscrub">body scrub</a>\nAnsiktsmask: <a href="https://www.eclore.se/collections/ansiktsmask">ansiktsmask</a>\nNaturlig hudvård: <a href="https://www.eclore.se">naturlig hudvård</a>`) +
-            `\nLänkarna ska kännas naturliga i texten.`;
-        })(),
-
-        bulletPoints:
-          `${c}\n\nGenerera 5 korta USP:er på svenska för: "${name}". Max 10 ord per punkt. ` +
-          `KÄLLTROHET: Basera punkterna på leverantörens faktiska produktbeskrivning. Hitta INTE på egenskaper eller claims. Ange INTE certifieringar (COSMOS, ekologisk, vegansk) om de inte är verifierade i källmaterialet. ` +
-          `Börja VARJE punkt med ✓ och mellanslag. Returnera BARA JSON-array: ["✓ ...","✓ ...","✓ ...","✓ ...","✓ ..."]`,
-
-        seoTitle:
-          (() => {
-            const vendor = formRef.current.vendor || "";
-            const tags = formRef.current.tags.join(", ");
-            const productType = (formRef.current.productType || "").toLowerCase();
-            const isVaska = productType.includes("sminkväskor") || productType.includes("handväska") || productType.includes("väska") || productType.includes("necessär");
-            return `Du är en SEO-expert för svensk e-handel som skapar konverterande title tags.\n\n` +
-              `UPPGIFT: Skapa en optimerad title tag för denna produkt.\n\n` +
-              `PRODUKTDATA:\n` +
-              `Produktnamn: ${name}\n` +
-              `Märke: ${vendor}\n` +
-              `Produkttyp: ${formRef.current.productType || ""}\n` +
-              `Tags: ${tags}\n\n` +
-              `REGLER:\n` +
-              `1. LÄNGD: Exakt 50-60 tecken (kritiskt - längre titles klipps av i Google)\n` +
-              `2. STRUKTUR: {Huvudkeyword} - {Starkaste USP} - {Viktigaste attribut} | éclore\n` +
-              `3. KEYWORD-STRATEGI: Extrahera produkttyp från produktnamn. Lägg keyword FÖRST. Ta INTE med märkesnamn i början.\n` +
-              `4. USP-PRIORITERING (välj högsta SOM FAKTISKT FINNS i tags/produktnamn): COSMOS ORGANIC > Ekologisk > Vegansk > Naturlig. Finns ingen verifierad certifiering – utelämna USP helt och använd mer keyword-info istället.\n` +
-              (isVaska ? `5. VÄSKOR - VIKTIGT: Skriv ALDRIG "naturlig", "naturligt", "naturliga" – det är irrelevant för väskor. Lyft istället fram mönster, färg, storlek, funktion eller material (velour, bomull, etc). Undvik påhittade egenskaper – håll dig till vad som faktiskt framgår av produktnamnet.\n` : "") +
-              `${isVaska ? "6" : "5"}. UNDVIK: Märkesnamn i början, upprepning, fler än 60 tecken, generiska fraser, versaler (utom COSMOS), pris\n` +
-              `${isVaska ? "7" : "6"}. OBLIGATORISKT: Avsluta med " | éclore", bindestreck " - " som separator, keyword i början\n` +
-              `${isVaska ? "8" : "7"}. KÄLLTROHET: Basera alltid titeln på leverantörens faktiska produktbeskrivning. Gör inga antaganden. KRITISKT: Använd ENDAST certifieringar (COSMOS, ekologisk, vegansk) om ordet bokstavligen står i produktnamnet "${name}" eller i Tags. Står det inte där – nämn det INTE. Vid tveksamhet, utelämna certifieringen helt.\n\n` +
-              `EXEMPEL:\n` +
-              (isVaska
-                ? `Input: "Garbanota Little Bird Sminkväska Fågelmotiv"\nOutput: Sminkväska Fågelmotiv - Handgjord Bomull | éclore\n\nInput: "Moi Mili Hobo Handväska Blommor Rosa"\nOutput: Hobo Handväska Rosa Blommor - Handgjord | éclore\n\n`
-                : `Input: "Tilk Refresh Me Probiotisk Toner med Rosenvatten", Tags: ekologisk\nOutput: Probiotisk Toner Rosenvatten - Ekologisk | éclore\n\nInput: "Nurme Naturligt Schampo för Torrt Hår 250ml", Tags: naturlig\nOutput: Schampo Torrt Hår 250ml - Naturligt Vegansk | éclore\n\n`) +
-              `Ge bara title tag, ingen förklaring.`;
-          })(),
-
-        handle:
-          `${c}\n\nGenerera en URL-slug på svenska för produkten: "${name}". ` +
-          `Regler: endast gemener, bindestreck mellan ord, inga svenska tecken (å→a, ä→a, ö→o), inga specialtecken. ` +
-          `Max 60 tecken. Inkludera varumärke + produkttyp + nyckelord. ` +
-          `Exempel: "nurme-torvschampo-lugnande-harbotten", "moi-mili-sminkvaska-blommigt-monster". ` +
-          `Returnera BARA slugen, inget annat.`,
-
-        seoDescription:
-          (() => {
-            const productType = (formRef.current.productType || "").toLowerCase();
-            const isVaska = productType.includes("sminkväskor") || productType.includes("handväska") || productType.includes("väska") || productType.includes("necessär");
-            return `${c}\n\nDu är en SEO-expert för éclore.se. Returnera BARA metabeskrivningen – ingen förklaring, ingen analys.\n\n` +
-              `Skriv en SEO-metabeskrivning (max 160 tecken) för: "${name}".\n\n` +
-              `REGLER:\n` +
-              `(1) Börja med varumärket + produkttyp.\n` +
-              `(2) Använd BARA egenskaper som faktiskt framgår av produktnamnet, beskrivningen eller INCI – hitta INTE på egenskaper. KRITISKT: Använd ENDAST certifieringar (COSMOS, ekologisk, vegansk) om ordet bokstavligen står i produktnamnet, tags eller beskrivningen. Vid tveksamhet, utelämna certifieringen helt.\n` +
-              `(3) ${isVaska ? "För väskor: lyft fram mönster, storlek, material, funktion (fickor, dragkedja etc). Skriv ALDRIG \"naturlig\", \"robust konstruktion\" eller påhittade attribut." : "Inkludera konkreta nyckelingredienser och starkaste differentiatorn (certifiering, unik egenskap)."}\n` +
-              `(4) Undvik: "mogen hud", "för dig över 40", "passar kvinnor", "naturlig" (för väskor), "robust" (om ej bevisat).\n` +
-              `(5) Avsluta med "Fri frakt över 599 kr." om det ryms inom 160 tecken.\n\n` +
-              `EXEMPEL:\n` +
-              (isVaska
-                ? `"Garbanota sminkväska med fågelmotiv, handgjord i Litauen. Bomullstyg med vattentätt foder och innerfickor. Fri frakt över 599 kr."\n`
-                : `"HOIA ansiktsmask 50 ml med AHA/BHA fruktsyror och hyaluronsyra. Prisbelönt 2024, vegansk utan parfym. Fri frakt över 599 kr."\n`) +
-              `\nReturnera BARA texten, max 160 tecken.`;
-          })(),
-
-        seoCluster:
-          `${c}\n\nSEO-kluster för: "${name}". ` +
-          `Returnera BARA JSON: {"primary":"sökord","secondary":["ord1","ord2","ord3"],"longTail":["fras 1","fras 2","fras 3"]}`,
-
-        usage:
-          `${c}\n\nSkriv detaljerade användningsinstruktioner på svenska för: "${name}". ` +
-          `Skriv som en av Ogilvys bästa copywriters – engagerande och konkret. ` +
-          `Struktur: ` +
-          `Intro: 2-3 meningar som sätter kontexten – när i rutinen, hur man förbereder sig, vad som gör produkten speciell att använda. Tala direkt till kunden. ` +
-          `Steg: 5-7 detaljerade steg som börjar med verb (Applicera, Massera, Arbeta, Låt, Skölj, Följ upp...). Varje steg ska förklara VARFÖR, inte bara HUR – vad händer i huden/håret och varför det spelar roll. ` +
-          `Sista steget bör innehålla ett tips om kompletterande produkttyp. ` +
-          `Returnera BARA JSON: {"intro":"2-3 meningar","steps":["Detaljerat steg 1","Detaljerat steg 2","Detaljerat steg 3","Detaljerat steg 4","Detaljerat steg 5"]}.`,
-
-        faq:
-          (() => {
-            const productType = (formRef.current.productType || "").toLowerCase();
-            const isVaska = productType.includes("sminkväskor") || productType.includes("handväska") || productType.includes("väska") || productType.includes("necessär");
-            const isDoftljus = productType.includes("doftljus");
-
-            // Shuffle helper – randomizes order so Claude picks different questions each time
-            const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
-
-            const vaskaPool = shuffle([
-              "Hur är väskan konstruerad och vad gör den praktisk att använda?",
-              "Vad får plats i de olika storlekarna?",
-              "Hur organiserar man bäst sin smink- och hudvårdsrutin med väskan?",
-              "Passar den för resor eller är den mest för hemmabruk?",
-              "Hur tvättar och rengör man väskan?",
-              "Hur länge håller väskan med normal användning?",
-              "Vad skiljer den från vanliga sminkväskor i butik?",
-              "Passar den som present?",
-              "Kan man använda den till annat än smink, t.ex. som toalettväska eller förvaringspåse?",
-              "Vad är dragkedjetypen och hur smidig är den?",
-              "Hur många fack och fickor har väskan?",
-              "Passar väskan i en resväska eller handväska?",
-            ]);
-
-            const doftljusPool = shuffle([
-              "Hur länge varar doften och vad påverkar brinntiden?",
-              "Vilka doftnoter ingår och vilken stämning skapar de?",
-              "Hur tar man hand om ett doftljus för bästa resultat?",
-              "Är vaxet naturligt och vad är det gjort av?",
-              "Är ljuset lämpligt för personer med doftkänslighet?",
-              "Hur stort rum passar ljuset för?",
-              "Kan man återanvända behållaren?",
-              "Skiljer sig doften när ljuset brinner mot när det är kallt?",
-              "Passar det som present?",
-              "Var tillverkas ljuset och hur?",
-              "Hur placerar man ljuset för bästa doftspridning?",
-              "Finns det några säkerhetsråd för att använda doftljuset?",
-            ]);
-
-            // Detect subcategory for more targeted questions
-            const pName = name.toLowerCase();
-            const isSchampo = pName.includes("schampo") || pName.includes("shampoo");
-            const isBalsam = pName.includes("balsam") || pName.includes("conditioner");
-            const isSerum = pName.includes("serum");
-            const isKram = pName.includes("kräm") || pName.includes("cream") || pName.includes("lotion");
-            const isOlja = pName.includes("olja") || pName.includes("oil");
-            const isMask = pName.includes("mask");
-            const isRengoring = pName.includes("rengör") || pName.includes("cleanser") || pName.includes("toner");
-            const isHarvard = (formRef.current.productType || "").toLowerCase().includes("hårvård") || isSchampo || isBalsam;
-
-            // Base pool relevant for all skincare/haircare
-            const basePool = [
-              "Vilka ingredienser är viktigast och vad gör de för " + (isHarvard ? "håret och hårbotten?" : "huden?"),
-              "Vilken " + (isHarvard ? "hårtyp och hårbotten" : "hudtyp") + " passar produkten bäst för?",
-              "Hur och när i " + (isHarvard ? "hårvårdsrutinen" : "hudvårdsrutinen") + " används produkten optimalt?",
-              "Kan man kombinera produkten med " + (isSerum ? "retinol eller syror?" : isSchampo ? "balsam och hårinpackning?" : "andra produkter i rutinen?"),
-              "Hur snabbt märker man resultat och vad kan man förvänta sig?",
-              "Passar produkten känslig " + (isHarvard ? "hårbotten?" : "hud?"),
-              "Är produkten vegansk och fri från skadliga ämnen?",
-              "Vad skiljer den här produkten från vanliga " + (isSchampo ? "schampon i butik?" : isSerum ? "serum på marknaden?" : isKram ? "krämer i handeln?" : "alternativ på marknaden?"),
-              "Hur mycket produkt ska man använda per tillfälle för bästa effekt?",
-              "Kan man använda produkten dagligen eller bör man ta pauser?",
-            ];
-
-            // Add subcategory-specific questions
-            const specificPool = isSerum ? [
-              "Ska man använda serummet före eller efter kräm?",
-              "Kan man använda serummet under ögonen?",
-              "Fungerar serummet ihop med solskydd?",
-            ] : isSchampo ? [
-              "Hur ofta bör man tvätta håret med det här schampot?",
-              "Behöver man använda balsam efter schampot?",
-              "Hjälper schampot mot håravfall eller tunnare hår?",
-            ] : isBalsam ? [
-              "Hur länge ska man låta balsamen verka?",
-              "Ska man applicera balsam på hårbotten eller bara på längderna?",
-              "Kan man använda balsamen som hårinpackning?",
-            ] : isKram ? [
-              "Kan man använda krämen både morgon och kväll?",
-              "Fungerar krämen som bas under makeup?",
-              "Hjälper krämen mot fina linjer och rynkor?",
-            ] : isOlja ? [
-              "Hur applicerar man oljan utan att håret eller huden känns fet?",
-              "Kan man blanda oljan med andra produkter?",
-              "Passar oljan som ansiktsolja och hårolja?",
-            ] : isMask ? [
-              "Hur ofta bör man använda masken för bästa resultat?",
-              "Kan man kombinera masken med serum efteråt?",
-              "Passar masken som nattmask?",
-            ] : isRengoring ? [
-              "Tar rengöringen bort makeup och solskydd effektivt?",
-              "Kan man använda rengöringen morgon och kväll?",
-              "Torkar rengöringen ut huden?",
-            ] : [];
-
-            const hudvardPool = shuffle([...basePool, ...specificPool]);
-
-            const pool = isVaska ? vaskaPool : isDoftljus ? doftljusPool : hudvardPool;
-            // Take first 7 from shuffled pool – Claude picks best 5 from these
-            const selected = pool.slice(0, 7).map((q, i) => `${i+1}. ${q}`).join("\n");
-
-            const links = isVaska
-              ? `Sminkväskor: https://www.eclore.se/collections/sminkvaskor | Ansiktsvård: https://www.eclore.se/collections/ansiktsvard | Hårvård: https://www.eclore.se/collections/harvard`
-              : isDoftljus
-              ? `Doftljus: https://www.eclore.se/collections/doftljus | Naturlig hudvård: https://www.eclore.se`
-              : `Ansiktsvård: https://www.eclore.se/collections/ansiktsvard | Serum: https://www.eclore.se/collections/serum\nAnti-age: https://www.eclore.se/collections/anti-age | Hårvård: https://www.eclore.se/collections/harvard`;
-
-            return `${c}\n\n5 FAQ-frågor och svar på svenska för: "${name}".\n` +
-              `Välj de 5 bäst lämpade frågorna från listan nedan och anpassa dem specifikt till denna produkt:\n${selected}\n` +
-              (isVaska ? `VIKTIGT: Detta är en väska/necessär. Skriv ALDRIG om hudtyp, hudvårdseffekter eller ingredienser.\n` : "") +
-              `Svar: 4-6 meningar HTML med <p>. Inkludera naturliga interna länkar till éclore-kategorier:\n` +
-              `${links}\n` +
-              `Returnera BARA JSON: {"faq_fraga_1":"...","faq_a1":"<p>...</p>","faq_fraga_2":"...","faq_a2":"<p>...</p>","faq_fraga_3":"...","faq_a3":"<p>...</p>","faq_fraga_4":"...","faq_a4":"<p>...</p>","faq_fraga_5":"...","faq_a5":"<p>...</p>"}`;
-          })(),
-
-        keyIngredients:
-          `${c}\n\n4-5 nyckelingredienser och fördelar på svenska för: "${name}". ` +
-          `Returnera BARA JSON-array: [{"name":"Namn","benefit":"Vad den gör..."},...]`,
-
-        tags:
-          `${c}\n\nShopify-produkttaggar på svenska för: "${name}". ` +
-          `Täck produkttyp, hudtyp, effekt, ingredienser. Max 15 taggar, lowercase, bindestreck. ` +
-          `Returnera BARA JSON-array: ["tagg1","tagg2",...]`,
-      };
-
-      const raw = await callClaude([{ role: "user", content: prompts[field] }]);
-      const clean = raw.replace(/```json\n?|```\n?/g, "").trim();
-
-      if (field === "bulletPoints") {
-        const arr = JSON.parse(clean);
-        syncBulletPoints(arr);
-      } else if (field === "seoCluster") {
-        setField("seoCluster", JSON.parse(clean));
-      } else if (field === "usage") {
-        setField("usage", JSON.parse(clean));
-      } else if (field === "keyIngredients") {
-        setField("keyIngredients", JSON.parse(clean));
-      } else if (field === "tags") {
-        setField("tags", JSON.parse(clean));
-      } else if (field === "faq") {
-        const parsed = JSON.parse(clean);
-        const arr = [1,2,3,4,5].map(i => ({
-          q: stripMd(parsed["faq_fraga_" + i] || ""),
-          a: parsed["faq_a" + i] || "",
-        }));
-        setField("faq", arr);
-      } else {
-        // Strip markdown code fences and bold/italic markers
-        const stripped = stripMd(raw.trim().replace(/^```[a-z]*\n?/i, "").replace(/\n?```\s*$/i, "").trim());
-        setField(field, stripped);
-      }
-    } catch(e) {
-      setApiError("Fel vid generering av " + field + ": " + e.message);
-    }
-    setGenerating(g => ({ ...g, [field]: false }));
-  };
-
-  // ─── Generate image meta (with Vision) ────────────────────────────────────
-
-  const generateImgMeta = async (idx) => {
-    setGenerating(g => ({ ...g, ["img_" + idx]: true }));
-    setApiError(null);
-    try {
-      const f = formRef.current;
-      const img = f.images[idx];
-      if (!img?.url) throw new Error("Ingen bild-URL");
-
-      let imageContent;
-      try {
-        const proxyUrl = PROXIES[0] + encodeURIComponent(img.url);
-        const imgRes = await fetch(proxyUrl);
-        if (!imgRes.ok) throw new Error("Kunde inte hämta bild");
-        const blob = await imgRes.blob();
-        const base64 = await new Promise((res, rej) => {
-          const reader = new FileReader();
-          reader.onload = () => res(reader.result.split(",")[1]);
-          reader.onerror = rej;
-          reader.readAsDataURL(blob);
-        });
-        imageContent = { type: "image", source: { type: "base64", media_type: blob.type || "image/jpeg", data: base64 } };
-      } catch(e) {
-        imageContent = { type: "image", source: { type: "url", url: img.url } };
-      }
-
-      const textContent = {
-        type: "text",
-        text:
-          `Du skriver för éclore (eclore.se) – naturlig hudvård för kvinnor 40-70 år.\n\n` +
-          `Titta noga på bilden och generera för produkten "${f.productName || "okänd produkt"}":\n\n` +
-          `1. ALT-TEXT (max 125 tecken): Beskriv konkret VAD som syns – förpackning, färg, textur, form. Inkludera produktnamnet naturligt. Svenska.\n\n` +
-          `2. SEO-FILNAMN (max 60 tecken): Baserat på vad bilden visar. Lowercase, bindestreck, UTAN filändelse.\n` +
-          `Exempel: "naturlig-ansiktskram-50ml-vit-burk"\n\n` +
-          `Returnera BARA JSON: {"altText":"...","suggestedFilename":"..."}`,
-      };
-
-      const raw = await callClaude([{ role: "user", content: [imageContent, textContent] }], 300);
-      const parsed = JSON.parse(raw.replace(/```json\n?|```\n?/g, "").trim());
-      const imgs = [...formRef.current.images];
-      imgs[idx] = { ...imgs[idx], altText: parsed.altText, suggestedFilename: parsed.suggestedFilename };
-      setField("images", imgs);
-    } catch(e) {
-      // Log error but don't throw — let queue continue
-      setApiError("Fel vid bildanalys bild " + (idx+1) + ": " + e.message);
-    }
-    setGenerating(g => ({ ...g, ["img_" + idx]: false }));
-  };
-
-  const generateAllImgMeta = async () => {
-    for (let i = 0; i < formRef.current.images.length; i++) {
-      await generateImgMeta(i);
-    }
-  };
-
-  // ─── Generate all ──────────────────────────────────────────────────────────
-
-  const generateAll = async (opts) => {
-    const options = opts || { description: true, shortDescription: true, bulletPoints: true, seoTitle: true, seoDescription: true, seoCluster: true, faq: true, usage: true, keyIngredients: true, tags: true, images: true };
-    setGeneratingAll(true);
-    const steps = [
-      ["description", "Genererar beskrivning..."],
-      ["shortDescription", "Genererar ingress..."],
-      ["bulletPoints", "Genererar USP:er..."],
-      ["seoTitle", "Genererar SEO-titel..."],
-      ["seoDescription", "Genererar SEO-metabeskrivning..."],
-      ["seoCluster", "Bygger SEO-kluster..."],
-      ["faq", "Genererar FAQ..."],
-      ["usage", "Genererar användningsinstruktioner..."],
-      ["keyIngredients", "Genererar nyckelingredienser..."],
-      ["tags", "Genererar taggar..."],
-    ];
-    for (const [field, label] of steps) {
-      if (!options[field]) continue;
-      setGenAllProgress(label);
-      try {
-        await generate(field);
-      } catch(e) {
-        console.error("generateAll error on field", field, ":", e.message);
-      }
-    }
-    if (options.images && formRef.current.images.length > 0) {
-      setGenAllProgress("Analyserar bilder...");
-      try {
-        await generateAllImgMeta();
-      } catch(e) {
-        setApiError("Bildanalys misslyckades men övrig generering är klar: " + e.message);
-      }
-    }
-    setGenAllProgress("✓ Klart!");
-    setTimeout(() => { setGeneratingAll(false); setGenAllProgress(""); }, 2000);
-  };
-
-  // ─── Bullet points sync ────────────────────────────────────────────────────
-
-  const syncBulletPoints = (points) => {
-    const val = points.filter(b => b.trim()).join("\n");
-    setForm(f => {
-      const mfs = [...f.metafields];
-      const i = mfs.findIndex(m => m.key === "bullet_points_1" && m.namespace === "custom");
-      if (i >= 0) mfs[i] = { ...mfs[i], value: val };
-      else if (val) mfs.push({ key: "bullet_points_1", value: val, namespace: "custom", type: "multi_line_text_field" });
-      return { ...f, bulletPoints: points, metafields: mfs };
-    });
-  };
-
-  // ─── Shopify fetch ─────────────────────────────────────────────────────────
-
-  const fetchProduct = async (overrideSettings) => {
-    const s = overrideSettings || settingsRef.current;
-    if (!s.shopifyStore || !s.shopifyToken || !s.productId) return;
-    setFetchingProduct(true);
-    setFetchError(null);
-    setProductLoaded(false);
-    try {
-      const headers = { "X-Shopify-Access-Token": s.shopifyToken };
-      const base = "https://" + s.shopifyStore + "/admin/api/2024-01";
-
-      // Product
-      const pRes = await fetchWithProxy(base + "/products/" + s.productId + ".json", { headers });
-      if (!pRes.ok) { const e = await pRes.json(); throw new Error(JSON.stringify(e.errors || e)); }
-      const pData = await pRes.json();
-      const p = pData.product;
-
-      // Reset entire form before loading new product so nothing bleeds over
-      setForm({
-        ...DEFAULT_FORM,
-        productName: p.title || "",
-        description: p.body_html || "",
-        tags: p.tags ? p.tags.split(", ").filter(Boolean) : [],
-        productType: p.product_type || "",
-        vendor: p.vendor || "",
-        price: p.variants?.[0]?.price || "",
-        handle: p.handle || "",
-      });
-
-      // Metafields
-      const mfRes = await fetchWithProxy(base + "/products/" + s.productId + "/metafields.json", { headers });
-      if (mfRes.ok) {
-        const mfData = await mfRes.json();
-        const mfs = mfData.metafields || [];
-        const get = (key) => mfs.find(m => m.key === key && m.namespace === "custom")?.value || "";
-
-        const inci = get("ingredienser");
-        const kortBeskrivningRaw = get("beskrivning");
-        // Parse rich text JSON back to plain text if needed
-        let kortBeskrivning = "";
-        if (kortBeskrivningRaw) {
-          try {
-            const rt = JSON.parse(kortBeskrivningRaw);
-            kortBeskrivning = (rt.children || []).map(p =>
-              (p.children || []).map(t => t.value || "").join("")
-            ).join(" ").trim();
-          } catch(e) {
-            kortBeskrivning = kortBeskrivningRaw; // already plain text
-          }
-        }
-        const usageRawStored = get("usage_instructions");
-        // Parse rich text JSON back to plain text
-        let usageRaw = "";
-        if (usageRawStored) {
-          if (usageRawStored.trim().startsWith("{")) {
-            try {
-              const rt = JSON.parse(usageRawStored);
-              usageRaw = (rt.children || []).map(p =>
-                (p.children || []).map(t => t.value || "").join("")
-              ).filter(Boolean).join("\n");
-            } catch(e) { usageRaw = ""; }
-          } else {
-            usageRaw = usageRawStored;
-          }
-        }
-        const bpRaw = get("bullet_points_1");
-        const seoTitle = mfs.find(m => m.key === "title_tag")?.value || "";
-        const seoDesc = mfs.find(m => m.key === "description_tag")?.value || "";
-
-        let usageIntro = "", usageSteps = [""];
-        if (usageRaw) {
-          const parts = usageRaw.split(/\n\n/);
-          usageIntro = parts[0] || "";
-          if (parts[1]) usageSteps = parts[1].split("\n").map(s => s.replace(/^\d+\.\s*/, "")).filter(Boolean);
-        }
-
-        let bulletPoints = ["", "", ""];
-        if (bpRaw) bulletPoints = bpRaw.split("\n").filter(Boolean);
-
-        const parseRichToHtml = (val) => {
-          if (!val) return "";
-          // Handle double-encoded JSON (old buggy data)
-          let parsed = val;
-          try { parsed = JSON.parse(val); } catch(e) { return val; }
-          // If it parsed to a string, it was double-encoded — parse again
-          if (typeof parsed === "string") {
-            try { parsed = JSON.parse(parsed); } catch(e) { return parsed; }
-          }
-          const inlineToHtml = (node) => {
-            if (node.type === "link") {
-              const text = (node.children || []).map(t => t.value || "").join("");
-              return `<a href="${node.url}">${text}</a>`;
-            }
-            let text = node.value || (node.children || []).map(t => t.value || "").join("");
-            if (node.bold) text = `<strong>${text}</strong>`;
-            if (node.italic) text = `<em>${text}</em>`;
-            return text;
-          };
-          return (parsed.children || []).map(node => {
-            const inner = (node.children || []).map(inlineToHtml).join("");
-            if (node.type === "paragraph") return `<p>${inner}</p>`;
-            if (node.type === "heading") return `<h${node.level || 2}>${inner}</h${node.level || 2}>`;
-            if (node.type === "unordered-list") {
-              return "<ul>" + (node.children || []).map(li => {
-                const liText = (li.children || []).flatMap(p => p.children || [p]).map(inlineToHtml).join("");
-                return `<li>${liText}</li>`;
-              }).join("") + "</ul>";
-            }
-            return inner;
-          }).join("");
-        };
-        const faq = [1,2,3,4,5].map(i => ({
-          q: get("faq_fraga_" + i),
-          a: parseRichToHtml(get("faq_a" + i)),
-        })).filter(item => item.q || item.a);
-
-        let keyIngredients = [{ name: "", benefit: "" }];
-        try { const ki = get("key_ingredients"); if (ki) keyIngredients = JSON.parse(ki); } catch(e) {}
-
-        const handled = ["ingredienser","beskrivning","usage_instructions","bullet_points_1","key_ingredients","title_tag","description_tag",
-          "faq_fraga_1","faq_fraga_2","faq_fraga_3","faq_fraga_4","faq_fraga_5",
-          "faq_a1","faq_a2","faq_a3","faq_a4","faq_a5"];
-        const customMfs = mfs
-          .filter(m => m.namespace === "custom" && !handled.includes(m.key))
-          .map(m => ({ key: m.key, value: m.value, namespace: "custom", type: m.type || "single_line_text_field" }));
-
-        setForm(f => ({
-          ...f,
-          inci: inci || f.inci,
-          shortDescription: kortBeskrivning || f.shortDescription,
-          seoTitle: seoTitle || f.seoTitle,
-          seoDescription: seoDesc || f.seoDescription,
-          bulletPoints: bulletPoints.length ? bulletPoints : f.bulletPoints,
-          faq: faq.length ? faq : f.faq,
-          keyIngredients: keyIngredients.length ? keyIngredients : f.keyIngredients,
-          metafields: customMfs.length ? customMfs : f.metafields,
-          usage: usageRaw ? { intro: usageIntro, steps: usageSteps.length ? usageSteps : [""] } : f.usage,
-        }));
-      }
-
-      // Images
-      const imgRes = await fetchWithProxy(base + "/products/" + s.productId + "/images.json", { headers });
-      if (imgRes.ok) {
-        const imgData = await imgRes.json();
-        const fetched = (imgData.images || []).map(img => ({
-          shopifyImageId: img.id,
-          url: img.src,
-          filename: img.src.split("/").pop().split("?")[0],
-          suggestedFilename: "",
-          altText: img.alt || "",
-        }));
-        if (fetched.length > 0) setField("images", fetched);
-      }
-
-      setProductLoaded(true);
-    } catch(e) {
-      setFetchError("Kunde inte hämta produkt: " + e.message);
-    }
-    setFetchingProduct(false);
-  };
-
-  // ─── Publish ───────────────────────────────────────────────────────────────
-
-  const publish = async (opts) => {
-    const s = settingsRef.current;
-    if (!s.shopifyStore || !s.shopifyToken || !s.productId) {
-      setPublishResult({ ok: false, msg: "Fyll i Shopify-inställningarna (⚙)." });
-      return;
-    }
-    setPublishing(true);
-    setPublishResult(null);
-    const f = formRef.current;
-    // If opts provided (from queue), only publish selected fields. Otherwise publish all.
-    const all = !opts;
-    try {
-      const allMfs = [
-        ...(all || opts?.seoTitle ? (f.seoTitle ? [{ namespace: "global", key: "title_tag", value: f.seoTitle, type: "single_line_text_field" }] : []) : []),
-        ...(all || opts?.seoDescription ? (f.seoDescription ? [{ namespace: "global", key: "description_tag", value: f.seoDescription, type: "single_line_text_field" }] : []) : []),
-        ...f.metafields.filter(m => m.key && m.value).map(m => ({
-          namespace: m.namespace || "custom",
-          key: m.key,
-          value: m.value,
-          type: m.type || "single_line_text_field",
-        })),
-        ...(all || opts.keyIngredients ? (f.inci.trim() ? [{ namespace: "custom", key: "ingredienser", value: f.inci.trim(), type: "multi_line_text_field" }] : []) : []),
-        { namespace: "custom", key: "vanliga_fragor", value: "Vanliga frågor", type: "single_line_text_field" },
-        ...(all || opts.shortDescription ? (f.shortDescription.trim() ? [{ namespace: "custom", key: "beskrivning", value: toRichText(f.shortDescription.trim()), type: "rich_text_field" }] : []) : []),
-        ...(all || opts.keyIngredients ? (f.keyIngredients.filter(k => k.name && k.benefit).length > 0 ? [{
-          namespace: "custom", key: "key_ingredients",
-          value: JSON.stringify({
-            type: "root",
-            children: f.keyIngredients.filter(k => k.name && k.benefit).map(k => ({
-              type: "paragraph",
-              children: [
-                { type: "text", value: k.name, bold: true },
-                { type: "text", value: ": " + k.benefit }
-              ]
-            }))
-          }),
-          type: "rich_text_field",
-        }] : []) : []),
-        ...(all || opts.usage ? (f.usage.intro || f.usage.steps.filter(s => s.trim()).length > 0 ? (() => {
-          const introText = (f.usage.intro || "").trim();
-          const stepsText = f.usage.steps.filter(s => s.trim()).map((s, i) => (i + 1) + ". " + s).join("\n");
-          const combined = (introText ? introText + "\n\n" : "") + stepsText;
-          const value = combined.trim().startsWith("{") ? combined : toRichText(combined);
-          return [{ namespace: "custom", key: "usage_instructions", value, type: "rich_text_field" }];
-        })() : []) : []),
-        ...(all || opts.faq ? f.faq.flatMap((item, i) => {
-          try {
-            return [
-              item.q ? { namespace: "custom", key: "faq_fraga_" + (i+1), value: item.q, type: "single_line_text_field" } : null,
-              item.a ? { namespace: "custom", key: "faq_a" + (i+1), value: toRichText(item.a), type: "rich_text_field" } : null,
-            ].filter(Boolean);
-          } catch(e) {
-            console.error("FAQ toRichText error on item " + i + ":", e.message, "Answer was:", item.a?.substring(0, 100));
-            return [
-              item.q ? { namespace: "custom", key: "faq_fraga_" + (i+1), value: item.q, type: "single_line_text_field" } : null,
-            ].filter(Boolean);
-          }
-        }) : []),
-      ];
-
-      const body = {
-        product: {
-          id: s.productId,
-          ...(all || opts?.description ? { title: f.productName, body_html: f.description } : {}),
-          ...(all || opts?.tags ? (f.tags.length > 0 ? { tags: f.tags.join(", ") } : {}) : {}),
-          ...(all || opts?.seoTitle ? (f.seoTitle ? { metafields_global_title_tag: f.seoTitle } : {}) : {}),
-          ...(all || opts?.seoDescription ? (f.seoDescription ? { metafields_global_description_tag: f.seoDescription } : {}) : {}),
-          ...(f.handle ? { handle: f.handle } : {}),
-        }
-      };
-
-      const res = await fetchWithProxy("https://" + s.shopifyStore + "/admin/api/2024-01/products/" + s.productId + ".json",
-        { method: "PUT", headers: { "Content-Type": "application/json", "X-Shopify-Access-Token": s.shopifyToken }, body: JSON.stringify(body) }
-      );
-
-      const resData = await res.json();
-
-      if (!res.ok) {
-        throw new Error(JSON.stringify(resData.errors || resData));
-      }
-
-      // Send metafields via product PUT (this approach worked before)
-      if (allMfs.length > 0) {
-        const mfPutRes = await fetchWithProxy(
-          "https://" + s.shopifyStore + "/admin/api/2024-01/products/" + s.productId + ".json",
-          { method: "PUT", headers: { "Content-Type": "application/json", "X-Shopify-Access-Token": s.shopifyToken },
-            body: JSON.stringify({ product: { id: s.productId, metafields: allMfs } }) }
-        );
-        if (!mfPutRes.ok) {
-          const mfErr = await mfPutRes.json();
-          console.warn("Metafields PUT error:", JSON.stringify(mfErr.errors || mfErr));
-        }
-
-        // Send description_tag separately via global metafield endpoint
-        if (all || opts?.seoDescription) {
-          const descMf = allMfs.find(m => m.key === "description_tag");
-          if (descMf) {
-            const mfBase2 = "https://" + s.shopifyStore + "/admin/api/2024-01/products/" + s.productId + "/metafields.json";
-            const mfHeaders2 = { "Content-Type": "application/json", "X-Shopify-Access-Token": s.shopifyToken };
-            const existingRes2 = await fetchWithProxy(mfBase2 + "?namespace=global&limit=10", { headers: { "X-Shopify-Access-Token": s.shopifyToken } });
-            const existingData2 = await existingRes2.json();
-            const existingDesc = (existingData2.metafields || []).find(m => m.key === "description_tag");
-            if (existingDesc) {
-              const r = await fetchWithProxy(
-                "https://" + s.shopifyStore + "/admin/api/2024-01/metafields/" + existingDesc.id + ".json",
-                { method: "PUT", headers: mfHeaders2, body: JSON.stringify({ metafield: { id: existingDesc.id, value: descMf.value, type: "single_line_text_field" } }) }
-              );
-              const d = await r.json();
-              console.warn("description_tag PUT failed:", JSON.stringify(d.errors));
-            }
-          }
-        }
-      }
-
-      // Update alt texts only if images option is selected (or publishing all)
-      const withAlt = (all || opts.images) ? f.images.filter(img => img.shopifyImageId && img.altText) : [];
-      if (withAlt.length > 0) {
-        await Promise.all(withAlt.map(img =>
-          fetchWithProxy(
-            "https://" + s.shopifyStore + "/admin/api/2024-01/products/" + s.productId + "/images/" + img.shopifyImageId + ".json",
-            { method: "PUT", headers: { "Content-Type": "application/json", "X-Shopify-Access-Token": s.shopifyToken }, body: JSON.stringify({ image: { id: img.shopifyImageId, alt: img.altText } }) }
-          )
-        ));
-      }
-
-      setPublishResult({ ok: true, msg: "✓ Produkten uppdaterades i Shopify!" + (withAlt.length > 0 ? " Alt-texter sparade för " + withAlt.length + " bild(er)." : "") });
-    } catch(e) {
-      setPublishResult({ ok: false, msg: "Fel: " + e.message });
-    }
-    setPublishing(false);
-  };
-
-  // ─── Queue ─────────────────────────────────────────────────────────────────
-
-  const logQ = (msg, type = "info") => setQueueLog(l => [...l, { msg, type, time: new Date().toLocaleTimeString("sv-SE") }]);
-
-  const runQueue = async () => {
-    setQueueRunning(true);
-    setQueueLog([]);
-    for (let i = 0; i < queue.length; i++) {
-      if (queue[i].status === "klar") continue;
-      setQueueIdx(i);
-      setQueue(q => q.map((it, j) => j === i ? { ...it, status: "hämtar..." } : it));
-      logQ("Hämtar " + queue[i].id + "...");
-      const s = { ...settingsRef.current, productId: queue[i].id };
-      saveSettings(s);
-      try {
-        await fetchProduct(s);
-        setQueue(q => q.map((it, j) => j === i ? { ...it, status: "genererar..." } : it));
-        logQ("Genererar innehåll...");
-        await generateAll(queueOptionsRef.current);
-        if (autoPublishRef.current) {
-          await new Promise(r => setTimeout(r, 500));
-          setQueue(q => q.map((it, j) => j === i ? { ...it, status: "publicerar..." } : it));
-          await publish(queueOptionsRef.current);
-          setQueue(q => q.map((it, j) => j === i ? { ...it, status: "klar", productName: formRef.current.productName } : it));
-          logQ("✓ " + (formRef.current.productName || queue[i].id) + " klar!", "success");
-        } else {
-          setQueue(q => q.map((it, j) => j === i ? { ...it, status: "väntar granskning", productName: formRef.current.productName } : it));
-          logQ("⏸ Granska och godkänn", "warn");
-          setQueueRunning(false);
-          return;
-        }
-      } catch(e) {
-        setQueue(q => q.map((it, j) => j === i ? { ...it, status: "fel" } : it));
-        logQ("✗ " + e.message, "error");
-      }
-    }
-    setQueueIdx(null);
-    setQueueRunning(false);
-    logQ("✓ Kön är klar!", "success");
-  };
-
-  const approveNext = async () => {
-    if (queueIdx === null) return;
-    logQ("Publicerar...");
-    await publish(queueOptionsRef.current);
-    setQueue(q => q.map((it, j) => j === queueIdx ? { ...it, status: "klar" } : it));
-    logQ("✓ " + formRef.current.productName + " publicerad!", "success");
-    const next = queue.findIndex((it, j) => j > queueIdx && it.status === "väntande");
-    if (next !== -1) { setQueueRunning(true); await runQueue(); }
-    else { setQueueIdx(null); logQ("✓ Alla klara!", "success"); }
-  };
-
-  // ─── AI Button ─────────────────────────────────────────────────────────────
-
-  const AiBtn = ({ field, label, imgIdx }) => {
-    const key = imgIdx !== undefined ? "img_" + imgIdx : field;
-    const loading = generating[key];
-    return (
-      <button
-        onClick={() => imgIdx !== undefined ? generateImgMeta(imgIdx) : generate(field)}
-        disabled={loading}
-        style={{ display: "inline-flex", alignItems: "center", gap: "5px", background: "rgba(200,169,110,0.12)", border: "1px solid rgba(200,169,110,0.3)", borderRadius: "6px", padding: "5px 10px", color: "#c8a96e", fontSize: "11px", letterSpacing: "0.06em", cursor: loading ? "not-allowed" : "pointer" }}
-      >
-        {loading ? <Spinner /> : "✦"} {label || "Generera"}
-      </button>
     );
   };
 
-  // ─── Input styles ──────────────────────────────────────────────────────────
-
-  const inp = { width: "100%", background: "#111", border: "1px solid #2a2a2a", borderRadius: "8px", padding: "10px 14px", color: "#f0ede8", fontSize: "14px", outline: "none" };
-  const ta = { ...inp, resize: "vertical", lineHeight: "1.6" };
-  const monoTa = { ...ta, fontFamily: "monospace", fontSize: "13px" };
-
-  // ─── Render ────────────────────────────────────────────────────────────────
-
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a" }}>
+    <div style={S.page}>
+      <div style={S.wrap}>
+        <header style={{ marginBottom: 14 }}>
+          <h1 style={{ fontFamily: "Georgia,serif", fontSize: 26, fontWeight: 600, margin: 0, color: "#2C351C" }}>
+            éclore <span style={{ fontStyle: "italic", fontWeight: 400 }}>produktstudio</span>
+          </h1>
+          <p style={{ ...S.small, marginTop: 4 }}>Produktanpassade texter med rätt sökord, certifieringar och USP:ar – enligt éclores SEO-regler.</p>
+        </header>
 
-      {/* Header */}
-      <div style={{ background: "#0f0f0f", borderBottom: "1px solid #1e1e1e", padding: "18px 28px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
-        <div>
-          <div style={{ fontFamily: "'Playfair Display',serif", fontSize: "21px" }}>
-            Shopify <span style={{ color: "#c8a96e", fontStyle: "italic" }}>Produkthanterare</span>
-          </div>
-          <div style={{ fontSize: "11px", color: "#444", marginTop: "2px", letterSpacing: "0.08em" }}>POWERED BY CLAUDE AI — éclore</div>
-        </div>
-        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-          <button
-            onClick={() => setShowSettings(true)}
-            style={{ display: "flex", alignItems: "center", gap: "6px", background: settings.anthropicKey ? "rgba(200,169,110,0.15)" : "rgba(232,124,90,0.1)", border: "1px solid " + (settings.anthropicKey ? "rgba(200,169,110,0.4)" : "rgba(232,124,90,0.4)"), borderRadius: "10px", padding: "9px 16px", color: settings.anthropicKey ? "#c8a96e" : "#e87c5a", cursor: "pointer", fontSize: "13px" }}
-          >
-            ⚙ {settings.anthropicKey ? "Inställningar" : "⚠ Konfigurera API-nyckel"}
-          </button>
-          <button
-            onClick={() => setShowQueue(q => !q)}
-            style={{ display: "flex", alignItems: "center", gap: "6px", background: showQueue ? "rgba(138,180,248,0.15)" : "#1a1a1a", border: "1px solid " + (showQueue ? "rgba(138,180,248,0.4)" : "#2a2a2a"), borderRadius: "10px", padding: "9px 16px", color: showQueue ? "#8ab4f8" : "#888", cursor: "pointer", fontSize: "13px" }}
-          >
-            ☰ Produktkö {queue.length > 0 && <span style={{ background: "rgba(138,180,248,0.2)", borderRadius: "10px", padding: "1px 7px", fontSize: "11px" }}>{queue.length}</span>}
-          </button>
-          <button
-            onClick={generateAll}
-            disabled={generatingAll || !form.productName}
-            style={{ display: "flex", alignItems: "center", gap: "6px", background: generatingAll ? "rgba(200,169,110,0.08)" : "linear-gradient(135deg,#c8a96e,#a87d3e)", border: generatingAll ? "1px solid rgba(200,169,110,0.3)" : "none", borderRadius: "10px", padding: "9px 18px", color: generatingAll ? "#c8a96e" : "#0f0f0f", cursor: (!form.productName || generatingAll) ? "not-allowed" : "pointer", fontSize: "13px", fontWeight: "600" }}
-          >
-            {generatingAll ? <><Spinner /> {genAllProgress || "Genererar..."}</> : "✦ Generera allt"}
+        <div style={{ display: "flex", gap: 4, background: "#E4E8DB", borderRadius: 10, padding: 4, marginBottom: 14, width: "fit-content" }}>
+          <button style={S.tab(mode === "single")} onClick={() => { setMode("single"); setReviewIdx(-1); }}>Enskild produkt</button>
+          <button style={S.tab(mode === "queue")} onClick={() => setMode("queue")}>
+            Kö {queue.length > 0 ? `(${queue.length})` : ""}
           </button>
         </div>
+
+        {mode === "single" ? <SingleView /> : (reviewIdx >= 0 ? <ReviewView /> : <QueueView />)}
       </div>
-
-      <div style={{ maxWidth: "780px", margin: "0 auto", padding: "28px 20px" }}>
-
-        {/* AI Context */}
-        <div style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "12px", padding: "18px", marginBottom: "24px" }}>
-          <div style={{ fontSize: "11px", letterSpacing: "0.1em", color: "#c8a96e", marginBottom: "8px", textTransform: "uppercase" }}>✦ Butiksprofil + produktkontext (används av all AI)</div>
-          <textarea value={aiContext} onChange={e => setAiContext(e.target.value)} rows={3} style={{ width: "100%", background: "transparent", border: "none", color: "#ccc", fontSize: "13px", resize: "vertical", outline: "none", lineHeight: "1.6" }} />
-        </div>
-
-        {/* Queue */}
-        {showQueue && (
-          <div style={{ marginBottom: "20px", background: "#111", border: "1px solid #1e1e1e", borderRadius: "12px", padding: "20px", display: "flex", flexDirection: "column", gap: "14px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div style={{ fontSize: "14px", fontWeight: "500" }}>Produktkö</div>
-              <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "#888", cursor: "pointer" }}>
-                <input type="checkbox" checked={autoPublish} onChange={e => setAutoPublish(e.target.checked)} style={{ accentColor: "#c8a96e" }} />
-                Helautomatisk
-              </label>
-            </div>
-            {/* Queue options */}
-            <div style={{ background: "#0a0a0a", border: "1px solid #1e1e1e", borderRadius: "8px", padding: "12px" }}>
-              <div style={{ fontSize: "11px", color: "#555", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Vad ska genereras?</div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-                {[
-                  ["description", "Beskrivning"],
-                  ["shortDescription", "Ingress"],
-                  ["bulletPoints", "USP:er"],
-                  ["seoTitle", "SEO-titel"],
-                  ["seoDescription", "Metabeskrivning"],
-                  ["seoCluster", "SEO-kluster"],
-                  ["faq", "FAQ"],
-                  ["usage", "Användning"],
-                  ["keyIngredients", "Ingredienser"],
-                  ["tags", "Taggar"],
-                  ["images", "Bildanalys"],
-                ].map(([key, label]) => (
-                  <label key={key} style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "12px", color: queueOptions[key] ? "#c8a96e" : "#444", cursor: "pointer", background: queueOptions[key] ? "rgba(200,169,110,0.1)" : "#111", border: "1px solid " + (queueOptions[key] ? "rgba(200,169,110,0.3)" : "#1e1e1e"), borderRadius: "6px", padding: "4px 10px" }}>
-                    <input type="checkbox" checked={queueOptions[key]} onChange={() => toggleQueueOption(key)} style={{ accentColor: "#c8a96e", margin: 0 }} />
-                    {label}
-                  </label>
-                ))}
-              </div>
-              <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
-                <button onClick={() => setQueueOptions(o => Object.fromEntries(Object.keys(o).map(k => [k, true])))} style={{ fontSize: "11px", color: "#555", background: "none", border: "none", cursor: "pointer", padding: 0 }}>Markera alla</button>
-                <span style={{ color: "#333" }}>|</span>
-                <button onClick={() => setQueueOptions(o => Object.fromEntries(Object.keys(o).map(k => [k, false])))} style={{ fontSize: "11px", color: "#555", background: "none", border: "none", cursor: "pointer", padding: 0 }}>Avmarkera alla</button>
-              </div>
-            </div>
-            <div style={{ display: "flex", gap: "10px" }}>
-              <textarea value={queueInput} onChange={e => setQueueInput(e.target.value)} placeholder={"Produkt-ID:n, ett per rad:\n8123456789\n8987654321"} rows={3} style={{ flex: 1, background: "#0a0a0a", border: "1px solid #2a2a2a", borderRadius: "8px", padding: "10px", color: "#f0ede8", fontSize: "12px", fontFamily: "monospace", resize: "vertical", outline: "none" }} />
-              <button onClick={() => { const ids = queueInput.split(/[,\n\s]+/).map(s => s.trim()).filter(Boolean); setQueue(q => [...q, ...ids.map(id => ({ id, status: "väntande", productName: "" }))]); setQueueInput(""); }} style={{ alignSelf: "flex-start", background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "8px", padding: "10px 14px", color: "#c8a96e", cursor: "pointer", fontSize: "12px", whiteSpace: "nowrap" }}>+ Lägg till</button>
-            </div>
-            {queue.length > 0 && (
-              <div style={{ display: "flex", flexDirection: "column", gap: "5px", maxHeight: "180px", overflowY: "auto" }}>
-                {queue.map((item, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "7px 12px", background: "#0a0a0a", borderRadius: "7px", border: "1px solid " + (item.status === "klar" ? "rgba(52,168,83,0.3)" : item.status === "fel" ? "rgba(232,124,90,0.3)" : item.status === "väntar granskning" ? "rgba(200,169,110,0.3)" : "#1e1e1e") }}>
-                    <span style={{ fontFamily: "monospace", fontSize: "11px", color: "#555", flex: "0 0 110px" }}>{item.id}</span>
-                    <span style={{ fontSize: "12px", color: "#ccc", flex: 1 }}>{item.productName || "—"}</span>
-                    <span style={{ fontSize: "11px", color: item.status === "klar" ? "#34a853" : item.status === "fel" ? "#e87c5a" : item.status === "väntar granskning" ? "#c8a96e" : "#555" }}>{item.status}</span>
-                    <button onClick={() => setQueue(q => q.filter((_, j) => j !== i))} style={{ background: "none", border: "none", color: "#333", cursor: "pointer", fontSize: "14px", padding: 0 }}>×</button>
-                  </div>
-                ))}
-              </div>
-            )}
-            <div style={{ display: "flex", gap: "10px" }}>
-              {!queueRunning && queue.some(i => i.status === "väntande") && <button onClick={runQueue} style={{ background: "linear-gradient(135deg,#c8a96e,#a87d3e)", border: "none", borderRadius: "8px", padding: "10px 20px", color: "#0f0f0f", cursor: "pointer", fontSize: "13px", fontWeight: "600" }}>▶ Starta kö</button>}
-              {!autoPublish && queue.some(i => i.status === "väntar granskning") && <button onClick={approveNext} style={{ background: "rgba(52,168,83,0.15)", border: "1px solid rgba(52,168,83,0.4)", borderRadius: "8px", padding: "10px 20px", color: "#34a853", cursor: "pointer", fontSize: "13px", fontWeight: "600" }}>✓ Godkänn & nästa</button>}
-              {queue.length > 0 && !queueRunning && <button onClick={() => { setQueue([]); setQueueLog([]); setQueueIdx(null); }} style={{ background: "none", border: "1px solid #2a2a2a", borderRadius: "8px", padding: "10px 14px", color: "#555", cursor: "pointer", fontSize: "12px" }}>Rensa</button>}
-            </div>
-            {queueLog.length > 0 && (
-              <div style={{ background: "#0a0a0a", borderRadius: "8px", padding: "10px", maxHeight: "130px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "3px" }}>
-                {queueLog.map((l, i) => <div key={i} style={{ fontSize: "11px", fontFamily: "monospace", color: l.type === "success" ? "#34a853" : l.type === "error" ? "#e87c5a" : l.type === "warn" ? "#c8a96e" : "#555" }}><span style={{ color: "#333" }}>{l.time}</span> {l.msg}</div>)}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Status banners */}
-        {fetchingProduct && <div style={{ marginBottom: "14px", padding: "12px 16px", borderRadius: "10px", background: "rgba(138,180,248,0.08)", border: "1px solid rgba(138,180,248,0.2)", color: "#8ab4f8", fontSize: "13px", display: "flex", alignItems: "center", gap: "10px" }}><Spinner /> Hämtar produkt från Shopify...</div>}
-        {productLoaded && !fetchingProduct && <div style={{ marginBottom: "14px", padding: "12px 16px", borderRadius: "10px", background: "rgba(52,168,83,0.08)", border: "1px solid rgba(52,168,83,0.2)", color: "#34a853", fontSize: "13px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span>✓ Hämtad: {form.productName}</span>
-          <button onClick={() => fetchProduct()} style={{ background: "none", border: "1px solid rgba(52,168,83,0.3)", borderRadius: "6px", padding: "4px 10px", color: "#34a853", cursor: "pointer", fontSize: "11px" }}>Hämta igen</button>
-        </div>}
-        {fetchError && <div style={{ marginBottom: "14px", padding: "12px 16px", borderRadius: "10px", background: "rgba(232,124,90,0.08)", border: "1px solid rgba(232,124,90,0.3)", color: "#e87c5a", fontSize: "13px" }}>{fetchError}</div>}
-        {apiError && <div style={{ marginBottom: "14px", padding: "12px 16px", borderRadius: "10px", background: "rgba(232,124,90,0.08)", border: "1px solid rgba(232,124,90,0.3)", color: "#e87c5a", fontSize: "12px", display: "flex", justifyContent: "space-between", gap: "12px" }}>
-          <span>⚠ {apiError}</span>
-          <button onClick={() => setApiError(null)} style={{ background: "none", border: "none", color: "#e87c5a", cursor: "pointer", fontSize: "16px", flexShrink: 0 }}>×</button>
-        </div>}
-
-        {/* Product ID quick input */}
-        <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
-          <input
-            value={settings.productId}
-            onChange={e => setSettings(s => ({ ...s, productId: e.target.value }))}
-            placeholder="Produkt-ID (ex: 8123456789012)"
-            style={{ flex: 1, background: "#111", border: "1px solid #2a2a2a", borderRadius: "8px", padding: "10px 14px", color: "#f0ede8", fontSize: "14px", outline: "none", fontFamily: "monospace" }}
-          />
-          <button
-            onClick={() => fetchProduct()}
-            disabled={fetchingProduct || !settings.productId}
-            style={{ background: "rgba(138,180,248,0.15)", border: "1px solid rgba(138,180,248,0.3)", borderRadius: "8px", padding: "10px 18px", color: "#8ab4f8", cursor: "pointer", fontSize: "13px", fontWeight: "500", whiteSpace: "nowrap" }}
-          >
-            {fetchingProduct ? <Spinner /> : "↓ Hämta produkt"}
-          </button>
-        </div>
-
-        {/* Tabs */}
-        <div style={{ display: "flex", gap: "3px", background: "#111", borderRadius: "12px", padding: "4px", marginBottom: "24px", overflowX: "auto" }}>
-          {TABS.map((t, i) => (
-            <button key={t} onClick={() => setTab(i)} style={{ flex: 1, minWidth: "80px", padding: "9px 6px", borderRadius: "9px", border: "none", background: tab === i ? "#1e1e1e" : "transparent", color: tab === i ? "#f0ede8" : "#555", fontSize: "12px", cursor: "pointer", fontWeight: tab === i ? "500" : "400", whiteSpace: "nowrap", transition: "all 0.15s" }}>{t}</button>
-          ))}
-        </div>
-
-        {/* ─── Tab: Produkt ─── */}
-        {tab === 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-            <Field label="Produktnamn">
-              <input value={form.productName} onChange={e => setField("productName", e.target.value)} placeholder="Ex: Vitamin C Serum 30ml" style={{ ...inp, fontSize: "15px" }} />
-            </Field>
-
-            <Field label="Above the fold-text" hint="~80 ord" action={<AiBtn field="shortDescription" label="Generera ingress" />}>
-              <textarea value={form.shortDescription} onChange={e => setField("shortDescription", e.target.value)} rows={4} placeholder="Ca 80 ord – primärt sökord i mening 1, ingrediens/effekt i mitten, för vem/när i slutet." style={ta} />
-              {(() => {
-                const n = form.shortDescription.trim() ? form.shortDescription.trim().split(/\s+/).length : 0;
-                const c = n === 0 ? "#444" : n < 60 ? "#e87c5a" : n <= 100 ? "#34a853" : "#e87c5a";
-                return <div style={{ marginTop: "5px", fontSize: "11px", color: c, textAlign: "right" }}>{n} ord {n >= 60 && n <= 100 ? "✓" : n > 0 ? "(sikta på 60–100)" : ""}</div>;
-              })()}
-            </Field>
-
-            <Field label="Bullet Points / USP:er" action={<AiBtn field="bulletPoints" label="Generera 5 USP:er" />}>
-              <div style={{ display: "flex", flexDirection: "column", gap: "7px" }}>
-                {form.bulletPoints.map((bp, idx) => (
-                  <div key={idx} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span style={{ color: "#34a853", flexShrink: 0 }}>✓</span>
-                    <input value={bp} onChange={e => { const pts = [...form.bulletPoints]; pts[idx] = e.target.value; syncBulletPoints(pts); }} placeholder={"USP " + (idx + 1)} style={{ ...inp, flex: 1, padding: "8px 12px" }} />
-                    <button onClick={() => syncBulletPoints(form.bulletPoints.filter((_, i) => i !== idx))} style={{ background: "none", border: "none", color: "#444", cursor: "pointer", fontSize: "16px", padding: "0 4px" }}>×</button>
-                  </div>
-                ))}
-                <button onClick={() => syncBulletPoints([...form.bulletPoints, ""])} style={{ alignSelf: "flex-start", background: "none", border: "1px dashed #333", borderRadius: "7px", padding: "6px 12px", color: "#555", cursor: "pointer", fontSize: "12px" }}>+ Lägg till</button>
-              </div>
-            </Field>
-
-            <Field label="Beskrivning (HTML)" action={<AiBtn field="description" label="Generera beskrivning" />}>
-              <textarea value={form.description} onChange={e => setField("description", e.target.value)} rows={9} placeholder="<p>Produktens fullständiga beskrivning...</p>" style={monoTa} />
-              {form.description && (
-                <details style={{ marginTop: "8px" }}>
-                  <summary style={{ fontSize: "11px", color: "#555", cursor: "pointer" }}>Förhandsgranskning HTML</summary>
-                  <div dangerouslySetInnerHTML={{ __html: form.description }} style={{ marginTop: "8px", background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "16px", fontSize: "14px", lineHeight: "1.7", color: "#ccc" }} />
-                </details>
-              )}
-            </Field>
-          </div>
-        )}
-
-        {/* ─── Tab: Bilder ─── */}
-        {tab === 1 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
-              <span style={{ fontSize: "13px", color: "#888" }}>{form.images.length} bild(er)</span>
-              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                <button onClick={() => fetchProduct()} style={{ display: "inline-flex", alignItems: "center", gap: "5px", background: "rgba(138,180,248,0.1)", border: "1px solid rgba(138,180,248,0.3)", borderRadius: "7px", padding: "7px 12px", color: "#8ab4f8", cursor: "pointer", fontSize: "12px" }}>↓ Hämta från Shopify</button>
-                {form.images.length > 0 && <button onClick={generateAllImgMeta} style={{ display: "inline-flex", alignItems: "center", gap: "5px", background: "rgba(200,169,110,0.1)", border: "1px solid rgba(200,169,110,0.25)", borderRadius: "7px", padding: "7px 12px", color: "#c8a96e", cursor: "pointer", fontSize: "12px" }}>✦ Analysera alla bilder</button>}
-                <button onClick={() => setField("images", [...form.images, { url: "", filename: "", altText: "", suggestedFilename: "" }])} style={{ background: "#1a1a1a", border: "1px solid #333", borderRadius: "7px", padding: "7px 12px", color: "#f0ede8", cursor: "pointer", fontSize: "12px" }}>+ Lägg till</button>
-              </div>
-            </div>
-            {form.images.length === 0 && <div style={{ textAlign: "center", padding: "48px", border: "1px dashed #2a2a2a", borderRadius: "12px", color: "#444" }}><div style={{ fontSize: "32px", marginBottom: "10px" }}>🖼</div>Inga bilder — hämta från Shopify eller lägg till manuellt</div>}
-            {form.images.map((img, idx) => (
-              <div key={idx} style={{ background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "12px", padding: "16px", display: "flex", flexDirection: "column", gap: "12px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: "12px", color: "#888", letterSpacing: "0.08em" }}>BILD {idx + 1}</span>
-                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                    <AiBtn imgIdx={idx} label="Analysera bild" />
-                    <button onClick={() => setField("images", form.images.filter((_, i) => i !== idx))} style={{ background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: "16px" }}>×</button>
-                  </div>
-                </div>
-                {img.url && <img src={img.url} alt={img.altText || ""} style={{ width: "100%", maxHeight: "200px", objectFit: "contain", borderRadius: "8px", background: "#111" }} onError={e => e.target.style.display = "none"} />}
-                <div>
-                  <div style={{ fontSize: "10px", color: "#666", marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.08em" }}>URL</div>
-                  <input value={img.url || ""} onChange={e => { const imgs = [...form.images]; imgs[idx] = { ...imgs[idx], url: e.target.value }; setField("images", imgs); }} placeholder="https://cdn.shopify.com/..." style={{ ...inp, fontSize: "12px", fontFamily: "monospace" }} />
-                </div>
-                <div>
-                  <div style={{ fontSize: "10px", color: "#666", marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Nuvarande filnamn</div>
-                  <div style={{ background: "#0d0d0d", border: "1px solid #1e1e1e", borderRadius: "6px", padding: "8px 12px", color: "#555", fontSize: "12px", fontFamily: "monospace" }}>{img.filename || "–"}</div>
-                </div>
-                {img.suggestedFilename && (
-                  <div style={{ background: "rgba(138,180,248,0.05)", border: "1px solid rgba(138,180,248,0.2)", borderRadius: "8px", padding: "10px 12px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "5px" }}>
-                      <span style={{ fontSize: "10px", color: "#8ab4f8", textTransform: "uppercase", letterSpacing: "0.08em" }}>✦ SEO-filnamn (vid omladdning)</span>
-                      <CopyBtn text={img.suggestedFilename} />
-                    </div>
-                    <div style={{ color: "#8ab4f8", fontSize: "12px", fontFamily: "monospace", wordBreak: "break-all" }}>{img.suggestedFilename}</div>
-                  </div>
-                )}
-                <div>
-                  <div style={{ fontSize: "10px", color: "#666", marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Alt-text</div>
-                  <input value={img.altText || ""} onChange={e => { const imgs = [...form.images]; imgs[idx] = { ...imgs[idx], altText: e.target.value }; setField("images", imgs); }} placeholder="Beskriv vad som syns på bilden..." style={inp} />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* ─── Tab: SEO & Meta ─── */}
-        {tab === 2 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-            <Field label={"URL-slug / handle " + form.handle.length + "/60"} hint="→ eclore.se/products/[slug]" action={<AiBtn field="handle" label="Förslag på slug" />}>
-              <div style={{ display: "flex", alignItems: "center", gap: "0", borderRadius: "8px", overflow: "hidden", border: "1px solid #2a2a2a" }}>
-                <span style={{ background: "#1a1a1a", padding: "10px 12px", color: "#555", fontSize: "12px", whiteSpace: "nowrap", borderRight: "1px solid #2a2a2a" }}>eclore.se/products/</span>
-                <input value={form.handle} onChange={e => setField("handle", e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-"))} placeholder="ansiktskram-for-torr-mogen-hud" style={{ flex: 1, background: "#111", border: "none", padding: "10px 12px", color: "#c8a96e", fontSize: "13px", outline: "none", fontFamily: "monospace" }} />
-              </div>
-              {form.handle && <div style={{ marginTop: "5px", fontSize: "11px", color: "#e87c5a" }}>⚠ Uppdatera URL manuellt i Shopify Admin och skapa omdirigering innan du byter slug.</div>}
-            </Field>
-
-            <Field label={"SEO-titel " + form.seoTitle.length + "/60"} action={<AiBtn field="seoTitle" label="Generera titel" />}>
-              <input value={form.seoTitle} onChange={e => setField("seoTitle", e.target.value)} placeholder="Naturlig ansiktskräm mogen hud | éclore" style={{ ...inp, border: "1px solid " + (form.seoTitle.length > 60 ? "#e87c5a" : "#2a2a2a") }} />
-            </Field>
-            <Field label={"SEO-metabeskrivning " + form.seoDescription.length + "/160"} action={<AiBtn field="seoDescription" label="Generera metabeskrivning" />}>
-              <textarea value={form.seoDescription} onChange={e => setField("seoDescription", e.target.value)} rows={3} placeholder="Beskrivande text för Google..." style={{ ...ta, border: "1px solid " + (form.seoDescription.length > 160 ? "#e87c5a" : "#2a2a2a") }} />
-            </Field>
-            {(form.seoTitle || form.seoDescription) && (
-              <div style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "12px", padding: "18px" }}>
-                <div style={{ fontSize: "10px", color: "#555", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Google-förhandsgranskning</div>
-                <div style={{ color: "#8ab4f8", fontSize: "17px", marginBottom: "3px" }}>{form.seoTitle || "Produkttitel"}</div>
-                <div style={{ color: "#34a853", fontSize: "12px", marginBottom: "4px" }}>eclore.se/products/...</div>
-                <div style={{ color: "#bdc1c6", fontSize: "13px", lineHeight: "1.5" }}>{form.seoDescription || "Metabeskrivning..."}</div>
-              </div>
-            )}
-            <Field label="SEO-kluster" action={<AiBtn field="seoCluster" label="Generera kluster" />}>
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                <div>
-                  <div style={{ fontSize: "10px", color: "#c8a96e", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.08em" }}>▸ Primärt sökord</div>
-                  <input value={form.seoCluster.primary} onChange={e => setField("seoCluster", { ...form.seoCluster, primary: e.target.value })} placeholder="t.ex. naturlig ansiktskräm mogen hud" style={{ ...inp, border: "1px solid rgba(200,169,110,0.3)" }} />
-                </div>
-                <div>
-                  <div style={{ fontSize: "10px", color: "#888", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.08em" }}>▸ Sekundära sökord</div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "7px", marginBottom: "8px" }}>
-                    {form.seoCluster.secondary.map((kw, i) => <Tag key={i} label={kw} onRemove={() => setField("seoCluster", { ...form.seoCluster, secondary: form.seoCluster.secondary.filter((_, j) => j !== i) })} />)}
-                  </div>
-                  <TagInput onAdd={v => setField("seoCluster", { ...form.seoCluster, secondary: [...form.seoCluster.secondary, v] })} />
-                </div>
-                <div>
-                  <div style={{ fontSize: "10px", color: "#888", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.08em" }}>▸ Long-tail fraser</div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "5px", marginBottom: "8px" }}>
-                    {form.seoCluster.longTail.map((lt, i) => (
-                      <div key={i} style={{ display: "flex", alignItems: "center", gap: "8px", background: "#111", border: "1px solid #222", borderRadius: "7px", padding: "8px 12px" }}>
-                        <span style={{ color: "#555", fontSize: "12px" }}>→</span>
-                        <span style={{ flex: 1, fontSize: "13px", color: "#bbb" }}>{lt}</span>
-                        <button onClick={() => setField("seoCluster", { ...form.seoCluster, longTail: form.seoCluster.longTail.filter((_, j) => j !== i) })} style={{ background: "none", border: "none", color: "#444", cursor: "pointer", fontSize: "14px" }}>×</button>
-                      </div>
-                    ))}
-                  </div>
-                  <TagInput onAdd={v => setField("seoCluster", { ...form.seoCluster, longTail: [...form.seoCluster.longTail, v] })} placeholder="Long-tail fras, tryck Enter" />
-                </div>
-              </div>
-            </Field>
-            <Field label="Custom metafält">
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                {form.metafields.map((mf, idx) => (
-                  <div key={idx} style={{ background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "9px", padding: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: "8px", alignItems: "end" }}>
-                      <div>
-                        <div style={{ fontSize: "10px", color: "#555", marginBottom: "4px", textTransform: "uppercase" }}>Nyckel</div>
-                        <input value={mf.key} onChange={e => { const m = [...form.metafields]; m[idx] = { ...m[idx], key: e.target.value }; setField("metafields", m); }} placeholder="min_nyckel" style={{ ...inp, padding: "7px 10px", fontSize: "13px" }} />
-                      </div>
-                      <div>
-                        <div style={{ fontSize: "10px", color: "#555", marginBottom: "4px", textTransform: "uppercase" }}>Typ</div>
-                        <select value={mf.type} onChange={e => { const m = [...form.metafields]; m[idx] = { ...m[idx], type: e.target.value }; setField("metafields", m); }} style={{ ...inp, padding: "7px 10px", fontSize: "13px", cursor: "pointer" }}>
-                          <option value="single_line_text_field">Text</option>
-                          <option value="multi_line_text_field">Lång text</option>
-                          <option value="rich_text_field">Rich text</option>
-                          <option value="url">URL</option>
-                          <option value="number_integer">Heltal</option>
-                          <option value="json">JSON</option>
-                        </select>
-                      </div>
-                      <button onClick={() => setField("metafields", form.metafields.filter((_, i) => i !== idx))} style={{ background: "none", border: "1px solid #2a2a2a", borderRadius: "7px", padding: "7px 10px", color: "#555", cursor: "pointer" }}>×</button>
-                    </div>
-                    <input value={mf.value} onChange={e => { const m = [...form.metafields]; m[idx] = { ...m[idx], value: e.target.value }; setField("metafields", m); }} placeholder="Värde" style={{ ...inp, padding: "7px 10px", fontSize: "13px" }} />
-                  </div>
-                ))}
-                <button onClick={() => setField("metafields", [...form.metafields, { key: "", value: "", namespace: "custom", type: "single_line_text_field" }])} style={{ alignSelf: "flex-start", background: "none", border: "1px dashed #333", borderRadius: "7px", padding: "7px 12px", color: "#555", cursor: "pointer", fontSize: "12px" }}>+ Lägg till metafält</button>
-              </div>
-            </Field>
-          </div>
-        )}
-
-        {/* ─── Tab: FAQ ─── */}
-        {tab === 3 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div style={{ fontSize: "13px", color: "#ccc" }}>{form.faq.length} frågor</div>
-              <div style={{ display: "flex", gap: "8px" }}>
-                <AiBtn field="faq" label="Generera 5 FAQ" />
-                <button onClick={() => setField("faq", [...form.faq, { q: "", a: "" }])} style={{ background: "#1a1a1a", border: "1px solid #333", borderRadius: "7px", padding: "7px 12px", color: "#f0ede8", cursor: "pointer", fontSize: "12px" }}>+ Lägg till</button>
-              </div>
-            </div>
-            {form.faq.length === 0 && <div style={{ textAlign: "center", padding: "48px", border: "1px dashed #2a2a2a", borderRadius: "12px", color: "#444" }}><div style={{ fontSize: "32px", marginBottom: "10px" }}>❓</div>Klicka "Generera 5 FAQ" för AI-förslag</div>}
-            {form.faq.map((item, idx) => (
-              <div key={idx} style={{ background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "12px", padding: "16px", display: "flex", flexDirection: "column", gap: "10px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: "11px", color: "#c8a96e", letterSpacing: "0.08em", textTransform: "uppercase" }}>Fråga {idx + 1}</span>
-                  <button onClick={() => setField("faq", form.faq.filter((_, i) => i !== idx))} style={{ background: "none", border: "none", color: "#444", cursor: "pointer", fontSize: "16px" }}>×</button>
-                </div>
-                <div>
-                  <div style={{ fontSize: "10px", color: "#666", marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.07em" }}>Fråga</div>
-                  <input value={item.q} onChange={e => { const f = [...form.faq]; f[idx] = { ...f[idx], q: e.target.value }; setField("faq", f); }} placeholder="t.ex. Passar produkten för känslig hud?" style={inp} />
-                </div>
-                <div>
-                  <div style={{ fontSize: "10px", color: "#666", marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.07em" }}>Svar (HTML)</div>
-                  <textarea value={item.a} onChange={e => { const f = [...form.faq]; f[idx] = { ...f[idx], a: e.target.value }; setField("faq", f); }} rows={4} placeholder="<p>Svar...</p>" style={monoTa} />
-                  {item.a && item.a.includes("<") && (
-                    <details style={{ marginTop: "6px" }}>
-                      <summary style={{ fontSize: "10px", color: "#555", cursor: "pointer" }}>Förhandsgranskning</summary>
-                      <div dangerouslySetInnerHTML={{ __html: item.a }} style={{ marginTop: "6px", background: "#0d0d0d", border: "1px solid #1e1e1e", borderRadius: "6px", padding: "10px 14px", fontSize: "13px", lineHeight: "1.7", color: "#ccc" }} />
-                    </details>
-                  )}
-                </div>
-              </div>
-            ))}
-            {form.faq.length > 0 && <div style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "9px", padding: "12px 16px", fontSize: "11px", color: "#555" }}>
-              Sparas som <code style={{ color: "#888" }}>custom.faq_fraga_1</code> / <code style={{ color: "#888" }}>custom.faq_a1</code> ... ×5
-            </div>}
-          </div>
-        )}
-
-        {/* ─── Tab: Användning ─── */}
-        {tab === 4 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div>
-                <div style={{ fontSize: "13px", color: "#ccc" }}>Användningsinstruktioner</div>
-                <div style={{ fontSize: "11px", color: "#555", marginTop: "2px" }}>→ custom.usage_instructions (rich text)</div>
-              </div>
-              <AiBtn field="usage" label="Generera instruktioner" />
-            </div>
-            <div>
-              <div style={{ fontSize: "11px", color: "#888", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "6px" }}>Intro</div>
-              <textarea value={form.usage.intro} onChange={e => setField("usage", { ...form.usage, intro: e.target.value })} rows={3} placeholder="t.ex. Vårt serum passar som andra steg i morgonrutinen, efter rengöring och toner." style={ta} />
-            </div>
-            <div>
-              <div style={{ fontSize: "11px", color: "#888", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" }}>Steg</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "7px" }}>
-                {form.usage.steps.map((step, idx) => (
-                  <div key={idx} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <span style={{ width: "24px", height: "24px", borderRadius: "50%", background: "rgba(200,169,110,0.15)", border: "1px solid rgba(200,169,110,0.3)", color: "#c8a96e", fontSize: "11px", fontWeight: "600", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{idx + 1}</span>
-                    <input value={step} onChange={e => { const s = [...form.usage.steps]; s[idx] = e.target.value; setField("usage", { ...form.usage, steps: s }); }} placeholder={"Steg " + (idx + 1) + " – börja med verb"} style={{ ...inp, flex: 1, padding: "8px 12px" }} />
-                    <button onClick={() => setField("usage", { ...form.usage, steps: form.usage.steps.filter((_, i) => i !== idx) })} style={{ background: "none", border: "none", color: "#444", cursor: "pointer", fontSize: "16px", padding: "0 4px" }}>×</button>
-                  </div>
-                ))}
-                <button onClick={() => setField("usage", { ...form.usage, steps: [...form.usage.steps, ""] })} style={{ alignSelf: "flex-start", background: "none", border: "1px dashed #333", borderRadius: "7px", padding: "6px 12px", color: "#555", cursor: "pointer", fontSize: "12px", marginTop: "3px" }}>+ Lägg till steg</button>
-              </div>
-            </div>
-            {(form.usage.intro || form.usage.steps.filter(s => s.trim()).length > 0) && (
-              <div style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "12px", padding: "16px" }}>
-                <div style={{ fontSize: "10px", color: "#555", marginBottom: "10px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Förhandsgranskning</div>
-                {form.usage.intro && <p style={{ fontSize: "13px", color: "#ccc", lineHeight: "1.7", marginBottom: "10px" }}>{form.usage.intro}</p>}
-                <ol style={{ margin: 0, paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "5px" }}>
-                  {form.usage.steps.filter(s => s.trim()).map((s, i) => <li key={i} style={{ fontSize: "13px", color: "#bbb", lineHeight: "1.6" }}>{s}</li>)}
-                </ol>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ─── Tab: Ingredienser & Taggar ─── */}
-        {tab === 5 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-            <Field label="INCI-ingredienslista" hint="→ custom.ingredienser">
-              <textarea value={form.inci} onChange={e => setField("inci", e.target.value)} rows={4} placeholder="Aqua, Glycerin, Niacinamide, Sodium Hyaluronate..." style={monoTa} />
-              <div style={{ marginTop: "5px", fontSize: "11px", color: "#555" }}>Klistra in INCI-listan från produktleverantören</div>
-            </Field>
-
-            <Field label="Nyckelingredienser" hint="→ custom.key_ingredients (json)" action={<AiBtn field="keyIngredients" label="Generera" />}>
-              <div style={{ display: "flex", flexDirection: "column", gap: "9px" }}>
-                {form.keyIngredients.map((ki, idx) => (
-                  <div key={idx} style={{ background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "9px", padding: "11px 14px", display: "flex", gap: "10px", alignItems: "center" }}>
-                    <input value={ki.name} onChange={e => { const k = [...form.keyIngredients]; k[idx] = { ...k[idx], name: e.target.value }; setField("keyIngredients", k); }} placeholder="Ingrediens" style={{ flex: "0 0 150px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "6px", padding: "7px 10px", color: "#c8a96e", fontSize: "13px", outline: "none", fontWeight: "500" }} />
-                    <input value={ki.benefit} onChange={e => { const k = [...form.keyIngredients]; k[idx] = { ...k[idx], benefit: e.target.value }; setField("keyIngredients", k); }} placeholder="Vad den gör för huden..." style={{ flex: 1, background: "#111", border: "1px solid #2a2a2a", borderRadius: "6px", padding: "7px 10px", color: "#f0ede8", fontSize: "13px", outline: "none" }} />
-                    <button onClick={() => setField("keyIngredients", form.keyIngredients.filter((_, i) => i !== idx))} style={{ background: "none", border: "none", color: "#444", cursor: "pointer", fontSize: "16px", padding: "0 2px" }}>×</button>
-                  </div>
-                ))}
-                <button onClick={() => setField("keyIngredients", [...form.keyIngredients, { name: "", benefit: "" }])} style={{ alignSelf: "flex-start", background: "none", border: "1px dashed #333", borderRadius: "7px", padding: "6px 12px", color: "#555", cursor: "pointer", fontSize: "12px" }}>+ Lägg till</button>
-              </div>
-            </Field>
-
-            <Field label="Produkttaggar" hint="→ product.tags" action={<AiBtn field="tags" label="Generera taggar" />}>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "7px", marginBottom: "9px" }}>
-                {form.tags.map((tag, i) => <Tag key={i} label={tag} onRemove={() => setField("tags", form.tags.filter((_, j) => j !== i))} />)}
-              </div>
-              <TagInput onAdd={v => setField("tags", [...form.tags, v.toLowerCase().replace(/\s+/g, "-")])} placeholder="Skriv tagg och tryck Enter" />
-              <div style={{ marginTop: "5px", fontSize: "11px", color: "#555" }}>Skickas direkt som <code style={{ color: "#888" }}>product.tags</code></div>
-            </Field>
-          </div>
-        )}
-
-        {/* ─── Publish bar ─── */}
-        <div style={{ marginTop: "32px", padding: "20px", background: "#0f0f0f", border: "1px solid #1e1e1e", borderRadius: "14px" }}>
-          {publishResult && (
-            <div style={{ marginBottom: "12px", padding: "10px 14px", borderRadius: "8px", background: publishResult.ok ? "rgba(52,168,83,0.1)" : "rgba(232,124,90,0.1)", border: "1px solid " + (publishResult.ok ? "rgba(52,168,83,0.3)" : "rgba(232,124,90,0.3)"), color: publishResult.ok ? "#34a853" : "#e87c5a", fontSize: "13px" }}>
-              {publishResult.msg}
-            </div>
-          )}
-          <div style={{ display: "flex", gap: "10px" }}>
-            <button
-              onClick={() => { publish(); }}
-              disabled={publishing || !form.productName || !settings.productId}
-              style={{ flex: 1, padding: "14px", background: (!form.productName || !settings.productId) ? "#1a1a1a" : "linear-gradient(135deg,#c8a96e,#a87d3e)", border: "none", borderRadius: "10px", color: (!form.productName || !settings.productId) ? "#444" : "#0f0f0f", fontSize: "14px", fontWeight: "600", cursor: (!form.productName || !settings.productId || publishing) ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
-            >
-              {publishing ? <><Spinner /> Publicerar...</> : "↑ Publicera till Shopify"}
-            </button>
-            <button onClick={() => setShowSettings(true)} style={{ padding: "14px 16px", background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "10px", color: "#888", cursor: "pointer" }}>⚙</button>
-          </div>
-          <div style={{ marginTop: "8px", fontSize: "11px", color: "#555", textAlign: "center" }}>
-            {settings.productId ? "Produkt-ID: " + settings.productId : <span style={{ color: "#e87c5a" }}>Ange Produkt-ID ovan för att publicera</span>}
-          </div>
-        </div>
-
-      </div>
-
-      {showSettings && <SettingsPanel settings={settings} onSave={saveSettings} onClose={() => setShowSettings(false)} />}
     </div>
   );
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+
+ReactDOM.createRoot(document.getElementById("root")).render(<EcloreProduktstudio />);
+
 </script>
 </body>
 </html>
