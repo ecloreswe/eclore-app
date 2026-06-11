@@ -393,6 +393,8 @@ const htmlToRichText = (html) => {
   return JSON.stringify({ type: "root", children });
 };
 
+const textToRich = (txt) => JSON.stringify({ type: "root", children: String(txt).split("\n").filter((l) => l.trim()).map((l) => ({ type: "paragraph", children: [{ type: "text", value: l }] })) });
+
 const keyIngredientsToRich = (list) =>
   JSON.stringify({ type: "root", children: (list || []).map((k) => ({
     type: "paragraph",
@@ -451,6 +453,7 @@ const fetchFromShopify = async (s, productId) => {
     currentHandle: product.handle || "",
     productType: detectType(product.title) || "",
   };
+  patch._orig = { title: product.title || "", body: product.body_html || "", tags: product.tags || "" };
   try {
     const mfRes = await fetch(`${sfBase(s)}/products/${productId}/metafields.json`, { headers: sfHeaders(s) });
     if (mfRes.ok) {
@@ -468,7 +471,6 @@ const fetchFromShopify = async (s, productId) => {
         patch.bulletPoints = [...get(bulletsKey).split("\n").map((l) => l.replace(/^[\u2713\u2714]\s*/, "").trim()).filter(Boolean), "", "", "", "", ""].slice(0, 5);
         patch._bulletsKey = bulletsKey;
       }
-      patch._faqQPrefix = !get("faq_fraga_1") && get("faq_q1") ? "faq_q" : "faq_fraga_";
       const faq = [1, 2, 3, 4, 5].map((i) => ({ q: get(`faq_fraga_${i}`) || get(`faq_q${i}`), a: richTextToHtml(get(`faq_a${i}`)) })).filter((x) => x.q || x.a);
       if (faq.length) patch.faq = faq;
       const u = get("usage_instructions");
@@ -495,30 +497,56 @@ const fetchFromShopify = async (s, productId) => {
 };
 
 const upsertMetafield = async (s, productId, existing, mf) => {
-  const found = existing.find((m) => m.namespace === mf.namespace && m.key === mf.key);
-  if (found) {
-    return fetch(`${sfBase(s)}/metafields/${found.id}.json`, {
-      method: "PUT", headers: sfWriteHeaders(s),
-      body: JSON.stringify({ metafield: { id: found.id, value: mf.value, type: found.type || mf.type } }),
+  const found0 = existing.find((m) => m.namespace === mf.namespace && m.key === mf.key);
+  if (found0 && String(found0.value) === String(mf.value)) return null; // oförändrat – rör inte
+  const send = async (value, type) => {
+    const found = existing.find((m) => m.namespace === mf.namespace && m.key === mf.key);
+    if (found) {
+      return fetch(`${sfBase(s)}/metafields/${found.id}.json`, {
+        method: "PUT", headers: sfWriteHeaders(s),
+        body: JSON.stringify({ metafield: { id: found.id, value, type: found.type || type } }),
+      });
+    }
+    return fetch(`${sfBase(s)}/products/${productId}/metafields.json`, {
+      method: "POST", headers: sfWriteHeaders(s),
+      body: JSON.stringify({ metafield: { namespace: mf.namespace, key: mf.key, value, type, owner_resource: "product" } }),
     });
+  };
+  let res = await send(mf.value, mf.type);
+  if (!res.ok) {
+    // Typmismatch mot definitionen? Prova den andra representationen automatiskt.
+    if (mf.type === "multi_line_text_field" || mf.type === "single_line_text_field") {
+      res = await send(textToRich(mf.value), "rich_text_field");
+    } else if (mf.type === "rich_text_field") {
+      const plain = richTextToHtml(mf.value).replace(/<\/(p|h[1-6]|li)>/g, "\n").replace(/<[^>]+>/g, "").trim();
+      res = await send(plain, "multi_line_text_field");
+    }
   }
-  return fetch(`${sfBase(s)}/products/${productId}/metafields.json`, {
-    method: "POST", headers: sfWriteHeaders(s),
-    body: JSON.stringify({ metafield: { ...mf, owner_resource: "product" } }),
-  });
+  if (!res.ok) {
+    let msg = ""; try { msg = JSON.stringify((await res.json()).errors); } catch {}
+    return `${mf.namespace}.${mf.key} (${msg || res.status})`;
+  }
+  return null;
 };
 
 const publishProduct = async (s, p, onStep) => {
   if (!p.shopifyId) throw new Error("Produkten saknar Shopify-ID – hämta den från Shopify först.");
   const pid = p.shopifyId;
   const handleChanged = p.handle && p.currentHandle && p.handle !== p.currentHandle;
-  onStep("Uppdaterar produkt (namn, beskrivning, taggar)...");
-  const body = { product: { id: Number(pid), title: p.productName, body_html: p.description, tags: (p.tags || []).join(", ") } };
-  if (p.handle) body.product.handle = p.handle;
-  const res = await fetch(`${sfBase(s)}/products/${pid}.json`, { method: "PUT", headers: sfWriteHeaders(s), body: JSON.stringify(body) });
-  if (!res.ok) {
-    let err = ""; try { err = JSON.stringify((await res.json()).errors); } catch {}
-    throw new Error(`Shopify-fel ${res.status}: ${err || "kontrollera write_products-behörighet"}`);
+  const o = p._orig || {};
+  const body = { product: { id: Number(pid) } };
+  if (p.productName && p.productName !== o.title) body.product.title = p.productName;
+  if (p.description && p.description !== o.body) body.product.body_html = p.description;
+  const tagsStr = (p.tags || []).join(", ");
+  if (tagsStr && tagsStr !== (o.tags || "")) body.product.tags = tagsStr;
+  if (handleChanged) body.product.handle = p.handle;
+  if (Object.keys(body.product).length > 1) {
+    onStep("Uppdaterar ändrade produktfält...");
+    const res = await fetch(`${sfBase(s)}/products/${pid}.json`, { method: "PUT", headers: sfWriteHeaders(s), body: JSON.stringify(body) });
+    if (!res.ok) {
+      let err = ""; try { err = JSON.stringify((await res.json()).errors); } catch {}
+      throw new Error(`Shopify-fel ${res.status}: ${err || "kontrollera write_products-behörighet"}`);
+    }
   }
   onStep("Uppdaterar metafält (SEO, FAQ, bullets, ingredienser)...");
   const mfRes = await fetch(`${sfBase(s)}/products/${pid}/metafields.json`, { headers: sfHeaders(s) });
@@ -532,11 +560,15 @@ const publishProduct = async (s, p, onStep) => {
     { namespace: "custom", key: "usage_instructions", value: p.usage ? `${p.usage.intro}\n\n${(p.usage.steps || []).map((x, i) => `${i + 1}. ${x}`).join("\n")}` : "", type: "multi_line_text_field" },
     { namespace: "custom", key: "key_ingredients", value: (p.keyIngredients || []).length ? keyIngredientsToRich(p.keyIngredients) : "", type: "rich_text_field" },
     ...(p.faq || []).flatMap((f, i) => [
-      { namespace: "custom", key: `${p._faqQPrefix || "faq_fraga_"}${i + 1}`, value: f.q, type: "single_line_text_field" },
+      { namespace: "custom", key: `faq_fraga_${i + 1}`, value: f.q, type: "single_line_text_field" },
       { namespace: "custom", key: `faq_a${i + 1}`, value: htmlToRichText(f.a), type: "rich_text_field" },
     ]),
   ].filter((m) => m.value);
-  for (const mf of mfs) await upsertMetafield(s, pid, existing, mf);
+  const mfErrors = [];
+  for (const mf of mfs) {
+    const err = await upsertMetafield(s, pid, existing, mf);
+    if (err) mfErrors.push(err);
+  }
   const imgsToUpdate = (p.images || []).filter((i) => i.shopifyImageId && i.altText);
   if (imgsToUpdate.length) {
     onStep("Uppdaterar alt-texter...");
@@ -554,7 +586,7 @@ const publishProduct = async (s, p, onStep) => {
       body: JSON.stringify({ redirect: { path: `/products/${p.currentHandle}`, target: `/products/${p.handle}` } }),
     });
   }
-  return handleChanged;
+  return { handleChanged, mfErrors };
 };
 
 /* ───────────────────────── App ───────────────────────── */
@@ -623,8 +655,9 @@ function EcloreProduktstudio() {
     setSfError("");
     setPublishState((s) => ({ ...s, [p.id]: "Publicerar..." }));
     try {
-      const handleChanged = await publishProduct(settings, p, (step) => setPublishState((s) => ({ ...s, [p.id]: step })));
-      const msg = handleChanged ? "✓ Publicerad + 301-redirect skapad" : "✓ Publicerad";
+      const result = await publishProduct(settings, p, (step) => setPublishState((s) => ({ ...s, [p.id]: step })));
+      let msg = result.handleChanged ? "✓ Publicerad + 301-redirect skapad" : "✓ Publicerad";
+      if (result.mfErrors.length) msg = `⚠ Publicerad, men dessa fält nekades av Shopify: ${result.mfErrors.join(" · ")}`;
       setPublishState((s) => ({ ...s, [p.id]: msg }));
       if (source === "queue") updateQueueItem(p.id, { currentHandle: p.handle });
       else setForm((f) => ({ ...f, currentHandle: f.handle }));
@@ -667,7 +700,7 @@ function EcloreProduktstudio() {
       try {
         const patch = await genField(cur, field, storeProfile, false, settings.anthropicKey);
         cur = { ...cur, ...patch };
-        setForm(cur);
+        setForm((f) => ({ ...f, ...patch }));
       } catch (e) { console.error(e); failed.push(label); }
     }
     if (failed.length) {
