@@ -128,7 +128,7 @@ PRODUKTFAKTA – använd ENDAST dessa fakta. Hitta ALDRIG på certifieringar, ut
 - Målgrupp / hud- eller hårtyp: ${p.audience || "alla"}
 - Storlek: ${p.size || "(ej angiven)"}${p.price ? `, Pris: ${p.price} kr` : ""}
 - Certifieringar och egenskaper (de ENDA som får nämnas): ${certs}
-- Utmärkelser: ${p.awards || "Inga – nämn inga utmärkelser"}
+- Utmärkelser: ${p.awards || (p.sourceText ? "Inga angivna i fältet – MEN om källmaterialet ovan UTTRYCKLIGEN nämner utmärkelser eller priser ska du lyfta dem tidigt (ange namnet exakt som i källan – hitta aldrig på)" : "Inga – nämn inga utmärkelser")}
 - INCI / ingredienser: ${p.inci || "(ej angiven)"}
 - Övrig USP/info: ${p.usp || "—"}
 - Källmaterial från varumärkets egen produktsida (verifiera fakta här och leta efter utmärkelser, effekter och positionering): ${String(p.sourceText || "").slice(0, 2500) || "(ej hämtat)"}
@@ -680,6 +680,9 @@ const publishProduct = async (s, p, onStep) => {
         <div style={S.col}>
           <label style={S.label}>Utmärkelser</label>
           <input style={S.input} value={p.awards} onChange={(e) => set((x) => ({ ...x, awards: e.target.value }))} placeholder="t.ex. Global Makeup Awards 2023 (Winner)" />
+          {!p.awards && /award|utmärkels|prisbelönt|winner|bronze|brons|highly commended/i.test(p.sourceText || "") && (
+            <p style={{ ...S.small, color: "#7A5B12", marginTop: 4 }}>💡 Källtexten verkar nämna utmärkelser – kolla källan och fyll gärna i fältet för full effekt i title och ingress.</p>
+          )}
         </div>
         <div style={S.col}>
           <label style={S.label}>Övrig USP / info</label>
@@ -1396,7 +1399,7 @@ function EcloreProduktstudio() {
                 <button style={S.btnGhost} onClick={() => generateImageMeta(i)} disabled={!!generating[`img_${i}`]}>
                   {generating[`img_${i}`] ? "Genererar..." : "Generera"}
                 </button>
-                {img.suggestedFilename && <button style={S.btnGhost} onClick={() => doCopy(`imgf_${i}`, img.suggestedFilename)}>{copied === `imgf_${i}` ? "✓" : "Kopiera filnamn"}</button>}
+                {(img.suggestedFilename || img.filename) && <button style={S.btnGhost} onClick={() => doCopy(`imgf_${i}`, img.suggestedFilename || img.filename)}>{copied === `imgf_${i}` ? "✓" : "Kopiera filnamn"}</button>}
                 {img.altText && <button style={S.btnGhost} onClick={() => doCopy(`imga_${i}`, img.altText)}>{copied === `imga_${i}` ? "✓" : "Kopiera alt-text"}</button>}
                 <button style={{ ...S.btnGhost, color: "#9B3B2E", borderColor: "#D8B4AC" }} onClick={() => setField("images", form.images.filter((_, x) => x !== i))}>Ta bort</button>
               </div>
