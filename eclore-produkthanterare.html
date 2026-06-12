@@ -103,6 +103,7 @@ const emptyProduct = () => ({
   id: Date.now() + Math.random(),
   shopifyId: "", handle: "", currentHandle: "", handleVariants: [],
   productName: "", originalName: "", brand: "", brandNote: "", productType: "", audience: "",
+  brandUrl: "", sourceText: "",
   size: "", price: "", inci: "", certs: [], awards: "", usp: "",
   primaryKeyword: "", secondaryKeywords: "",
   nameVariants: [], seoTitle: "", titleVariants: [], titleWhy: "",
@@ -130,6 +131,8 @@ PRODUKTFAKTA – använd ENDAST dessa fakta. Hitta ALDRIG på certifieringar, ut
 - Utmärkelser: ${p.awards || "Inga – nämn inga utmärkelser"}
 - INCI / ingredienser: ${p.inci || "(ej angiven)"}
 - Övrig USP/info: ${p.usp || "—"}
+- Källmaterial från varumärkets egen produktsida (verifiera fakta här och leta efter utmärkelser, effekter och positionering): ${String(p.sourceText || "").slice(0, 2500) || "(ej hämtat)"}
+- Leverantörens originalbeskrivning (KÄLLMATERIAL – hämta fakta, vinklar och USP:ar härifrån, t.ex. effekter, utmärkelser, positionering. Skriv om på svenska, kopiera ALDRIG rakt av): ${String((p._orig && p._orig.body) || p.description || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 1500) || "(saknas)"}
 
 SÖKORD:
 - Primärt sökord: ${p.primaryKeyword || "(ej valt – utgå från produkttypen)"}
@@ -167,7 +170,7 @@ const buildPrompts = (p, storeProfile) => {
 
     bulletPoints: `${ctx}\n\nSkriv exakt 5 bullet points (max 9 ord vardera) för produktsidan. Ordning: 1) viktigaste effekten/resultatet, 2) nyckelingrediens + effekt, 3) certifiering/egenskap från listan ELLER andra effekt, 4) passar-för (hudtyp/behov), 5) ursprung/hantverk eller storlek/räckvidd. Inga punkter i slutet. Svara BARA med JSON-array: ["...","...","...","...","..."]`,
 
-    description: `${ctx}\n\nSkriv en strukturerad produktbeskrivning (max 350 ord) i HTML med exakt denna struktur:\n<h2>[Primärt sökord/produkttyp] – [kort nyttofras]</h2>\n<p>2–3 meningar: vad produkten är, primärt sökord i första meningen, ursprung/hantverk om relevant, ev. utmärkelse.</p>\n<h2>Ingredienser & effekter</h2>\n<p>3–4 nyckelingredienser ur INCI med konkret effekt, ingrediensnamn i <strong>fetstil</strong>.</p>\n<h2>Resultat & fördelar</h2>\n<ul><li>3–4 konkreta fördelar kopplade till köparens frågor ovan</li></ul>\n<h2>För vem passar ${p.productType ? p.productType.toLowerCase() : "produkten"}?</h2>\n<p>Målgrupp/hudtyp + avsluta med en konkret användningssituation.</p>\n\nReturnera BARA HTML.`,
+    description: `${ctx}\n\nSkriv en strukturerad produktbeskrivning (max 350 ord) i HTML med exakt denna struktur:\n<h2>[Primärt sökord/produkttyp] – [kort nyttofras]</h2>\n<p>2–3 meningar: vad produkten är, primärt sökord i första meningen, ursprung/hantverk om relevant, ev. utmärkelse.</p>\n<h2>Ingredienser & effekter</h2>\n<p>3–4 nyckelingredienser ur INCI med konkret effekt, ingrediensnamn i <strong>fetstil</strong>.</p>\n<h2>Resultat & fördelar</h2>\n<ul><li>3–4 konkreta fördelar kopplade till köparens frågor ovan</li></ul>\n<h2>För vem passar ${p.productType ? p.productType.toLowerCase() : "produkten"}?</h2>\n<p>Målgrupp/hudtyp + avsluta med en konkret användningssituation.</p>\n\nLägg in EN intern länk naturligt i löptexten till ${ti.coll} med beskrivande ankartext (kategori/produkttyp – aldrig "klicka här"), gärna i sista stycket. Använd en ANNAN ankartext än FAQ:ns länk.\n\nReturnera BARA HTML.`,
 
     faq: `${ctx}\n\nSkriv exakt 5 FAQ på svenska som matchar VERKLIGA köparfrågor för produkttypen (se listan ovan) – inte generiska hudvårdsfrågor. Minst en fråga om produktens nyckelingrediens(er), och en om ursprung/certifiering/utmärkelse (endast angivna fakta). Svar 40–70 ord i HTML med <p>, och i ETT av svaren en intern länk: <a href="${ti.coll}">relevant ankartext</a>. Svara BARA med JSON: {"faq_q1":"...","faq_a1":"<p>...</p>","faq_q2":"...","faq_a2":"<p>...</p>","faq_q3":"...","faq_a3":"<p>...</p>","faq_q4":"...","faq_a4":"<p>...</p>","faq_q5":"...","faq_a5":"<p>...</p>"}`,
 
@@ -619,7 +622,7 @@ const publishProduct = async (s, p, onStep) => {
     tab: (on) => ({ padding: "9px 16px", borderRadius: 8, border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", background: on ? "#46522F" : "transparent", color: on ? "#FBFCF8" : "#46522F" }),
     status: (s) => ({ fontSize: 11, fontWeight: 700, padding: "3px 8px", borderRadius: 999, background: s === "klar" ? "#E4EAD6" : s === "genererar" ? "#FDF3D7" : s === "fel" ? "#F6E0DB" : "#EDEFE6", color: s === "klar" ? "#33401E" : s === "genererar" ? "#7A5B12" : s === "fel" ? "#9B3B2E" : "#5A6450" }),
   };
-  const FactFields = ({ p, set }) => (
+  const FactFields = ({ p, set, onFetchSource }) => (
     <>
       <div style={{ marginBottom: 10 }}>
         <label style={S.label}>Produktnamn (gärna originalnamnet, även engelskt)</label>
@@ -682,6 +685,19 @@ const publishProduct = async (s, p, onStep) => {
           <label style={S.label}>Övrig USP / info</label>
           <input style={S.input} value={p.usp} onChange={(e) => set((x) => ({ ...x, usp: e.target.value }))} placeholder="t.ex. ovanlig kombination av ingredienser" />
         </div>
+      </div>
+      <div style={{ marginBottom: 10 }}>
+        <label style={S.label}>Länk till produkten hos varumärket (valfritt – hämtar fakta & utmärkelser)</label>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          <input style={{ ...S.input, flex: "1 1 200px" }} value={p.brandUrl} onChange={(e) => set((x) => ({ ...x, brandUrl: e.target.value }))} placeholder="https://hoiahomespa.com/product/..." />
+          {onFetchSource && <button style={S.btnGhost} onClick={onFetchSource} disabled={!p.brandUrl || p._srcBusy}>{p._srcBusy ? "Hämtar..." : "Hämta källtext"}</button>}
+        </div>
+        {p.sourceText ? (
+          <details style={{ marginTop: 6 }}>
+            <summary style={{ ...S.small, cursor: "pointer" }}>Källtext hämtad ({p.sourceText.length} tecken) – klicka för att granska/redigera</summary>
+            <textarea style={{ ...S.ta, minHeight: 100, marginTop: 6 }} value={p.sourceText} onChange={(e) => set((x) => ({ ...x, sourceText: e.target.value }))} />
+          </details>
+        ) : null}
       </div>
     </>
   );
@@ -814,6 +830,31 @@ function EcloreProduktstudio() {
     setSfBusy("");
   };
 
+  const fetchSourceText = async (p, set) => {
+    if (!p.brandUrl) return;
+    let proxy = (settings.proxyUrl || "").trim().replace(/\/$/, "");
+    if (!proxy) { setSfError("Källhämtning kräver CORS-proxyn – fyll i proxy-URL och uppdatera workern med nya worker.js."); return; }
+    if (!/^https?:\/\//.test(proxy)) proxy = "https://" + proxy;
+    set((x) => ({ ...x, _srcBusy: true }));
+    try {
+      const res = await fetch(`${proxy}/fetch?url=${encodeURIComponent(p.brandUrl)}`);
+      if (!res.ok) throw new Error(`Workern svarade ${res.status} – är den uppdaterad med /fetch-stödet?`);
+      const html = await res.text();
+      const text = html
+        .replace(/<script[\s\S]*?<\/script>/gi, " ")
+        .replace(/<style[\s\S]*?<\/style>/gi, " ")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/\s+/g, " ")
+        .trim().slice(0, 4000);
+      set((x) => ({ ...x, sourceText: text, _srcBusy: false }));
+      setSfError("");
+    } catch (e) {
+      console.error(e);
+      set((x) => ({ ...x, _srcBusy: false }));
+      setSfError(`Kunde inte hämta källsidan: ${e.message}`);
+    }
+  };
+
   const fetchToQueue = async () => {
     const ids = queueIds.split(/[\n,;]+/).map((x) => x.trim()).filter(Boolean);
     if (!sfReady || !ids.length) { setSfError("Fyll i butik, token och minst ett produkt-ID."); return; }
@@ -931,6 +972,26 @@ function EcloreProduktstudio() {
       let cur = { ...items[i], status: "genererar" };
       updateQueueItem(cur.id, { status: "genererar" });
       const failed = [];
+      // Hämta källtext från varumärkeslänken automatiskt om den saknas
+      if (cur.brandUrl && !cur.sourceText && settings.proxyUrl) {
+        setQueueProgress(`Produkt ${i + 1}/${items.length} · ${cur.productName.slice(0, 28)} · Hämtar källtext...`);
+        try {
+          let proxy = settings.proxyUrl.trim().replace(/\/$/, "");
+          if (!/^https?:\/\//.test(proxy)) proxy = "https://" + proxy;
+          const res = await fetch(`${proxy}/fetch?url=${encodeURIComponent(cur.brandUrl)}`);
+          if (res.ok) {
+            const html = await res.text();
+            const text = html
+              .replace(/<script[\s\S]*?<\/script>/gi, " ")
+              .replace(/<style[\s\S]*?<\/style>/gi, " ")
+              .replace(/<[^>]+>/g, " ")
+              .replace(/\s+/g, " ")
+              .trim().slice(0, 4000);
+            cur = { ...cur, sourceText: text };
+            updateQueueItem(cur.id, { sourceText: text });
+          }
+        } catch (e) { console.error("Källtext kunde inte hämtas, fortsätter utan", e); }
+      }
       for (const [field, label] of PIPELINE) {
         if (field === "keywords" && cur.primaryKeyword) continue;
         setQueueProgress(`Produkt ${i + 1}/${items.length} · ${cur.productName.slice(0, 28)} · ${label}...`);
@@ -1144,7 +1205,7 @@ function EcloreProduktstudio() {
             </div>
             {editId === p.id && (
               <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid #E2E6D8" }}>
-                <FactFields p={p} set={(fn) => updateQueueItem(p.id, fn)} />
+                <FactFields p={p} set={(fn) => updateQueueItem(p.id, fn)} onFetchSource={() => fetchSourceText(p, (fn) => updateQueueItem(p.id, fn))} />
               </div>
             )}
           </div>
@@ -1154,7 +1215,7 @@ function EcloreProduktstudio() {
       {draft && (
         <div style={{ ...S.card, borderLeft: "4px solid #46522F" }}>
           <h2 style={S.h2}>Ny produkt till kön</h2>
-          <FactFields p={draft} set={setDraft} />
+          <FactFields p={draft} set={setDraft} onFetchSource={() => fetchSourceText(draft, setDraft)} />
           <div style={{ display: "flex", gap: 6 }}>
             <button style={S.btn} disabled={!draft.productName}
               onClick={() => { setQueue((q) => [...q, { ...draft, originalName: draft.productName }]); setDraft(emptyProduct()); }}>
@@ -1201,7 +1262,7 @@ function EcloreProduktstudio() {
         </section>
         <section style={S.card}>
           <h2 style={S.h2}>1 · Produktfakta</h2>
-          <FactFields p={form} set={setForm} />
+          <FactFields p={form} set={setForm} onFetchSource={() => fetchSourceText(form, setForm)} />
           <div style={{ marginTop: 4 }}>
             <button style={S.btnGhost} onClick={() => generateField("productNames")} disabled={!!generating.productNames}>
               {generating.productNames ? "Föreslår..." : "Föreslå svenskt produktnamn"}
@@ -1335,7 +1396,8 @@ function EcloreProduktstudio() {
                 <button style={S.btnGhost} onClick={() => generateImageMeta(i)} disabled={!!generating[`img_${i}`]}>
                   {generating[`img_${i}`] ? "Genererar..." : "Generera"}
                 </button>
-                {img.altText && <button style={S.btnGhost} onClick={() => doCopy(`img_${i}`, `${img.suggestedFilename}\n${img.altText}`)}>{copied === `img_${i}` ? "✓" : "Kopiera"}</button>}
+                {img.suggestedFilename && <button style={S.btnGhost} onClick={() => doCopy(`imgf_${i}`, img.suggestedFilename)}>{copied === `imgf_${i}` ? "✓" : "Kopiera filnamn"}</button>}
+                {img.altText && <button style={S.btnGhost} onClick={() => doCopy(`imga_${i}`, img.altText)}>{copied === `imga_${i}` ? "✓" : "Kopiera alt-text"}</button>}
                 <button style={{ ...S.btnGhost, color: "#9B3B2E", borderColor: "#D8B4AC" }} onClick={() => setField("images", form.images.filter((_, x) => x !== i))}>Ta bort</button>
               </div>
             </div>
