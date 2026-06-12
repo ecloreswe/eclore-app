@@ -895,11 +895,29 @@ function EcloreProduktstudio() {
   const generateImageMeta = async (idx) => {
     setGenerating((g) => ({ ...g, [`img_${idx}`]: true }));
     try {
-      const prompt = `${buildCtx(form, storeProfile)}\n\nFör produktbild ${idx + 1}, nuvarande filnamn: "${form.images[idx]?.filename || ""}". Generera:\n1. SEO-filnamn på svenska (lowercase, bindestreck, .jpg, max 60 tecken, primärt sökord eller produkttyp + varumärke)\n2. Alt-text på svenska (max 125 tecken, beskriv bilden + produktnamn)\nSvara BARA med JSON: {"suggestedFilename":"...","altText":"..."}`;
-      const j = JSON.parse(stripFences(await callClaude(prompt, settings.anthropicKey)));
-      const imgs = [...form.images];
-      imgs[idx] = { ...imgs[idx], suggestedFilename: j.suggestedFilename, altText: j.altText };
-      setField("images", imgs);
+      const img = form.images[idx] || {};
+      let imageBlock = null;
+      if (img.url) {
+        try {
+          const u = img.url + (img.url.includes("?") ? "&" : "?") + "width=800";
+          const blob = await (await fetch(u)).blob();
+          const b64 = await new Promise((resolve, reject) => {
+            const r = new FileReader();
+            r.onload = () => resolve(r.result.split(",")[1]);
+            r.onerror = reject;
+            r.readAsDataURL(blob);
+          });
+          imageBlock = { type: "image", source: { type: "base64", media_type: blob.type || "image/jpeg", data: b64 } };
+        } catch (e) { console.error("Kunde inte hämta bilden – genererar utan bildanalys", e); }
+      }
+      const promptText = `${buildCtx(form, storeProfile)}\n\nFör produktbild ${idx + 1}${imageBlock ? " (bilden bifogas – titta på den och beskriv vad som FAKTISKT syns: produkt/förpackning, händer, hudtextur, miljö, färger osv.)" : ""}, nuvarande filnamn: "${img.filename || ""}". Generera:\n1. SEO-filnamn på svenska (lowercase, bindestreck, .jpg, max 60 tecken, primärt sökord eller produkttyp + det bilden visar)\n2. Alt-text på svenska (max 125 tecken) som beskriver bildens faktiska innehåll + produktnamnet\nSvara BARA med JSON: {"suggestedFilename":"...","altText":"..."}`;
+      const content = imageBlock ? [imageBlock, { type: "text", text: promptText }] : promptText;
+      const j = safeParse(stripFences(await callClaude(content, settings.anthropicKey)));
+      setForm((f) => {
+        const imgs = [...f.images];
+        imgs[idx] = { ...imgs[idx], suggestedFilename: j.suggestedFilename, altText: j.altText };
+        return { ...f, images: imgs };
+      });
     } catch (e) { console.error(e); }
     setGenerating((g) => ({ ...g, [`img_${idx}`]: false }));
   };
