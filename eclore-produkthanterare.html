@@ -159,7 +159,7 @@ const buildPrompts = (p, storeProfile) => {
 
     seoTitle: `${ctx}\n\nSkriv 3 olika title-taggar med olika strategier:\n1. SÖKORD FÖRST: primärt sökord + mest särskiljande detalj (doft, variant eller certifiering).\n2. VARUMÄRKE + SÖKORD: varumärke/produktnamn + produkttyp eller sökord.\n3. BEHOV FÖRST: målgruppens problem/behov + lösning, t.ex. "Schampo för torrt hår – naturligt & sulfatfritt".\n\nVälj sedan den bästa enligt regeln:\n- Varumärket har egen sökvolym ELLER produkten har en utmärkelse → välj 2\n- Tydligt problem/målgrupp angiven → välj 3\n- Annars → välj 1\n\nRegler för ALLA tre:\n- Max 60 tecken TOTALT, ska sluta med " | éclore"\n- Naturlig svensk versalisering (inte Stor Bokstav På Varje Ord)\n- Inga utfyllnadsord ("köp", "bästa", "online") och inget pris\nSvara BARA med JSON: {"variants":["...","...","..."],"pick":1,"why":"max 12 ord om varför"}`,
 
-    seoDescription: `${ctx}\n\nSkriv en meta-beskrivning på max 150 tecken. Primärt sökord tidigt + en konkret nytta. Avsluta med det STARKASTE återstående säljargumentet, i prioritetsordning: 1) utmärkelse, 2) konkret resultat (t.ex. effekt eller tidsaspekt), 3) certifiering/egenskap från listan, 4) "Fri frakt över 599 kr" (passar särskilt när priset är under 599 kr). ALDRIG generiska avslut som "Upptäck hos éclore" – varje produkt ska få en unik, konkret avslutning. Returnera BARA texten.`,
+    seoDescription: `${ctx}\n\nSkriv en meta-beskrivning på max 150 tecken. Primärt sökord tidigt + en konkret nytta. Avsluta med det STARKASTE återstående säljargumentet, i prioritetsordning: 1) utmärkelse, 2) konkret resultat (t.ex. effekt eller tidsaspekt), 3) certifiering/egenskap från listan, 4) "Fri frakt över 599 kr" (passar särskilt när priset är under 599 kr). ALDRIG generiska avslut som "Upptäck hos éclore" – varje produkt ska få en unik, konkret avslutning. Returnera ENDAST meta-beskrivningen som EN enda rad text – ingen rubrik, ingen produktbeskrivning, ingen övrig text före eller efter.`,
 
     urlHandle: `${ctx}\n\nNuvarande URL-handle: "${p.currentHandle || "(ny produkt)"}".\nFöreslå 3 URL-handles (slug) för produktsidan. Regler: lowercase, endast a-z, 0-9 och bindestreck (å/ä→a, ö→o, é→e), max 60 tecken, primärt sökord eller produkttyp först, inget varumärke om det inte tillför sökvärde, inga stoppord (och, med, för i onödan). Variera: 1 = sökord + variant/doft, 2 = produkttyp + behov, 3 = kortast möjliga. Svara BARA med JSON-array: ["...","...","..."]`,
 
@@ -243,6 +243,10 @@ const genField = async (p, field, storeProfile, autoPick, apiKey) => {
       const valid = v.filter((t) => t.length <= 60 && /\|\s*éclore\s*$/i.test(t));
       if (v[pick] && (v[pick].length > 60) && valid.length) pick = v.indexOf(valid[0]);
       return { titleVariants: v, seoTitle: v[pick] || v[0] || "", titleWhy: j.why || "" };
+    }
+    case "seoDescription": {
+      const firstLine = mdToHtml(raw).split("\n").map((l) => l.trim()).filter(Boolean)[0] || "";
+      return { seoDescription: firstLine.replace(/^#+\s*/, "") };
     }
     case "urlHandle": {
       const v = safeParse(raw);
