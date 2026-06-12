@@ -143,20 +143,21 @@ KÖPARENS VANLIGASTE FRÅGOR för denna produkttyp: ${ti.concerns}
 
 HÅRDA REGLER:
 1. Svenska. Naturligt språk, ingen keyword stuffing.
-2. Primärt sökord ska finnas naturligt i första meningen av beskrivning och ingress.
+2. Primärt sökord ska finnas i första meningen av beskrivning och ingress – men det FÅR böjas och kompletteras med småord (med, och, för) så att meningen blir korrekt svenska. Grammatik går ALLTID före exakt ordföljd.
 3. Nämn certifieringar/egenskaper ENDAST om de står i listan ovan. Skriv aldrig "ekologisk", "COSMOS", "parfymfri" etc. om det inte är angivet.
 4. Nämn utmärkelser endast om de anges – och då gärna tidigt.
 5. H2-rubriker = sökord och kundnytta, inte varumärkesupprepning.
 6. Påstå inget medicinskt (botar, läker, behandlar eksem etc.) – skriv "kan lugna", "återfuktar", "stödjer".
 7. Fetstil skrivs ALLTID som <strong>...</strong> i HTML – ALDRIG markdown-asterisker (**ord**).
-8. Om "Ekologiska ingredienser" anges: skriv "med ekologiska ingredienser" eller nämn specifika ekologiska ingredienser (t.ex. "ekologisk arganolja") – påstå ALDRIG att hela produkten är ekologisk eller certifierad om inte COSMOS/Ecocert anges.`;
+8. Om "Ekologiska ingredienser" anges: skriv "med ekologiska ingredienser" eller nämn specifika ekologiska ingredienser (t.ex. "ekologisk arganolja") – påstå ALDRIG att hela produkten är ekologisk eller certifierad om inte COSMOS/Ecocert anges.
+9. Korrekturläs all text: korrekt svensk stavning och grammatik. Var extra noga med sammansatta ord och ingrediensnamn (t.ex. "plommonkärnolja", aldrig "plommenkärnolja") och adjektivböjning ("detta naturliga schampo", aldrig "detta naturligt schampo").`;
 };
 
 const buildPrompts = (p, storeProfile) => {
   const ctx = buildCtx(p, storeProfile);
   const ti = typeInfoOf(p);
   return {
-    keywords: `${ctx}\n\nFöreslå sökord för denna produkt baserat på produkttyp, ingredienser och målgrupp. Primärt sökord = mest köpnära long-tail (2–4 ord, svenska, realistisk sökvolym). 5 sekundära sökord som varierar behov/egenskap. Svara BARA med JSON: {"primary":"...","secondary":["...","...","...","...","..."]}`,
+    keywords: `${ctx}\n\nFöreslå sökord för denna produkt baserat på produkttyp, ingredienser och målgrupp. Primärt sökord = mest köpnära long-tail (2–4 ord, svenska, realistisk sökvolym). Sökorden ska vara korrekt stavad, naturlig svenska – kontrollera särskilt sammansatta ord (t.ex. "plommonolja", aldrig "plommolja"). 5 sekundära sökord som varierar behov/egenskap. Svara BARA med JSON: {"primary":"...","secondary":["...","...","...","...","..."]}`,
 
     productNames: `${ctx}\n\nProduktens nuvarande (ofta engelska) namn: "${p.originalName || p.productName}".\n\nFöreslå 3 svenska produktnamn enligt éclores namnkonvention:\n[Produkttyp] [Ingrediens/Doft] – [Viktigaste egenskap] – [Storlek]\nExempel: "Deodorant Lavendel – Aluminiumfri – 50 ml", "Ansiktsserum Svart Vitlök – Anti-age – 30 ml".\n\nRegler:\n- Inget varumärkesnamn först (namnet blir H1 och ska vara sökordsfokuserat)\n- Storlek med mellanslag: "50 ml", "100 g"\n- Behåll ev. känt produktnamn som mellandel ENDAST om det tillför sökvärde\n- Variera: 1 = ingrediens/doft-fokus, 2 = behov/egenskap-fokus, 3 = enklast möjliga\nVälj också den bästa (pick = 1, 2 eller 3) utifrån sökbarhet och tydlighet.\nSvara BARA med JSON: {"names":["...","...","..."],"pick":1}`,
 
