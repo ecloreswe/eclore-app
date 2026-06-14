@@ -131,9 +131,9 @@ PRODUKTFAKTA – använd ENDAST dessa fakta. Hitta ALDRIG på certifieringar, ut
 - Storlek: ${p.size || "(ej angiven)"}${p.price ? `, Pris: ${p.price} kr` : ""}
 - Certifieringar och egenskaper (de ENDA som får nämnas): ${certs}
 - Utmärkelser: ${p.awards || (p.sourceText ? "Inga angivna i fältet – MEN om källmaterialet ovan UTTRYCKLIGEN nämner utmärkelser eller priser ska du lyfta dem tidigt (ange namnet exakt som i källan – hitta aldrig på)" : "Inga – nämn inga utmärkelser")}
-- ${p.productType === "Accessoar / Necessär" ? "Material och detaljer" : "INCI / ingredienser"}: ${p.inci || "(ej angiven)"}
+- ${p.productType === "Accessoar / Necessär" ? "Material och detaljer" : "INCI / ingredienser"}: ${p.inci || (p.sourceText ? "(ej angivet manuellt – leta efter ingredienslista i källmaterialet nedan och använd den om du hittar den, annars utelämna)" : "(ej angiven)")}
 - Övrig USP/info: ${p.usp || "—"}
-- Källmaterial från varumärkets egen produktsida (verifiera fakta här och leta efter utmärkelser, effekter och positionering): ${String(p.sourceText || "").slice(0, 2500) || "(ej hämtat)"}
+- Källmaterial från varumärkets egen produktsida (verifiera fakta här, leta efter utmärkelser, effekter, positionering OCH ingredienslista/INCI om INCI-fältet ovan är tomt): ${String(p.sourceText || "").slice(0, 3500) || "(ej hämtat)"}
 - Leverantörens originalbeskrivning (KÄLLMATERIAL – hämta fakta, vinklar och USP:ar härifrån, t.ex. effekter, utmärkelser, positionering. Skriv om på svenska, kopiera ALDRIG rakt av): ${String((p._orig && p._orig.body) || p.description || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 1500) || "(saknas)"}
 
 SÖKORD:
@@ -162,7 +162,7 @@ const buildPrompts = (p, storeProfile) => {
   const ti = typeInfoOf(p);
   const acc = p.productType === "Accessoar / Necessär";
   return {
-    keywords: `${ctx}\n\nFöreslå sökord för denna produkt baserat på produkttyp, ingredienser och målgrupp. Primärt sökord = mest köpnära long-tail (2–4 ord, svenska, realistisk sökvolym). Sökorden ska vara korrekt stavad, naturlig svenska – kontrollera särskilt sammansatta ord (t.ex. "plommonolja", aldrig "plommolja"). 5 sekundära sökord som varierar behov/egenskap. Svara BARA med JSON: {"primary":"...","secondary":["...","...","...","...","..."]}`,
+    keywords: `${ctx}\n\nFöreslå sökord för denna produkt.\n\nPRIMÄRT SÖKORD – välj ETT enligt denna prioritetsordning:\n1. Hudtyp/behov + produkttyp (t.ex. "kroppsskrubb torr hud", "schampo känslig hårbotten") – om hudtyp eller behov framgår av INCI, källmaterial eller produktnamn\n2. Naturlig/vegansk + produkttyp (t.ex. "naturlig kroppsskrubb", "veganskt schampo") – om certifieringar finns och alternativ 1 inte är tillämpligt\n3. Produkttyp + distinkt ingrediens (t.ex. "kroppsskrubb blåbär") – ENDAST om ingrediensen är helt unik och inte täcks av alternativen ovan\n\nPrimärt sökord ska vara: 2–4 ord, korrekt svenska, realistisk sökvolym, köpnära. Utgå gärna från dessa typiska sökord för produkttypen: ${ti.kw.join(", ")}\n\nSEKUNDÄRA SÖKORD – exakt 5 st som varierar längs dessa axlar:\n- En variant med distinkt ingrediens (t.ex. "kroppsskrubb blåbär lavendel")\n- En variant med certifiering om relevant (t.ex. "vegansk kroppsskrubb")\n- En engelsk variant om produkten kan sökas på engelska (t.ex. "body scrub dry skin")\n- En long-tail med fråge- eller jämförelseformulering (t.ex. "bästa kroppsskrubben för torr hud")\n- En generisk variant utan ingrediens (t.ex. "exfolierande kroppsskrubb")\n\nSökorden ska vara korrekt stavad, naturlig svenska – kontrollera särskilt sammansatta ord (t.ex. "kroppsskrubb", aldrig "kropps skrubb").\nSvara BARA med JSON: {"primary":"...","secondary":["...","...","...","...","..."]}`,
 
     productNames: `${ctx}\n\nProduktens nuvarande (ofta engelska) namn: "${p.originalName || p.productName}".\n\nFöreslå 3 svenska produktnamn enligt éclores namnkonvention:\n[Produkttyp] [Ingrediens/Doft] – [Viktigaste egenskap] – [Storlek]\nExempel: "Deodorant Lavendel – Aluminiumfri – 50 ml", "Ansiktsserum Svart Vitlök – Anti-age – 30 ml".\n\nRegler:\n- Inget varumärkesnamn först (namnet blir H1 och ska vara sökordsfokuserat)\n- Storlek med mellanslag: "50 ml", "100 g"\n- Tankstreck "–" som avskiljare, aldrig bindestreck "-"\n- Behåll ev. känt produktnamn som mellandel ENDAST om det tillför sökvärde\n- Variera: 1 = ingrediens/doft-fokus, 2 = behov/egenskap-fokus, 3 = enklast möjliga\nVälj också den bästa (pick = 1, 2 eller 3) utifrån sökbarhet och tydlighet.\nSvara BARA med JSON: {"names":["...","...","..."],"pick":1}`,
 
@@ -854,7 +854,7 @@ function EcloreProduktstudio() {
         .replace(/<style[\s\S]*?<\/style>/gi, " ")
         .replace(/<[^>]+>/g, " ")
         .replace(/\s+/g, " ")
-        .trim().slice(0, 4000);
+        .trim().slice(0, 6000);
       set((x) => ({ ...x, sourceText: text, _srcBusy: false }));
       setSfError("");
     } catch (e) {
@@ -995,7 +995,7 @@ function EcloreProduktstudio() {
               .replace(/<style[\s\S]*?<\/style>/gi, " ")
               .replace(/<[^>]+>/g, " ")
               .replace(/\s+/g, " ")
-              .trim().slice(0, 4000);
+              .trim().slice(0, 6000);
             cur = { ...cur, sourceText: text };
             updateQueueItem(cur.id, { sourceText: text });
           }
