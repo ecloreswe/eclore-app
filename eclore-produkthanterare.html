@@ -162,7 +162,7 @@ const buildPrompts = (p, storeProfile) => {
   const ti = typeInfoOf(p);
   const acc = p.productType === "Accessoar / Necessär";
   return {
-    keywords: `${ctx}\n\nFöreslå sökord för denna produkt.\n\nPRIMÄRT SÖKORD – välj ETT enligt denna prioritetsordning:\n1. Hudtyp/behov + produkttyp (t.ex. "kroppsskrubb torr hud", "schampo känslig hårbotten") – om hudtyp eller behov framgår av INCI, källmaterial eller produktnamn\n2. Naturlig/vegansk + produkttyp (t.ex. "naturlig kroppsskrubb", "veganskt schampo") – om certifieringar finns och alternativ 1 inte är tillämpligt\n3. Produkttyp + distinkt ingrediens (t.ex. "kroppsskrubb blåbär") – ENDAST om ingrediensen är helt unik och inte täcks av alternativen ovan\n\nPrimärt sökord ska vara: 2–4 ord, korrekt svenska, realistisk sökvolym, köpnära. Utgå gärna från dessa typiska sökord för produkttypen: ${ti.kw.join(", ")}\n\nSEKUNDÄRA SÖKORD – exakt 5 st som varierar längs dessa axlar:\n- En variant med distinkt ingrediens (t.ex. "kroppsskrubb blåbär lavendel")\n- En variant med certifiering om relevant (t.ex. "vegansk kroppsskrubb")\n- En engelsk variant om produkten kan sökas på engelska (t.ex. "body scrub dry skin")\n- En long-tail med fråge- eller jämförelseformulering (t.ex. "bästa kroppsskrubben för torr hud")\n- En generisk variant utan ingrediens (t.ex. "exfolierande kroppsskrubb")\n\nSökorden ska vara korrekt stavad, naturlig svenska – kontrollera särskilt sammansatta ord (t.ex. "kroppsskrubb", aldrig "kropps skrubb").\nSvara BARA med JSON: {"primary":"...","secondary":["...","...","...","...","..."]}`,
+    keywords: `${ctx}\n\nFöreslå sökord för denna produkt.\n\nPRIMÄRT SÖKORD – välj ETT enligt denna prioritetsordning:\n1. Hudtyp/behov + produkttyp (t.ex. "kroppsskrubb torr hud", "schampo känslig hårbotten") – om hudtyp eller behov framgår av INCI, källmaterial eller produktnamn\n2. Naturlig/vegansk + produkttyp (t.ex. "naturlig kroppsskrubb", "veganskt schampo") – DEFAULT-VAL när inget tydligt behov finns. Välj alltid detta framför ingrediens\n3. Produkttyp + ingrediens (t.ex. "kroppsskrubb blåbär") – SISTA UTVÄG och bara om ingrediensen är ovanlig och aktivt sökt. Vanliga ingredienser som blåbär, lavendel, kokos, shea, argan är INTE tillräckligt unika – välj då alternativ 2\n\nPrimärt sökord ska vara: 2–4 ord, korrekt svenska, realistisk sökvolym, köpnära. Utgå gärna från dessa typiska sökord för produkttypen: ${ti.kw.join(", ")}\n\nSEKUNDÄRA SÖKORD – exakt 5 st som varierar längs dessa axlar:\n- En variant med distinkt ingrediens (t.ex. "kroppsskrubb blåbär lavendel")\n- En variant med certifiering om relevant (t.ex. "vegansk kroppsskrubb")\n- En engelsk variant om produkten kan sökas på engelska (t.ex. "body scrub dry skin")\n- En long-tail med fråge- eller jämförelseformulering (t.ex. "bästa kroppsskrubben för torr hud")\n- En generisk variant utan ingrediens (t.ex. "exfolierande kroppsskrubb")\n\nSökorden ska vara korrekt stavad, naturlig svenska – kontrollera särskilt sammansatta ord (t.ex. "kroppsskrubb", aldrig "kropps skrubb").\nSvara BARA med JSON: {"primary":"...","secondary":["...","...","...","...","..."]}`,
 
     productNames: `${ctx}\n\nProduktens nuvarande (ofta engelska) namn: "${p.originalName || p.productName}".\n\nFöreslå 3 svenska produktnamn enligt éclores namnkonvention:\n[Produkttyp] [Ingrediens/Doft] – [Viktigaste egenskap] – [Storlek]\nExempel: "Deodorant Lavendel – Aluminiumfri – 50 ml", "Ansiktsserum Svart Vitlök – Anti-age – 30 ml".\n\nRegler:\n- Inget varumärkesnamn först (namnet blir H1 och ska vara sökordsfokuserat)\n- Storlek med mellanslag: "50 ml", "100 g"\n- Tankstreck "–" som avskiljare, aldrig bindestreck "-"\n- Behåll ev. känt produktnamn som mellandel ENDAST om det tillför sökvärde\n- Variera: 1 = ingrediens/doft-fokus, 2 = behov/egenskap-fokus, 3 = enklast möjliga\nVälj också den bästa (pick = 1, 2 eller 3) utifrån sökbarhet och tydlighet.\nSvara BARA med JSON: {"names":["...","...","..."],"pick":1}`,
 
@@ -849,12 +849,24 @@ function EcloreProduktstudio() {
       const res = await fetch(`${proxy}/fetch?url=${encodeURIComponent(p.brandUrl)}`);
       if (!res.ok) throw new Error(`Workern svarade ${res.status} – är den uppdaterad med /fetch-stödet?`);
       const html = await res.text();
-      const text = html
+      // Extrahera produktrelevant text – filtrera bort nav/header-skräp
+      const rawText = html
         .replace(/<script[\s\S]*?<\/script>/gi, " ")
         .replace(/<style[\s\S]*?<\/style>/gi, " ")
+        .replace(/<nav[\s\S]*?<\/nav>/gi, " ")
+        .replace(/<header[\s\S]*?<\/header>/gi, " ")
+        .replace(/<footer[\s\S]*?<\/footer>/gi, " ")
         .replace(/<[^>]+>/g, " ")
+        .replace(/&amp;/g, "&").replace(/&nbsp;/g, " ").replace(/&#[0-9]+;/g, " ")
         .replace(/\s+/g, " ")
-        .trim().slice(0, 6000);
+        .trim();
+      // Filtrera bort korta fragment (nav-länkar etc) – behåll bara meningar >50 tecken
+      const sentences = rawText.split(/(?<=[.!?])\s+|\s{2,}/);
+      const meaningful = sentences
+        .map(s => s.trim())
+        .filter(s => s.length > 50)
+        .join(" ");
+      const text = (meaningful || rawText).slice(0, 6000);
       set((x) => ({ ...x, sourceText: text, _srcBusy: false }));
       setSfError("");
     } catch (e) {
@@ -990,12 +1002,19 @@ function EcloreProduktstudio() {
           const res = await fetch(`${proxy}/fetch?url=${encodeURIComponent(cur.brandUrl)}`);
           if (res.ok) {
             const html = await res.text();
-            const text = html
+            const rawText = html
               .replace(/<script[\s\S]*?<\/script>/gi, " ")
               .replace(/<style[\s\S]*?<\/style>/gi, " ")
+              .replace(/<nav[\s\S]*?<\/nav>/gi, " ")
+              .replace(/<header[\s\S]*?<\/header>/gi, " ")
+              .replace(/<footer[\s\S]*?<\/footer>/gi, " ")
               .replace(/<[^>]+>/g, " ")
+              .replace(/&amp;/g, "&").replace(/&nbsp;/g, " ").replace(/&#[0-9]+;/g, " ")
               .replace(/\s+/g, " ")
-              .trim().slice(0, 6000);
+              .trim();
+            const sentences2 = rawText.split(/(?<=[.!?])\s+|\s{2,}/);
+            const meaningful2 = sentences2.map(s => s.trim()).filter(s => s.length > 50).join(" ");
+            const text = (meaningful2 || rawText).slice(0, 6000);
             cur = { ...cur, sourceText: text };
             updateQueueItem(cur.id, { sourceText: text });
           }
