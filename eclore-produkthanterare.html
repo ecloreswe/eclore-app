@@ -43,14 +43,14 @@ const PRODUCT_TYPES = {
 };
 
 const BRANDS = {
-  "LUUV": "Naturlig hår- och kroppsvård samt brun utan sol från Estland. Produktnamn följer formatet: produkttyp + ingrediens/doft – egenskaper – storlek (t.ex. '50 ml' med mellanslag). Havtorn är LUUV:s signaturingrediens – lyft dess konkreta effekt (stärker håret från rot till topp, ger lyster och volym). LUUV:s produkter har ofta frisk citrusdoft – beskriv doften som citrusfrisk, ALDRIG som 'mediterran', 'sydeuropeisk' eller liknande geografiska fantasier. Hitta ALDRIG på påståenden som inte finns i källmaterialet – skriv INTE 'synliga resultat redan efter första användningen' eller liknande om det inte anges. Skriv INTE 'kombinerar traditionell växtkunskap med modern hårvetenskap' eller liknande generiska fraser. Fokusera på vad ingredienserna faktiskt gör: volym, återfuktning, skalpvård, värmeskydd – beroende på vad produkten innehåller. FÖR BRUN UTAN SOL-PRODUKTER: Lyft de faktiska aktiva ämnena (dihydroxiaceton, erytrulos), utvecklingstid, nyans (ljus/medium/mörk) och luktfri formula om det anges. Skriv INTE att resultatet ser ut 'som en vecka i Medelhavet' eller liknande. Ange INTE 'ekologisk' som certifiering om det inte finns i produktfakta – dihydroxiaceton och erytrulos är syntetiska aktiva ämnen, inte ekologiska ingredienser.",
-  "BONOBO": "Naturlig hudvård i små batcher, framtagen i samarbete med örtkunnig expertis. Lyft hantverket och small-batch-produktionen. Använd INTE ursprungsland som säljargument – fokusera på hantverk och europeisk kvalitet. Skriv ALDRIG 'traditionell europeisk örtkunskap' – skriv istället konkret vad BONOBO faktiskt gör, t.ex. 'framtagen med örtkunnig expertis' eller 'handgjord i små batcher'. Undvik att stapla 'noggrant utvalt' + 'hantverk' + 'small-batch' i samma mening – välj ett av dessa och gör det konkret.",
-  "Tilk!": "Estniskt naturkosmetikavarumärke med tydlig ingrediensfokus och vetenskaplig approach. Produktlinjer baserade på specifika aktiva ingredienser: probiotika/laktobacillus, hyaluronsyra, AHA, Q10, rödalger (Furcellaria lumbricalis). Tagline: 'Be Your Own SkinHero'. Cruelty-free och naturliga råvaror. Lyft: den specifika aktiva ingrediensen och dess konkreta effekt, produktens estniska ursprung, eventuella utmärkelser (ange i fältet). ALDRIG: pseudovetenskapliga fraser som 'arbetar i symbios', 'återställer hudens naturliga styrka och vitalitet', 'probiotisk kraft' utan förklaring. Skriv istället konkret vad ingrediensen gör: 'fermenterat laktobacillus stärker hudens mikrobiom och hudbarriären'. ALDRIG: tidsangivelser för resultat ('hela dagen', 'hela natten') om de inte anges i källmaterialet.",
-  "Magrada": "Lettiskt ekologiskt kosmetikavarumärke (Magrada Organic Cosmetics) som tillverkar handgjord hår- och hudvård av färska råvaror. Anpassat för känslig och allergisk hud. Hög andel naturliga ingredienser (ofta 90%+) – lyft alltid den faktiska procentsatsen om den anges i produktfakta. Magrada har prisbelönta produkter – lyft utmärkelser om de anges i fältet. Lyft: ekologiska råvaror, handgjort hantverk, lettiskt ursprung (utan att göra det till huvudargument), konkreta ingredienseffekter. ALDRIG: påhittade kliniska påståenden med exakta procenttal (t.ex. '30% minskat hårbrott') – dessa är vilseledande om de inte anges i källmaterialet. ALDRIG: 'luxuös', 'traditionellt hantverk som respekterar miljön' utan substans.",
-  "Nurme": "Estniskt naturkosmetikavarumärke med filosofin att färre och renare ingredienser är bättre. Nyckel-USP: enkla ingredienslistor, ofta bara 2–5 ingredienser, ekologiskt certifierade råvaror. Lyft alltid: antal ingredienser om det är få (t.ex. 'endast 2 ingredienser'), ekologisk certifiering om angiven, estniskt ursprung. Passar känslig och allergisk hud tack vare rena formulor utan onödiga tillsatser. ALDRIG: påhittade kliniska påståenden med tidsangivelser ('12 timmar', '24 timmar') om det inte anges i källmaterialet. ALDRIG: 'djupgående' (anglicism – skriv 'djup'), 'som verkligen fungerar', 'ett måste', 'synbart mjukare hud redan efter första användningen' om det inte anges. Nurmes styrka är enkelheten – låt den tala för sig själv.",
-  "Garbanota": "Litauiskt varumärke som enbart gör väskor och accessoarer – INGEN hudvård. Grundaren skapar handgjorda väskor, ryggsäckar, sminkväskor och necessärer med personlig kreativ touch. Signum: suede-liknande tyg, lockigt innerfoder ('curly lining'), illustrerade motiv. Lyft: handgjort ursprung från Litauen, konkret material och detaljer (dragkedja, foder, fickor, mått), det illustrerade motivet och färgen/mönstret. Presentvinkeln är stark – lyft att väskorna passar som present. ALDRIG: hudvårdsargument, reklamspråk som 'förvandlar vardagen till en ritual', 'omsluter med omtanke', 'garanterar', 'maximerar förvaringskapaciteten'. Skriv enkelt och konkret om vad väskan är, vad den rymmer och vad som gör den unik.",
-  "HOIA": "Estniskt naturkosmetikavarumärke med hem-spa-filosofi, inspirerat av nordisk natur. Handgjort i små batcher med botaniska formler. HOIA:s produkter har ofta kreativa och minnesvärda produktnamn (t.ex. 'Kleopatra SUPERCHARGED') – använd alltid produktnamnet tidigt i texten, det är en del av varumärkesidentiteten. Lyft: handgjort estniskt ursprung, botaniska/nordiska råvaror, hem-spa-känslan (lugn, ritual, ta hand om sig själv). ALDRIG: påhittade kliniska påståenden med exakta tidsangivelser ('inom 2-3 veckor', '24 timmar') om de inte anges i källmaterialet. ALDRIG: 'Nikotanamid' – rätt stavning är 'niacinamid' eller 'nikotinamid'. Scenario-intro förbjudet – börja med vad produkten är och gör.",
-  "Moi Mili": "Handgjorda sminkväskor och necessärer i bomullstyg med illustrerade mönster. Lyft design, hantverk och konkreta materialdetaljer – inte hudvårdsargument. Fokusera på faktiska produktdetaljer: mått, material, fickantal, dragkedjetyp, färg/mönster. ALDRIG: 'sofistikerad', 'optimal förvaring', 'portabilitet' (skriv 'bärbarhet' eller omformulera), 'din sminksamling förtjänar'. 'hanverk' stavas 'hantverk' med t. Latte-färg = varm beige/cremefärg – beskriv färgen konkret, 'latte' är ett färgnamn inte en metafor. Presentvinkeln är stark för Moi Mili – lyft gärna att väskorna passar som present.",
+  "LUUV": "Naturlig hår- och kroppsvård samt brun utan sol från Estland. Produktnamn följer formatet: produkttyp + ingrediens/doft – egenskaper – storlek. Havtorn är LUUV:s signaturingrediens. Doft är ofta citrusfrisk – ALDRIG 'mediterran' eller 'sydeuropeisk'. Hitta ALDRIG på påståenden som inte finns i källmaterialet. FÖR BRUN UTAN SOL: lyft aktiva ämnen (DHA, erytrulos), utvecklingstid, nyans. Ange INTE 'ekologisk' om det inte finns i produktfakta.",
+  "BONOBO": "Naturlig hudvård i små batcher, framtagen i samarbete med örtkunnig expertis. Lyft hantverket och small-batch-produktionen. Använd INTE ursprungsland som säljargument. Skriv ALDRIG 'traditionell europeisk örtkunskap' – skriv istället konkret vad BONOBO faktiskt gör, t.ex. 'framtagen med örtkunnig expertis' eller 'handgjord i små batcher'. Undvik att stapla 'noggrant utvalt' + 'hantverk' + 'small-batch' i samma mening.",
+  "Tilk!": "Estniskt naturkosmetikavarumärke med tydlig ingrediensfokus. Produktlinjer baserade på specifika aktiva ingredienser: probiotika/laktobacillus, hyaluronsyra, AHA, Q10, rödalger (Furcellaria lumbricalis). Lyft: den specifika aktiva ingrediensen och dess konkreta effekt, eventuella utmärkelser. ALDRIG: 'arbetar i symbios', tidsangivelser utan källa, 'Nikotanamid' (rätt: 'niacinamid').",
+  "Magrada": "Lettiskt ekologiskt kosmetikavarumärke som tillverkar handgjord hår- och hudvård av färska råvaror. Anpassat för känslig och allergisk hud. Lyft alltid den faktiska procentandelen naturliga ingredienser om den anges. ALDRIG: kliniska påståenden med exakta procenttal utan källa.",
+  "Nurme": "Estniskt naturkosmetikavarumärke med filosofin att färre och renare ingredienser är bättre. Nyckel-USP: enkla ingredienslistor, ofta bara 2–5 ingredienser, ekologiskt certifierade råvaror. Lyft alltid: antal ingredienser om det är få, ekologisk certifiering. ALDRIG: kliniska tidsangivelser utan källa, 'djupgående', 'synbart mjukare hud redan efter första användningen'.",
+  "Garbanota": "Litauiskt varemärke som enbart gör väskor och accessoarer – INGEN hudvård. Handgjorda väskor med personlig kreativ touch. Signum: suede-liknande tyg, lockigt innerfoder ('curly lining'), illustrerade motiv. Lyft: handgjort ursprung från Litauen, konkret material, illustrerat motiv. Presentvinkeln är stark. ALDRIG: hudvårdsargument, 'garanterar', 'maximerar förvaringskapaciteten'.",
+  "HOIA": "Estniskt naturkosmetikavarumärke med hem-spa-filosofi, inspirerat av nordisk natur. Handgjort i små batcher med botaniska formler. HOIA:s produkter har kreativa namn (t.ex. 'Kleopatra SUPERCHARGED') – använd alltid produktnamnet tidigt. ALDRIG: kliniska påståenden med tidsangivelser utan källa, 'Nikotanamid' (rätt: 'niacinamid').",
+  "Moi Mili": "Handgjorda sminkväskor och necessärer i bomullstyg med illustrerade mönster från Polen. Lyft design, hantverk och konkreta materialdetaljer – inte hudvårdsargument. Fokusera på: mått, material, fickantal, dragkedjetyp, färg/mönster. Presentvinkeln är stark. ALDRIG: 'sofistikerad', 'optimal förvaring', 'portabilitet'.",
   "Zelma Kraft": "Handgjorda produkter med fokus på hantverk och naturliga material.",
   "Annat": "",
 };
@@ -70,54 +70,52 @@ const CERT_SCAN = [
   { word: /aluminiumfri|utan aluminium/i, cert: ["Aluminiumfri"] },
 ];
 
-const DEFAULT_PROFILE = `TONALITET: Varm auktoritet – som en kunnig vän som ger råd. Undvik hype, superlativ utan substans och ungdomligt slang. Använd gärna: "hantverk", "naturliga ingredienser", "tillverkat i Europa", "genuint", "noggrant utvalt".
+const DEFAULT_PROFILE = `TONALITET: Varm auktoritet – som en kunnig vän som ger råd. Undvik hype, superlativ utan substans och ungdomligt slang.
 
-KONVERTERING: Lyft ursprung och hantverk tidigt. Nämn konkreta ingredienser och deras effekt. Avsluta beskrivningen med en tydlig användningssituation. Bullet points = konkret nytta, inte floskler.
+KONVERTERING: Lyft ursprung och hantverk tidigt. Nämn konkreta ingredienser och deras effekt. Bullet points = konkret nytta, inte floskler.
 
-SEO: Primärt sökord naturligt i första meningen, i title och i meta. Long-tail-fokus (produkttyp + naturlig/vegansk + behov). Ingen keyword stuffing. H2-rubriker fokuserar på sökord och nytta – stapla inte varumärkesnamn i rubriker.
+SEO: Primärt sökord naturligt i första meningen, i title och i meta. Long-tail-fokus. Ingen keyword stuffing. H2-rubriker fokuserar på sökord och nytta.
 
-FÖRBJUDNA ORD OCH FRASER – använd aldrig dessa:
+FÖRBJUDNA ORD OCH FRASER:
 - "matterar" → skriv "ger mattare hy" eller "reglerar glansen"
 - "boostas", "boosta" → skriv "stärker", "ökar", "ger"
-- "traditionell europeisk örtkunskap" / "örtkunskap" → skriv konkret: "örtkunnig expertis", "kunskap om medicinalörter"
+- "traditionell europeisk örtkunskap" → skriv konkret: "örtkunnig expertis"
 - "specialutvecklad" → skriv vad produkten faktiskt gör
-- "revolutionerande", "banbrytande", "unik formula" → utelämna
-- "exklusiv", "lyxig" (utan substans) → beskriv vad som faktiskt motiverar premiumkänslan
+- "revolutioner ande", "banbrytande", "unik formula" → utelämna
+- "exklusiv", "lyxig" (utan substans) → beskriv vad som motiverar premiumkänslan
 - "magin", "hemligheten bakom" → utelämna
 - "hitta din perfekta match", "din nya favorit" → utelämna
-- "Upptäck fler alternativ" → skriv "Se fler" + konkret kategorilänk
 - "investering för livet" / "investering" som avslutsord → utelämna
-- "idealisk" → använd max en gång per text, hellre "perfekt" eller "utmärkt"
-- "Perfekt för dig som..." → variera, t.ex. "Passar dig med...", "För dig med..."
+- "idealisk" → använd max en gång per text
+- "Perfekt för dig som..." → variera: "Passar dig med...", "För dig med..."
 - "friss", "frizz" → skriv "krusigt hår" eller "krull"
 - "djupgående" → anglicism, skriv "djup"
-- "arbetar i symbios" → pseudovetenskapligt, utelämna eller beskriv konkret vad som händer
-- "vitalitet", "styrka och vitalitet" → abstrakt och substanslöst, skriv vad huden faktiskt får
-- "från djupet" (som floskel) → utelämna eller specificera vilket hudlager
 - "ett måste" → reklamkliché, utelämna
-- "som verkligen fungerar" → utelämna, substanslöst
-- "revitaliserad", "revitalisering" → skriv "förnyad", "återupplivad"
-- "levererar synliga resultat" → skriv konkret vad som sker, t.ex. "ger mjukare hår" eller "minskar synliga linjer"
-- "respekterar hudens naturliga rytm" / "genomtänkt formel" → meningslösa floskler, utelämna
-- Scenario-intro ("När din hud behöver X men Y, erbjuder Z lösningen") → börja alltid direkt med vad produkten är och gör, inte med ett konstruerat problem
-- "sofistikerad", "sofistikerat" → skriv konkret vad som gör det värdefullt
-- "portabilitet" → skriv "lätt att ta med" eller omformulera
-- "optimal förvaring" → beskriv konkret vad som ryms och hur det organiseras
-- "säkerställer" → undvik, låter företag-kliché
-- "optimal organisation", "optimal förvaring", "optimalt" → skriv konkret vad som gör det praktiskt
-- "noggrant utvalt material" → skriv vad materialet faktiskt är och vad det gör
-- exakta produktantal utan källa ("rymmer 15-20 produkter") → skriv istället vad som faktiskt ryms (t.ex. "läppstift, mascara, concealer och fuktkräm")
-- "kreativ europeisk tradition", "hantverkstradition" utan substans → skriv konkret var och hur produkten är tillverkad
-- "perfekt överblick" → floskel, utelämna eller beskriv konkret
-- "blir vackrare med åren", "blir mjukare för varje användning", "utvecklas naturligt med tiden" (om tyg/material) → påhittade egenskaper om de inte anges i källmaterialet
-- "färgkosmetik" → skriv "smink" i löptext och meta, "dekorativ kosmetik" kan användas i mer formella sammanhang
-- "genomtänkt hantverk", "genomtänkt konstruktion", "genomtänkt design" → vagt och överanvänt, beskriv istället vad som faktiskt är genomtänkt (t.ex. "dubbelstygnade sömmar och förstärkta hörn")
+- "som verkligen fungerar" → utelämna
+- "färgkosmetik" → skriv "smink" i löptext och meta
+- "sofistikerad" → skriv konkret vad som gör det värdefullt
+- "portabilitet" → skriv "lätt att ta med"
+- "optimal organisation/förvaring" → beskriv konkret
+- exakta produktantal utan källa ("rymmer 15-20 produkter") → skriv vad som faktiskt ryms
+- "kreativ europeisk tradition" → skriv konkret var och hur
+- "perfekt överblick" → floskel, utelämna
+- "blir vackrare med åren", "blir mjukare för varje användning", "utvecklas naturligt med tiden" → påhittade egenskaper
+- "genomtänkt hantverk/konstruktion/design" → beskriv vad som faktiskt är genomtänkt
+- "säkerställer" → undvik
+- "levererar synliga resultat" → skriv konkret vad som sker
+- "respekterar hudens naturliga rytm" / "genomtänkt formel" → floskler
+- "redan första användningen" / "från första tvätten" → bara om explicit stöds av källmaterialet
+- "omedelbar lindring", "lindrar omedelbart" → samma regel
+- "arbetar aktivt för att återställa balansen" → abstrakt, beskriv vad ingrediensen gör
+- "arbetar i symbios" → pseudovetenskapligt
+- "vitalitet", "styrka och vitalitet" → abstrakt
+- Scenario-intro ("När din hud behöver X...") → börja alltid direkt med vad produkten är och gör
 
-UPPREPNING: Använd aldrig samma fras eller mening i både ingress och beskrivning. Om ingressen nämner "örtkunnig expertis" får beskrivningen inte upprepa det – välj en annan vinkel.
+UPPREPNING: Använd aldrig samma fras i både ingress och beskrivning.
 
-ANGLICISMER: Undvik ord som låter konstruerade på svenska. Testa: skulle en svensk hudvårdsexpert säga detta naturligt? Om inte – omformulera.
+ANGLICISMER: Testa: skulle en svensk hudvårdsexpert säga detta naturligt? Om inte – omformulera.
 
-PÅHITTADE PÅSTÅENDEN: Skriv ALDRIG saker som inte framgår av produktfakta eller källmaterialet. Absolut förbjudet: kliniska påståenden med exakta siffror (t.ex. "30% minskat hårbrott", "90% upplever förbättring") om de inte finns i källmaterialet – dessa är vilseledande marknadsföring. Förbjudet att hitta på: resultatpåståenden ("synliga resultat redan efter första användningen"), doftbeskrivningar som inte anges i källan ("mediterran", "sydeuropeisk"), kopplingar till andra produkter ("precis som vår övriga hårvård"), eller egenskaper som inte nämns ("kombinerar traditionell växtkunskap med modern hårvetenskap"). Om information saknas – utelämna hellre än att fylla i med gissningar.`;
+PÅHITTADE PÅSTÅENDEN: Skriv ALDRIG saker som inte framgår av produktfakta eller källmaterialet. Förbjudet: kliniska påståenden med exakta siffror ("30% minskat hårbrott", "inom 2-3 veckor") utan källa. Förbjudet: geografiska fantasier om doft ("mediterran", "sydeuropeisk"). Förbjudet: påståenden om vad produkten gör "nattetid" om det inte är angivet som nattprodukt.`;
 
 /* ───────────────────────── Hjälpfunktioner ───────────────────────── */
 
@@ -192,4 +190,1318 @@ HÅRDA REGLER:
 3. Nämn certifieringar/egenskaper ENDAST om de står i listan ovan. Skriv aldrig "ekologisk", "COSMOS", "parfymfri" etc. om det inte är angivet.
 4. Nämn utmärkelser endast om de anges – och då gärna tidigt.
 5. H2-rubriker = sökord och kundnytta, inte varumärkesupprepning.
-6. Påstå inget medicinskt (botar, läker, behandlar eksem etc.) – skriv "kan lugna", "återfuktar", "stödjer". Förbjudet: "stimulerar kollagenproduktionen" → skriv "kan stödja hudens kollagenbildning". Förbjudet: "aktiverar förnyelsecykeln" → skriv "bidrar till cellförnyelse". Förbjudet: "arbetar nattetid" / "levererar resultat medan du sover" om det inte anges i produktfakta att det är ett nattserum. Förbjudet: "redan första användningen" / "från första tvätten" – omedelbart resultatpåstående som bara får användas om det explicit stöds av källmaterialet. Förbjudet: "omedelbar lindring", "lindrar omedelbart" – samma regel. Förbjudet: "arbetar aktivt för att återställa balansen" – abstrakt, beskriv istället vad ingrediensen konkret gör.
+6. Påstå inget medicinskt (botar, läker, behandlar eksem etc.) – skriv "kan lugna", "återfuktar", "stödjer".
+7. Fetstil skrivs ALLTID som <strong>...</strong> i HTML – ALDRIG markdown-asterisker (**ord**).
+8. Om "Ekologiska ingredienser" anges: skriv "med ekologiska ingredienser" eller nämn specifika ekologiska ingredienser (t.ex. "ekologisk arganolja") – påstå ALDRIG att hela produkten är ekologisk eller certifierad om inte COSMOS/Ecocert anges.
+9. Korrekturläs all text: korrekt svensk stavning och grammatik. Var extra noga med sammansatta ord och ingrediensnamn. Ingrediensnamn som ofta stavas fel: "niacinamid" (ALDRIG "nikotanamid"), "hyaluronsyra" (ett ord), "ricinolja".
+11. Var KONSEKVENT med fakta. Är en detalj inte angiven: utelämna hellre än att gissa.
+12. Upprepa ALDRIG samma fras från ingressen i beskrivningen.
+13. Se butiksprofilen ovan för fullständig lista på förbjudna ord.
+10. Som AVSKILJARE i titlar, produktnamn och rubriker används alltid tankstreck "–", aldrig bindestreck "-". Bindestreck endast i riktiga sammansättningar (cruelty-free, latte-färg).
+11. Var KONSEKVENT med fakta genom alla fält – samma antal fickor, dragkedjor, mått osv. överallt. Är en detalj inte angiven i produktfakta eller källmaterial: utelämna den hellre än att gissa. Undvik floskelavslut som "en investering för livet".`;
+};
+
+const buildPrompts = (p, storeProfile) => {
+  const ctx = buildCtx(p, storeProfile);
+  const ti = typeInfoOf(p);
+  const acc = p.productType === "Accessoar / Necessär";
+  return {
+    keywords: `${ctx}\\n\\nFöreslå sökord för denna produkt.\\n\\nPRIMÄRT SÖKORD – välj ETT enligt denna prioritetsordning:\\n1. Hudtyp/behov + produkttyp (t.ex. \"kroppsskrubb torr hud\", \"schampo känslig hårbotten\") – om hudtyp eller behov framgår av INCI, källmaterial eller produktnamn\\n2. Naturlig/vegansk + produkttyp (t.ex. \"naturlig kroppsskrubb\", \"veganskt schampo\") – DEFAULT-VAL när inget tydligt behov finns. Välj alltid detta framför ingrediens\\n3. Produkttyp + ingrediens (t.ex. \"kroppsskrubb blåbär\") – SISTA UTVÄG och bara om ingrediensen är ovanlig och aktivt sökt. Vanliga ingredienser som blåbär, lavendel, kokos, shea, argan är INTE tillräckligt unika – välj då alternativ 2\\n\\nPrimärt sökord ska vara: 2–4 ord, korrekt svenska, realistisk sökvolym, köpnära. Utgå gärna från dessa typiska sökord för produkttypen: ${ti.kw.join(\", \")}\\n\\nSEKUNDÄRA SÖKORD – exakt 5 st som varierar längs dessa axlar:\\n- En variant med distinkt ingrediens\\n- En variant med certifiering om relevant\\n- En engelsk variant om produkten kan sökas på engelska\\n- En long-tail med fråge- eller jämförelseformulering\\n- En generisk variant utan ingrediens\\n\\nSökorden ska vara korrekt stavad, naturlig svenska – kontrollera särskilt sammansatta ord.\\nSvara BARA med JSON: {\"primary\":\"...\",\"secondary\":[\"...\",\"...\",\"...\",\"...\",\"...\"]}\`,
+
+    productNames: `${ctx}\n\nProduktens nuvarande (ofta engelska) namn: "${p.originalName || p.productName}".\n\nFöreslå 3 svenska produktnamn enligt éclores namnkonvention:\n[Produkttyp] [Ingrediens/Doft] – [Viktigaste egenskap] – [Storlek]\nExempel: "Deodorant Lavendel – Aluminiumfri – 50 ml", "Ansiktsserum Svart Vitlök – Anti-age – 30 ml".\n\nRegler:\n- Inget varumärkesnamn först (namnet blir H1 och ska vara sökordsfokuserat)\n- Storlek med mellanslag: "50 ml", "100 g"\n- Tankstreck "–" som avskiljare, aldrig bindestreck "-"\n- Behåll ev. känt produktnamn som mellandel ENDAST om det tillför sökvärde\n- Variera: 1 = ingrediens/doft-fokus, 2 = behov/egenskap-fokus, 3 = enklast möjliga\nVälj också den bästa (pick = 1, 2 eller 3) utifrån sökbarhet och tydlighet.\nSvara BARA med JSON: {"names":["...","...","..."],"pick":1}`,
+
+    seoTitle: `${ctx}\n\nSkriv 3 title-taggar med dessa strategier:\n\n1. BEHOV FÖRST: Hudtyp/problem + produkttyp + starkaste differentiator.\n   Exempel: "Kroppskräm torr hud – kokos & mangosmör | éclore"\n   Differentiator = den mest unika ingrediensen ELLER ett konkret resultat – INTE bara doften.\n\n2. SÖKORD FÖRST: Primärt sökord exakt + kortaste möjliga unika detalj.\n   Exempel: "Naturlig kroppskräm kokos – lugnar & återfuktar | éclore"\n\n3. RESULTAT FÖRST: Vad kunden får ut av produkten + produkttyp.\n   Exempel: "Mjuk och återfuktad hud – naturlig kroppskräm kokos | éclore"\n\nVälj sedan den bästa enligt denna prioritet:\n- Produkttypen har tydlig hudtyp/målgrupp i INCI eller källmaterial (t.ex. torr hud, känslig hud, fett hår) → välj 1\n- Varumärket har känd sökvolym i Sverige ELLER produkten har en utmärkelse → välj 2\n- Annars → välj 3\n\nRegler för ALLA tre:\n- Max 60 tecken TOTALT inklusive " | éclore"\n- Räkna tecken noggrant – " | éclore" = 9 tecken, kvarvarande utrymme = 51 tecken\n- Naturlig svensk versalisering\n- Tankstreck "–" som avskiljare, aldrig bindestreck "-"\n- Inga utfyllnadsord ("köp", "bästa", "online")\n- Ingredienser används MAX som ett ord i differentiator – stapla aldrig 3+ ingredienser\n\nSvara BARA med JSON: {"variants":["...","...","..."],"pick":1,"why":"max 12 ord om varför"}`,
+
+    seoDescription: `${ctx}\n\nSkriv en meta-beskrivning på max 155 tecken.\n\nStruktur:\n1. Börja med primärt sökord + hudtyp/behov om det finns – spegla titelns vinkel (t.ex. om titeln lyfter "torr hud" ska metan göra detsamma)\n2. Lyft sedan den starkaste konkreta nyttan: nyckelingrediens + effekt ELLER ett mätbart/kännbart resultat\n3. Avsluta med starkaste återstående argument i prioritetsordning:\n   a) Utmärkelse (ange exakt namn)\n   b) Konkret resultat (effekt, känsla, tidsaspekt)\n   c) Certifiering/egenskap från listan\n   d) "Fri frakt över 599 kr" (passa in när priset är under 599 kr)\n\nRÄKNA TECKEN NOGA: meta-beskrivningen får vara MAX 150 tecken (inte 155 – håll en marginal). Räkna varje tecken inklusive mellanslag och skiljetecken. Om texten är längre än 150 tecken: förkorta tills den är under gränsen innan du svarar.\nALDRIG: generiska avslut ("Upptäck hos éclore", "Handla nu"), vaga adjektiv ("exklusiv", "lyxig"), upprepning av title-taggen ord för ord.\nReturnera ENDAST meta-beskrivningen som EN enda rad text – ingen rubrik, ingen produktbeskrivning, ingen övrig text före eller efter.`,
+
+    urlHandle: `${ctx}\n\nNuvarande URL-handle: "${p.currentHandle || "(ny produkt)"}".\nFöreslå 3 URL-handles (slug) för produktsidan. Regler: lowercase, endast a-z, 0-9 och bindestreck (å/ä→a, ö→o, é→e), max 60 tecken, primärt sökord eller produkttyp först, inget varumärke om det inte tillför sökvärde, inga stoppord (och, med, för i onödan). Variera: 1 = sökord + variant/doft, 2 = produkttyp + behov, 3 = kortast möjliga. Svara BARA med JSON-array: ["...","...","..."]`,
+
+    shortDescription: `${ctx}\n\nSkriv en ingress (above the fold, under priset) i HTML med exakt denna struktur:\n<h2>Sökordsrik rubrik med en ANNAN vinkel än produktnamnet – t.ex. nytta, resultat eller tidsaspekt (max 70 tecken)</h2>\n<p>50–70 ord. Primärt sökord i första meningen. Lyft den starkaste USP:n (utmärkelse > certifiering > nyckelingrediens). Avsluta med vad kunden får ut av produkten.</p>\nRubriken får INTE vara identisk med produktnamn, H1 eller title-tagg. Returnera BARA HTML.`,
+
+    bulletPoints: `${ctx}\n\nSkriv exakt 5 bullet points (max 9 ord vardera) för produktsidan. Ordning: ${acc ? "1) viktigaste funktionen/designen, 2) material, 3) storlek/vad som ryms, 4) hantverk/ursprung, 5) skötsel eller presentvinkel" : "1) viktigaste effekten/resultatet, 2) nyckelingrediens + effekt, 3) certifiering/egenskap från listan ELLER andra effekt, 4) passar-för (hudtyp/behov), 5) ursprung/hantverk eller storlek/räckvidd"}. Inga punkter i slutet. Svara BARA med JSON-array: ["...","...","...","...","..."]`,
+
+    description: acc ? `${ctx}\n\nSkriv en strukturerad produktbeskrivning (max 300 ord) i HTML med exakt denna struktur:\n<h2>[Primärt sökord/produkttyp] – [kort säljfras]</h2>\n<p>2–3 meningar: vad accessoaren är, primärt sökord i första meningen, design och hantverk, ev. utmärkelse.</p>\n<h2>Material & funktioner</h2>\n<p>Material, sömnad, foder, dragkedja och praktiska detaljer – materialnamn i <strong>fetstil</strong>. Endast fakta som anges i produktfakta/källmaterial.</p>\n<h2>Storlek & vad som ryms</h2>\n<ul><li>3–4 punkter om mått (om angivna), fack och vad som får plats</li></ul>\n<h2>För vem passar ${p.productType ? p.productType.toLowerCase() : "accessoaren"}?</h2>\n<p>Användningssituationer (resa, handväskan, badrumshyllan) och gärna present-vinkeln.</p>\n\nLägg in EN intern länk naturligt i löptexten till ${ti.coll} med beskrivande ankartext. Använd en ANNAN ankartext än FAQ:ns länk.\n\nReturnera BARA HTML.` : `${ctx}\n\nSkriv en strukturerad produktbeskrivning (max 350 ord) i HTML med exakt denna struktur:\n<h2>[Primärt sökord/produkttyp] – [kort nyttofras]</h2>\n<p>2–3 meningar: vad produkten är, primärt sökord i första meningen, ursprung/hantverk om relevant, ev. utmärkelse.</p>\n<h2>Ingredienser & effekter</h2>\n<p>3–4 nyckelingredienser ur INCI med konkret effekt, ingrediensnamn i <strong>fetstil</strong>.</p>\n<h2>Resultat & fördelar</h2>\n<ul><li>3–4 konkreta fördelar kopplade till köparens frågor ovan</li></ul>\n<h2>För vem passar ${p.productType ? p.productType.toLowerCase() : "produkten"}?</h2>\n<p>Målgrupp/hudtyp + avsluta med en konkret användningssituation.</p>\n\nLägg in EN intern länk naturligt i löptexten till ${ti.coll} med beskrivande ankartext (kategori/produkttyp – aldrig "klicka här"), gärna i sista stycket. Använd en ANNAN ankartext än FAQ:ns länk.\n\nReturnera BARA HTML.`,
+
+    faq: `${ctx}\n\nSkriv exakt 5 FAQ på svenska som matchar VERKLIGA köparfrågor för produkttypen (se listan ovan) – inte generiska hudvårdsfrågor. Minst en fråga om ${acc ? "material och skötsel" : "produktens nyckelingrediens(er)"}, och en om ursprung/certifiering/utmärkelse (endast angivna fakta). Svar 40–70 ord i HTML med <p>, och i ETT av svaren en intern länk: <a href="${ti.coll}">relevant ankartext</a>. Svara BARA med JSON: {"faq_q1":"...","faq_a1":"<p>...</p>","faq_q2":"...","faq_a2":"<p>...</p>","faq_q3":"...","faq_a3":"<p>...</p>","faq_q4":"...","faq_a4":"<p>...</p>","faq_q5":"...","faq_a5":"<p>...</p>"}`,
+
+    usage: acc ? `${ctx}\n\nDetta är en accessoar – INTE en hudvårdsprodukt. Börja ALDRIG med ett konstruerat scenario. Beskriv direkt: vad väskan är, material, storlek och motiv. Lyft gärna presentvinkeln. Skriv SKÖTSELRÅD istället för användningsinstruktioner (rengöring, torkning, förvaring – endast utifrån angivet material). Svara BARA med JSON: {"intro":"2–3 meningar om skötsel så accessoaren håller länge","steps":["Steg som börjar med verb","...","..."]}` : `${ctx}\n\nSkriv användningsinstruktioner anpassade till produkttypen ${p.productType || ""} (t.ex. brun utan sol: skrubb först, applicering, väntetid; schampo: mängd, massera, övergångsperiod). Svara BARA med JSON: {"intro":"2–3 meningar om när och hur produkten används","steps":["Steg som börjar med verb","...","..."]}`,
+
+    keyIngredients: acc ? `${ctx}\n\nDetta är en accessoar – inga ingredienser. Välj istället 3–5 FUNKTIONER OCH MATERIAL ur produktfakta/källmaterial (t.ex. "100 % bomull", "Vattenavvisande foder", "Rymligt huvudfack", "Handsytt mönster") och beskriv varje med konkret nytta på 8–15 ord. Hitta aldrig på material som inte anges. Svara BARA med JSON-array: [{"name":"...","effect":"..."}]` : `${ctx}\n\nVälj 3–5 nyckelingredienser ur INCI-listan (eller produktfakta om INCI saknas) och beskriv varje med konkret effekt på 8–15 ord. Använd svenska namn (t.ex. "Havtornsolja" istället för "Hippophae Rhamnoides"). Svara BARA med JSON-array: [{"name":"...","effect":"..."}]`,
+
+    tags: `${ctx}\n\nSkapa 8–12 Shopify-produkttaggar på svenska: produkttyp, varumärke, hudtyp/behov, nyckelingredienser, angivna certifieringar. Lowercase. Svara BARA med JSON-array: ["...","..."]`,
+  };
+};
+
+const callClaude = async (prompt, apiKey) => {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        messages: [{ role: "user", content: prompt }],
+      }),
+    });
+    const data = await res.json();
+    if (data.error) {
+      const msg = data.error.message || "API-fel";
+      const retryable = res.status === 429 || res.status >= 500 || /rate|overload/i.test(msg);
+      if (retryable && attempt < 2) { await new Promise((r) => setTimeout(r, 3000 * (attempt + 1))); continue; }
+      throw new Error(msg);
+    }
+    return (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("\n");
+  }
+  throw new Error("API-fel efter flera försök");
+};
+
+/* Genererar ett fält och returnerar de uppdaterade egenskaperna.
+   autoPick=true (kö): valda namn/titlar sätts automatiskt. */
+const safeParse = (raw) => {
+  try { return JSON.parse(raw); } catch {}
+  const m = String(raw).match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+  if (m) return JSON.parse(m[0]);
+  throw new Error("Kunde inte tolka AI-svaret");
+};
+
+const mdToHtml = (s) => String(s || "").replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>").replace(/\*\*/g, "");
+
+const genField = async (p, field, storeProfile, autoPick, apiKey) => {
+  const raw = stripFences(await callClaude(buildPrompts(p, storeProfile)[field], apiKey));
+  switch (field) {
+    case "keywords": {
+      const j = safeParse(raw);
+      return { primaryKeyword: j.primary || "", secondaryKeywords: (j.secondary || []).join(", ") };
+    }
+    case "productNames": {
+      const j = safeParse(raw);
+      const names = j.names || [];
+      const pick = Math.min(Math.max((j.pick || 1) - 1, 0), names.length - 1);
+      const out = { nameVariants: names };
+      if (autoPick && names[pick]) {
+        out.originalName = p.originalName || p.productName;
+        out.productName = names[pick];
+      }
+      return out;
+    }
+    case "seoTitle": {
+      const j = safeParse(raw);
+      const v = j.variants || [];
+      let pick = Math.min(Math.max((j.pick || 1) - 1, 0), v.length - 1);
+      const valid = v.filter((t) => t.length <= 60 && /\|\s*éclore\s*$/i.test(t));
+      if (v[pick] && (v[pick].length > 60) && valid.length) pick = v.indexOf(valid[0]);
+      return { titleVariants: v, seoTitle: v[pick] || v[0] || "", titleWhy: j.why || "" };
+    }
+    case "seoDescription": {
+      const firstLine = mdToHtml(raw).split("\n").map((l) => l.trim()).filter(Boolean)[0] || "";
+      const cleaned = firstLine.replace(/^#+\s*/, "");
+      return { seoDescription: cleaned.length > 155 ? cleaned.slice(0, 152) + "..." : cleaned };
+    }
+    case "urlHandle": {
+      const v = safeParse(raw);
+      const out = { handleVariants: v };
+      if (!p.currentHandle && autoPick && v[0]) out.handle = v[0]; // byt aldrig befintlig URL automatiskt
+      return out;
+    }
+    case "bulletPoints": case "tags": case "keyIngredients":
+      return { [field]: safeParse(raw) };
+    case "usage":
+      return { usage: safeParse(raw) };
+    case "faq": {
+      const j = safeParse(raw);
+      return { faq: [1, 2, 3, 4, 5].map((i) => ({ q: j[`faq_q${i}`] || "", a: mdToHtml(j[`faq_a${i}`] || "") })) };
+    }
+    default:
+      return { [field]: mdToHtml(raw) };
+  }
+};
+
+const PIPELINE = [
+  ["keywords", "Föreslår sökord"],
+  ["productNames", "Föreslår svenskt namn"],
+  ["seoTitle", "Skriver title-tagg"],
+  ["urlHandle", "Föreslår URL"],
+  ["seoDescription", "Skriver meta"],
+  ["shortDescription", "Skriver ingress"],
+  ["bulletPoints", "Bullet points"],
+  ["description", "Produktbeskrivning"],
+  ["faq", "FAQ"],
+  ["usage", "Användning"],
+  ["keyIngredients", "Nyckelingredienser"],
+  ["tags", "Taggar"],
+];
+
+const runChecks = (p) => {
+  const out = [];
+  const kw = (p.primaryKeyword || "").toLowerCase().trim();
+  if (p.seoTitle) {
+    out.push({ ok: p.seoTitle.length <= 60, label: `Title ${p.seoTitle.length}/60 tecken` });
+    out.push({ ok: /\|\s*éclore\s*$/i.test(p.seoTitle), label: 'Title slutar med "| éclore"' });
+    if (kw) out.push({ ok: p.seoTitle.toLowerCase().includes(kw), label: "Sökord i title" });
+  }
+  if (p.seoDescription) {
+    out.push({ ok: p.seoDescription.length <= 155, label: `Meta ${p.seoDescription.length}/155 tecken` });
+    if (kw) out.push({ ok: p.seoDescription.toLowerCase().includes(kw), label: "Sökord i meta" });
+  }
+  if (kw && p.shortDescription) out.push({ ok: p.shortDescription.toLowerCase().includes(kw), label: "Sökord i ingress" });
+  if (kw && p.description) out.push({ ok: p.description.toLowerCase().includes(kw), label: "Sökord i beskrivning" });
+  const allText = [p.description, p.shortDescription, (p.bulletPoints || []).join(" "), p.seoTitle, p.seoDescription, (p.faq || []).map((f) => f.q + " " + f.a).join(" ")].join(" ");
+  if (allText.trim()) {
+    const leaks = CERT_SCAN.filter((c) => c.word.test(allText) && !c.cert.some((x) => (p.certs || []).includes(x))).map((c) => c.cert[0]);
+    [...new Set(leaks)].forEach((l) => out.push({ ok: false, label: `Texten nämner "${l}" – inte ibockad. Kontrollera!` }));
+  }
+  return out;
+};
+
+const dumpProduct = (p) => [
+  `PRODUKTNAMN: ${p.productName}`,
+  p.originalName && p.originalName !== p.productName ? `ORIGINALNAMN: ${p.originalName}` : "",
+  `TITLE: ${p.seoTitle}`,
+  `META: ${p.seoDescription}`,
+  p.handle ? `URL: /products/${p.handle}` : "",
+  `\nINGRESS:\n${p.shortDescription}`,
+  `\nBULLETS:\n${(p.bulletPoints || []).filter(Boolean).map((b) => `• ${b}`).join("\n")}`,
+  `\nBESKRIVNING (HTML):\n${p.description}`,
+  `\nFAQ:\n${(p.faq || []).map((f) => `${f.q}\n${f.a}`).join("\n\n")}`,
+  p.usage ? `\nANVÄNDNING:\n${p.usage.intro}\n${(p.usage.steps || []).map((s, i) => `${i + 1}. ${s}`).join("\n")}` : "",
+  `\nNYCKELINGREDIENSER:\n${(p.keyIngredients || []).map((k) => `${k.name} – ${k.effect}`).join("\n")}`,
+  `\nTAGGAR: ${(p.tags || []).join(", ")}`,
+].filter(Boolean).join("\n");
+
+
+/* ───────────── Shopify rich text (RTF) ↔ HTML ───────────── */
+
+const escHtml = (t) => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+const richNodeToHtml = (n) => {
+  if (!n) return "";
+  if (n.type === "text") {
+    let t = escHtml(n.value || "");
+    if (n.bold) t = `<strong>${t}</strong>`;
+    if (n.italic) t = `<em>${t}</em>`;
+    return t;
+  }
+  const kids = (n.children || []).map(richNodeToHtml).join("");
+  switch (n.type) {
+    case "root": return kids;
+    case "paragraph": return `<p>${kids}</p>`;
+    case "heading": return `<h${n.level || 2}>${kids}</h${n.level || 2}>`;
+    case "link": return `<a href="${escHtml(n.url || "")}">${kids}</a>`;
+    case "list": return n.listType === "ordered" ? `<ol>${kids}</ol>` : `<ul>${kids}</ul>`;
+    case "list-item": return `<li>${kids}</li>`;
+    default: return kids;
+  }
+};
+
+const richTextToHtml = (raw) => {
+  if (!raw) return "";
+  try {
+    const j = JSON.parse(raw);
+    if (j && j.type === "root") return richNodeToHtml(j);
+  } catch {}
+  return raw; // var redan HTML/vanlig text
+};
+
+const inlineToRich = (el) => {
+  const out = [];
+  el.childNodes.forEach((c) => {
+    if (c.nodeType === 3) { if (c.textContent) out.push({ type: "text", value: c.textContent }); return; }
+    const tag = (c.tagName || "").toLowerCase();
+    if (tag === "strong" || tag === "b") {
+      inlineToRich(c).forEach((n) => out.push(n.type === "text" ? { ...n, bold: true } : n));
+    } else if (tag === "em" || tag === "i") {
+      inlineToRich(c).forEach((n) => out.push(n.type === "text" ? { ...n, italic: true } : n));
+    } else if (tag === "a") {
+      out.push({ type: "link", url: c.getAttribute("href") || "", children: inlineToRich(c) });
+    } else if (tag === "br") {
+      out.push({ type: "text", value: " " });
+    } else {
+      inlineToRich(c).forEach((n) => out.push(n));
+    }
+  });
+  return out.length ? out : [{ type: "text", value: "" }];
+};
+
+const htmlToRichText = (html) => {
+  if (!html || !html.trim()) return "";
+  const doc = new DOMParser().parseFromString(`<div>${html}</div>`, "text/html");
+  const rootEl = doc.body.firstChild;
+  const children = [];
+  rootEl.childNodes.forEach((c) => {
+    if (c.nodeType === 3) {
+      if (c.textContent.trim()) children.push({ type: "paragraph", children: [{ type: "text", value: c.textContent.trim() }] });
+      return;
+    }
+    const tag = (c.tagName || "").toLowerCase();
+    const m = tag.match(/^h([1-6])$/);
+    if (m) children.push({ type: "heading", level: Number(m[1]), children: inlineToRich(c) });
+    else if (tag === "ul" || tag === "ol") {
+      children.push({ type: "list", listType: tag === "ol" ? "ordered" : "unordered",
+        children: Array.from(c.children).map((li) => ({ type: "list-item", children: inlineToRich(li) })) });
+    } else {
+      children.push({ type: "paragraph", children: inlineToRich(c) });
+    }
+  });
+  if (!children.length) return "";
+  return JSON.stringify({ type: "root", children });
+};
+
+const textToRich = (txt) => JSON.stringify({ type: "root", children: String(txt).split("\n").filter((l) => l.trim()).map((l) => ({ type: "paragraph", children: [{ type: "text", value: l }] })) });
+
+const keyIngredientsToRich = (list) =>
+  JSON.stringify({ type: "root", children: (list || []).map((k) => ({
+    type: "paragraph",
+    children: [{ type: "text", value: k.name || "", bold: true }, { type: "text", value: ` – ${k.effect || ""}` }],
+  })) });
+
+const parseKeyIngredients = (raw) => {
+  try {
+    const j = JSON.parse(raw);
+    if (Array.isArray(j)) return j.map((x) => ({ name: x.name || "", effect: x.effect || x.benefit || "" }));
+    if (j && j.type === "root") {
+      return (j.children || []).map((p) => {
+        const texts = (p.children || []).filter((c) => c.type === "text");
+        const name = texts.filter((t) => t.bold).map((t) => t.value).join("").trim();
+        const rest = texts.filter((t) => !t.bold).map((t) => t.value).join("").replace(/^[\s\u2013\-:]+/, "").trim();
+        if (name) return { name, effect: rest };
+        if (rest) {
+          const m = rest.match(/^(.+?)\s*[\u2013\-:]\s*(.+)$/);
+          return m ? { name: m[1], effect: m[2] } : { name: rest, effect: "" };
+        }
+        return null;
+      }).filter(Boolean);
+    }
+  } catch {}
+  return raw.split("\n").map((l) => l.trim()).filter(Boolean).map((l) => {
+    const m = l.match(/^(.+?)\s*[\u2013\-:]\s*(.+)$/);
+    return m ? { name: m[1], effect: m[2] } : { name: l, effect: "" };
+  });
+};
+
+/* ───────────────────────── Shopify Admin API ───────────────────────── */
+
+const sfHeaders = (s) => ({ "X-Shopify-Access-Token": s.shopifyToken });
+const sfWriteHeaders = (s) => ({ ...sfHeaders(s), "Content-Type": "application/json" });
+const sfBase = (s) => {
+  const store = s.shopifyStore.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  if (s.proxyUrl) {
+    let proxy = s.proxyUrl.trim().replace(/\/$/, "");
+    if (!/^https?:\/\//.test(proxy)) proxy = "https://" + proxy;
+    return `${proxy}/${store}/admin/api/2024-01`;
+  }
+  return `https://${store}/admin/api/2024-01`;
+};
+
+const fetchFromShopify = async (s, productId) => {
+  const res = await fetch(`${sfBase(s)}/products/${productId}.json`, { headers: sfHeaders(s) });
+  if (!res.ok) throw new Error(`Shopify svarade ${res.status} – kontrollera butik, token (read_products) och produkt-ID.`);
+  const { product } = await res.json();
+  const patch = {
+    shopifyId: String(product.id),
+    productName: product.title || "",
+    originalName: product.title || "",
+    description: product.body_html || "",
+    tags: product.tags ? product.tags.split(", ").filter(Boolean) : [],
+    handle: product.handle || "",
+    currentHandle: product.handle || "",
+    productType: detectType(product.title) || "",
+  };
+  const v0 = (product.variants || [])[0];
+  if (v0 && v0.price) patch.price = String(v0.price).replace(/\.00$/, "");
+  const sizeM = (product.title || "").match(/(\d+\s?(?:ml|g|st))\b/i);
+  if (sizeM) patch.size = sizeM[1];
+  patch._orig = { title: product.title || "", body: product.body_html || "", tags: product.tags || "" };
+  try {
+    const mfRes = await fetch(`${sfBase(s)}/products/${productId}/metafields.json`, { headers: sfHeaders(s) });
+    if (mfRes.ok) {
+      const mfs = (await mfRes.json()).metafields || [];
+      const get = (k) => mfs.find((m) => m.key === k && m.namespace === "custom")?.value || "";
+      patch._mfKeys = mfs.map((m) => m.namespace + "." + m.key);
+      const inciKey = ["ingredienser", "ingredients", "inci"].find((k) => get(k));
+      if (inciKey) { patch.inci = get(inciKey); patch._inciKey = inciKey; }
+      patch.seoTitle = mfs.find((m) => m.key === "title_tag")?.value || "";
+      patch.seoDescription = mfs.find((m) => m.key === "description_tag")?.value || "";
+      const ingressKey = ["beskrivning", "short_description"].find((k) => get(k));
+      if (ingressKey) { patch.shortDescription = richTextToHtml(get(ingressKey)); patch._ingressKey = ingressKey; }
+      const bulletsKey = ["bullet_points_1", "bullet_points"].find((k) => get(k));
+      if (bulletsKey) {
+        patch.bulletPoints = [...get(bulletsKey).split("\n").map((l) => l.replace(/^[\u2713\u2714]\s*/, "").trim()).filter(Boolean), "", "", "", "", ""].slice(0, 5);
+        patch._bulletsKey = bulletsKey;
+      }
+      const faq = [1, 2, 3, 4, 5].map((i) => ({ q: get(`faq_fraga_${i}`) || get(`faq_q${i}`), a: richTextToHtml(get(`faq_a${i}`)) })).filter((x) => x.q || x.a);
+      if (faq.length) patch.faq = faq;
+      const u = get("usage_instructions");
+      if (u) {
+        const parts = u.split(/\n\n/);
+        patch.usage = { intro: parts[0] || "", steps: (parts[1] || "").split("\n").map((x) => x.replace(/^\d+\.\s*/, "")).filter(Boolean) };
+      }
+      const ki = get("key_ingredients");
+      if (ki) { const parsed = parseKeyIngredients(ki); if (parsed.length) patch.keyIngredients = parsed; }
+    }
+  } catch {}
+  try {
+    const imgRes = await fetch(`${sfBase(s)}/products/${productId}/images.json`, { headers: sfHeaders(s) });
+    if (imgRes.ok) {
+      const imgs = (await imgRes.json()).images || [];
+      patch.images = imgs.map((img) => ({
+        shopifyImageId: img.id, url: img.src,
+        filename: img.src.split("/").pop().split("?")[0],
+        suggestedFilename: "", altText: img.alt || "",
+      }));
+    }
+  } catch {}
+  return patch;
+};
+
+const upsertMetafield = async (s, productId, existing, mf) => {
+  const found0 = existing.find((m) => m.namespace === mf.namespace && m.key === mf.key);
+  if (found0 && String(found0.value) === String(mf.value)) return { key: `${mf.namespace}.${mf.key}`, status: "oförändrad" };
+  const send = async (value, type) => {
+    const found = existing.find((m) => m.namespace === mf.namespace && m.key === mf.key);
+    if (found) {
+      return fetch(`${sfBase(s)}/metafields/${found.id}.json`, {
+        method: "PUT", headers: sfWriteHeaders(s),
+        body: JSON.stringify({ metafield: { id: found.id, value, type: found.type || type } }),
+      });
+    }
+    return fetch(`${sfBase(s)}/products/${productId}/metafields.json`, {
+      method: "POST", headers: sfWriteHeaders(s),
+      body: JSON.stringify({ metafield: { namespace: mf.namespace, key: mf.key, value, type, owner_resource: "product" } }),
+    });
+  };
+  let res = await send(mf.value, mf.type);
+  if (!res.ok) {
+    // Typmismatch mot definitionen? Prova den andra representationen automatiskt.
+    if (mf.type === "multi_line_text_field" || mf.type === "single_line_text_field") {
+      res = await send(textToRich(mf.value), "rich_text_field");
+    } else if (mf.type === "rich_text_field") {
+      const plain = richTextToHtml(mf.value).replace(/<\/(p|h[1-6]|li)>/g, "\n").replace(/<[^>]+>/g, "").trim();
+      res = await send(plain, "multi_line_text_field");
+    }
+  }
+  if (!res.ok) {
+    let msg = ""; try { msg = JSON.stringify((await res.json()).errors); } catch {}
+    return { key: `${mf.namespace}.${mf.key}`, status: "fel", msg: msg || String(res.status) };
+  }
+  return { key: `${mf.namespace}.${mf.key}`, status: found0 ? "uppdaterad" : "skapad" };
+};
+
+const publishProduct = async (s, p, onStep) => {
+  if (!p.shopifyId) throw new Error("Produkten saknar Shopify-ID – hämta den från Shopify först.");
+  const pid = p.shopifyId;
+  const handleChanged = p.handle && p.currentHandle && p.handle !== p.currentHandle;
+  const o = p._orig || {};
+  const body = { product: { id: Number(pid) } };
+  if (p.productName && p.productName !== o.title) body.product.title = p.productName;
+  if (p.description && p.description !== o.body) body.product.body_html = p.description;
+  const tagsStr = (p.tags || []).join(", ");
+  if (tagsStr && tagsStr !== (o.tags || "")) body.product.tags = tagsStr;
+  if (handleChanged) body.product.handle = p.handle;
+  if (Object.keys(body.product).length > 1) {
+    onStep("Uppdaterar ändrade produktfält...");
+    const res = await fetch(`${sfBase(s)}/products/${pid}.json`, { method: "PUT", headers: sfWriteHeaders(s), body: JSON.stringify(body) });
+    if (!res.ok) {
+      let err = ""; try { err = JSON.stringify((await res.json()).errors); } catch {}
+      throw new Error(`Shopify-fel ${res.status}: ${err || "kontrollera write_products-behörighet"}`);
+    }
+  }
+  onStep("Uppdaterar metafält (SEO, FAQ, bullets, ingredienser)...");
+  const mfRes = await fetch(`${sfBase(s)}/products/${pid}/metafields.json`, { headers: sfHeaders(s) });
+  const existing = mfRes.ok ? (await mfRes.json()).metafields || [] : [];
+  const mfs = [
+    { namespace: "global", key: "title_tag", value: p.seoTitle, type: "single_line_text_field" },
+    { namespace: "global", key: "description_tag", value: p.seoDescription, type: "single_line_text_field" },
+    { namespace: "custom", key: p._inciKey || "ingredienser", value: p.inci, type: "multi_line_text_field" },
+    { namespace: "custom", key: p._ingressKey || "beskrivning", value: htmlToRichText(p.shortDescription), type: "rich_text_field" },
+    { namespace: "custom", key: p._bulletsKey || "bullet_points_1", value: (p.bulletPoints || []).filter(Boolean).map((b) => "\u2713 " + b).join("\n"), type: "multi_line_text_field" },
+    { namespace: "custom", key: "usage_instructions", value: p.usage ? `${p.usage.intro}\n\n${(p.usage.steps || []).map((x, i) => `${i + 1}. ${x}`).join("\n")}` : "", type: "multi_line_text_field" },
+    { namespace: "custom", key: "key_ingredients", value: (p.keyIngredients || []).length ? keyIngredientsToRich(p.keyIngredients) : "", type: "rich_text_field" },
+    ...(p.faq || []).flatMap((f, i) => [
+      { namespace: "custom", key: `faq_fraga_${i + 1}`, value: f.q, type: "single_line_text_field" },
+      { namespace: "custom", key: `faq_a${i + 1}`, value: htmlToRichText(f.a), type: "rich_text_field" },
+    ]),
+  ];
+  const log = [];
+  for (const mf of mfs) {
+    if (!mf.value) { log.push({ key: `${mf.namespace}.${mf.key}`, status: "tom – skickades inte" }); continue; }
+    log.push(await upsertMetafield(s, pid, existing, mf));
+  }
+  const imgsToUpdate = (p.images || []).filter((i) => i.shopifyImageId && i.altText);
+  if (imgsToUpdate.length) {
+    onStep("Uppdaterar alt-texter...");
+    for (const img of imgsToUpdate) {
+      await fetch(`${sfBase(s)}/products/${pid}/images/${img.shopifyImageId}.json`, {
+        method: "PUT", headers: sfWriteHeaders(s),
+        body: JSON.stringify({ image: { id: img.shopifyImageId, alt: img.altText } }),
+      });
+    }
+  }
+  if (handleChanged) {
+    onStep("Skapar 301-redirect för gamla URL:en...");
+    await fetch(`${sfBase(s)}/redirects.json`, {
+      method: "POST", headers: sfWriteHeaders(s),
+      body: JSON.stringify({ redirect: { path: `/products/${p.currentHandle}`, target: `/products/${p.handle}` } }),
+    });
+  }
+  return { handleChanged, log };
+};
+
+
+/* ───────────── UI-komponenter (stabil identitet – fixar fokus) ───────────── */
+
+  const S = {
+    page: { fontFamily: "'Avenir Next','Segoe UI',system-ui,sans-serif", background: "#EFF1EA", minHeight: "100vh", color: "#22281F" },
+    wrap: { maxWidth: 880, margin: "0 auto", padding: "20px 14px 80px" },
+    card: { background: "#FFFFFF", borderRadius: 12, padding: 16, marginBottom: 14, border: "1px solid #DDE2D3" },
+    h2: { fontSize: 14, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#46522F", margin: "0 0 12px" },
+    label: { display: "block", fontSize: 12, fontWeight: 600, color: "#5A6450", marginBottom: 4 },
+    input: { width: "100%", boxSizing: "border-box", padding: "9px 10px", borderRadius: 8, border: "1px solid #C9D0BC", fontSize: 14, background: "#FBFCF8", color: "#22281F", outline: "none" },
+    ta: { width: "100%", boxSizing: "border-box", padding: "9px 10px", borderRadius: 8, border: "1px solid #C9D0BC", fontSize: 13, background: "#FBFCF8", color: "#22281F", fontFamily: "inherit", resize: "vertical", outline: "none" },
+    row: { display: "flex", gap: 10, flexWrap: "wrap" },
+    col: { flex: "1 1 160px", marginBottom: 10 },
+    btn: { background: "#46522F", color: "#FBFCF8", border: "none", borderRadius: 8, padding: "9px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer" },
+    btnGhost: { background: "transparent", color: "#46522F", border: "1px solid #B8C2A4", borderRadius: 8, padding: "7px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer" },
+    chip: (on) => ({ padding: "6px 10px", borderRadius: 999, border: on ? "1.5px solid #46522F" : "1px solid #C9D0BC", background: on ? "#E4EAD6" : "#FBFCF8", fontSize: 12, fontWeight: 600, color: on ? "#33401E" : "#5A6450", cursor: "pointer" }),
+    out: { background: "#F7F8F3", border: "1px solid #E2E6D8", borderRadius: 8, padding: 12, fontSize: 13, lineHeight: 1.55, whiteSpace: "pre-wrap", wordBreak: "break-word" },
+    outHead: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 },
+    small: { fontSize: 11, color: "#7A8468" },
+    tab: (on) => ({ padding: "9px 16px", borderRadius: 8, border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", background: on ? "#46522F" : "transparent", color: on ? "#FBFCF8" : "#46522F" }),
+    status: (s) => ({ fontSize: 11, fontWeight: 700, padding: "3px 8px", borderRadius: 999, background: s === "klar" ? "#E4EAD6" : s === "genererar" ? "#FDF3D7" : s === "fel" ? "#F6E0DB" : "#EDEFE6", color: s === "klar" ? "#33401E" : s === "genererar" ? "#7A5B12" : s === "fel" ? "#9B3B2E" : "#5A6450" }),
+  };
+  const FactFields = ({ p, set, onFetchSource }) => (
+    <>
+      <div style={{ marginBottom: 10 }}>
+        <label style={S.label}>Produktnamn (gärna originalnamnet, även engelskt)</label>
+        <input style={S.input} value={p.productName}
+          onChange={(e) => { const v = e.target.value; set((x) => ({ ...x, productName: v, productType: x.productType || detectType(v) })); }}
+          placeholder="t.ex. Stimulate Me Face Serum" />
+      </div>
+      <div style={S.row}>
+        <div style={S.col}>
+          <label style={S.label}>Varumärke</label>
+          <select style={S.input} value={p.brand}
+            onChange={(e) => set((x) => ({ ...x, brand: e.target.value, brandNote: BRANDS[e.target.value] || "" }))}>
+            <option value="">Välj...</option>
+            {Object.keys(BRANDS).map((b) => <option key={b} value={b}>{b}</option>)}
+          </select>
+        </div>
+        <div style={S.col}>
+          <label style={S.label}>Produkttyp</label>
+          <select style={S.input} value={p.productType} onChange={(e) => set((x) => ({ ...x, productType: e.target.value }))}>
+            <option value="">Välj...</option>
+            {Object.keys(PRODUCT_TYPES).map((t) => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </div>
+      </div>
+      <div style={S.row}>
+        <div style={S.col}>
+          <label style={S.label}>Målgrupp / hud- eller hårtyp</label>
+          <input style={S.input} value={p.audience} onChange={(e) => set((x) => ({ ...x, audience: e.target.value }))} placeholder="t.ex. torr och känslig hud" />
+        </div>
+        <div style={S.col}>
+          <label style={S.label}>Storlek</label>
+          <input style={S.input} value={p.size} onChange={(e) => set((x) => ({ ...x, size: e.target.value }))} placeholder="50 ml" />
+        </div>
+        <div style={S.col}>
+          <label style={S.label}>Pris (kr)</label>
+          <input style={S.input} value={p.price} onChange={(e) => set((x) => ({ ...x, price: e.target.value }))} placeholder="349" />
+        </div>
+      </div>
+      <div style={{ marginBottom: 10 }}>
+        <label style={S.label}>{p.productType === "Accessoar / Necessär" ? "Material & detaljer (t.ex. 100 % bomull, mått, fack)" : "INCI / ingredienslista"}</label>
+        <textarea style={{ ...S.ta, minHeight: 60 }} value={p.inci} onChange={(e) => set((x) => ({ ...x, inci: e.target.value }))} placeholder={p.productType === "Accessoar / Necessär" ? "t.ex. 100 % bomull, vattenavvisande foder, 24 x 16 cm, metalldragkedja" : "Klistra in INCI – styr nyckelingredienser, beskrivning och FAQ"} />
+      </div>
+      <div style={{ marginBottom: 10 }}>
+        <label style={S.label}>Certifieringar & egenskaper (endast ibockade får nämnas)</label>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+          {CERTS.map((c) => (
+            <span key={c} style={S.chip(p.certs.includes(c))}
+              onClick={() => set((x) => ({ ...x, certs: x.certs.includes(c) ? x.certs.filter((y) => y !== c) : [...x.certs, c] }))}>
+              {c}
+            </span>
+          ))}
+        </div>
+      </div>
+      <div style={S.row}>
+        <div style={S.col}>
+          <label style={S.label}>Utmärkelser</label>
+          <input style={S.input} value={p.awards} onChange={(e) => set((x) => ({ ...x, awards: e.target.value }))} placeholder="t.ex. Global Makeup Awards 2023 (Winner)" />
+          {!p.awards && /award|utmärkels|prisbelönt|winner|bronze|brons|highly commended/i.test(p.sourceText || "") && (
+            <p style={{ ...S.small, color: "#7A5B12", marginTop: 4 }}>💡 Källtexten verkar nämna utmärkelser – kolla källan och fyll gärna i fältet för full effekt i title och ingress.</p>
+          )}
+        </div>
+        <div style={S.col}>
+          <label style={S.label}>Övrig USP / info</label>
+          <input style={S.input} value={p.usp} onChange={(e) => set((x) => ({ ...x, usp: e.target.value }))} placeholder="t.ex. ovanlig kombination av ingredienser" />
+        </div>
+      </div>
+      <div style={{ marginBottom: 10 }}>
+        <label style={S.label}>Länk till produkten hos varumärket (valfritt – hämtar fakta & utmärkelser)</label>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          <input style={{ ...S.input, flex: "1 1 200px" }} value={p.brandUrl} onChange={(e) => set((x) => ({ ...x, brandUrl: e.target.value }))} placeholder="https://hoiahomespa.com/product/..." />
+          {onFetchSource && <button style={S.btnGhost} onClick={onFetchSource} disabled={!p.brandUrl || p._srcBusy}>{p._srcBusy ? "Hämtar..." : "Hämta källtext"}</button>}
+        </div>
+        {p.sourceText ? (
+          <details style={{ marginTop: 6 }}>
+            <summary style={{ ...S.small, cursor: "pointer" }}>Källtext hämtad ({p.sourceText.length} tecken) – klicka för att granska/redigera</summary>
+            <textarea style={{ ...S.ta, minHeight: 100, marginTop: 6 }} value={p.sourceText} onChange={(e) => set((x) => ({ ...x, sourceText: e.target.value }))} />
+          </details>
+        ) : null}
+      </div>
+    </>
+  );
+  const VariantPicker = ({ label, variants, current, why, onPick, strategies }) => (
+    variants.length > 0 ? (
+      <div style={{ marginTop: 8 }}>
+        <span style={S.small}>{label}{why ? ` · Claudes motivering: ${why}` : ""}</span>
+        {variants.map((t, i) => (
+          <div key={i} style={{ ...S.chip(current === t), display: "block", marginTop: 5, textAlign: "left" }} onClick={() => onPick(t)}>
+            {strategies && (
+              <span style={{ ...S.small, display: "block", color: "inherit", opacity: 0.7 }}>
+                {strategies[i] || "Variant"} · {t.length} tecken{t.length > 60 ? " ⚠ för lång" : ""}
+              </span>
+            )}
+            {t}
+          </div>
+        ))}
+      </div>
+    ) : null
+  );
+  const ChecksPanel = ({ p }) => {
+    const checks = runChecks(p);
+    return checks.length ? (
+      <div style={{ ...S.card, borderLeft: "4px solid #46522F" }}>
+        <h2 style={S.h2}>SEO-kontroll</h2>
+        {checks.map((c, i) => (
+          <div key={i} style={{ fontSize: 13, marginBottom: 4, color: c.ok ? "#46522F" : "#9B3B2E" }}>
+            {c.ok ? "✓" : "✕"} {c.label}
+          </div>
+        ))}
+      </div>
+    ) : null;
+  };
+  const PubLog = ({ log }) => {
+    if (!log) return null;
+    const errs = log.filter((l) => l.status === "fel").length;
+    return (
+      <details style={{ marginTop: 8 }} open={errs > 0}>
+        <summary style={{ ...S.small, cursor: "pointer", fontWeight: 700 }}>Publiceringslogg ({log.length} fält{errs ? `, ${errs} fel` : ""})</summary>
+        <div style={{ marginTop: 6 }}>
+          {log.map((l, i) => (
+            <div key={i} style={{ fontSize: 12, marginBottom: 2, color: l.status === "fel" ? "#9B3B2E" : l.status === "skapad" || l.status === "uppdaterad" ? "#46522F" : "#7A8468" }}>
+              {l.status === "fel" ? "✕" : "•"} {l.key}: {l.status}{l.msg ? ` – ${l.msg}` : ""}
+            </div>
+          ))}
+        </div>
+      </details>
+    );
+  };
+  const UrlBlock = ({ p, set, onGenerate, busy }) => {
+    const changed = p.handle && p.currentHandle && p.handle !== p.currentHandle;
+    return (
+      <div style={{ marginBottom: 16 }}>
+        <div style={S.outHead}>
+          <span style={{ fontSize: 13, fontWeight: 700 }}>URL (handle)</span>
+          {onGenerate && <button style={S.btnGhost} onClick={onGenerate} disabled={busy}>{busy ? "Genererar..." : "Generera"}</button>}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <span style={{ ...S.small, whiteSpace: "nowrap" }}>/products/</span>
+          <input style={S.input} value={p.handle} onChange={(e) => set({ handle: e.target.value })} />
+        </div>
+        {changed && <p style={{ fontSize: 12, color: "#7A5B12", margin: "6px 0 0" }}>⚠ URL:en ändras från /products/{p.currentHandle} – en 301-redirect skapas automatiskt vid publicering.</p>}
+        <VariantPicker label="Förslag – klicka för att byta:" variants={p.handleVariants || []} current={p.handle} onPick={(t) => set({ handle: t })} />
+      </div>
+    );
+  };
+
+const OutBlock = ({ title, field, copyValue, ui, children }) => (
+  <div style={{ marginBottom: 16 }}>
+    <div style={S.outHead}>
+      <span style={{ fontSize: 13, fontWeight: 700 }}>{title}</span>
+      <span style={{ display: "flex", gap: 6 }}>
+        <button style={S.btnGhost} onClick={() => ui.generateField(field)} disabled={!!ui.generating[field]}>
+          {ui.generating[field] ? "Genererar..." : "Generera"}
+        </button>
+        {copyValue ? (
+          <button style={S.btnGhost} onClick={() => ui.doCopy(field, copyValue)}>{ui.copied === field ? "✓ Kopierad" : "Kopiera"}</button>
+        ) : null}
+      </span>
+    </div>
+    {children}
+  </div>
+);
+
+/* ───────────────────────── App ───────────────────────── */
+
+function EcloreProduktstudio() {
+  const [mode, setMode] = useState("single");
+  const [form, setForm] = useState(emptyProduct());
+  const [storeProfile, setStoreProfile] = useState(DEFAULT_PROFILE);
+  const [generating, setGenerating] = useState({});
+  const [allProgress, setAllProgress] = useState("");
+  const [copied, setCopied] = useState("");
+  const [error, setError] = useState("");
+  const [showProfile, setShowProfile] = useState(false);
+
+  // Kö
+  const [queue, setQueue] = useState([]);
+  const [draft, setDraft] = useState(null); // produkt som håller på att läggas till
+  const [queueRunning, setQueueRunning] = useState(false);
+  const [queueProgress, setQueueProgress] = useState("");
+  const [reviewIdx, setReviewIdx] = useState(-1); // -1 = listvy
+  const [editId, setEditId] = useState(null);
+
+  // Shopify
+  const [settings, setSettings] = useState(() => {
+    const base = { shopifyStore: "", shopifyToken: "", anthropicKey: "", proxyUrl: "" };
+    try { return { ...base, ...JSON.parse(localStorage.getItem("eclore_settings") || "{}") }; } catch { return base; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem("eclore_settings", JSON.stringify(settings)); } catch {}
+  }, [settings]);
+  const [showSettings, setShowSettings] = useState(false);
+  const [singleId, setSingleId] = useState("");
+  const [queueIds, setQueueIds] = useState("");
+  const [sfBusy, setSfBusy] = useState("");
+  const [sfError, setSfError] = useState("");
+  const [publishState, setPublishState] = useState({});
+  const [publishLog, setPublishLog] = useState({});
+
+  const sfReady = settings.shopifyStore && settings.shopifyToken;
+
+  const fetchSingle = async () => {
+    if (!sfReady || !singleId.trim()) { setSfError("Fyll i butik, token och produkt-ID."); return; }
+    setSfError(""); setSfBusy("single");
+    try {
+      const patch = await fetchFromShopify(settings, singleId.trim());
+      setForm((f) => ({ ...f, ...patch, brandNote: f.brandNote }));
+    } catch (e) { setSfError(e.message); }
+    setSfBusy("");
+  };
+
+  const fetchSourceText = async (p, set) => {
+    if (!p.brandUrl) return;
+    let proxy = (settings.proxyUrl || "").trim().replace(/\/$/, "");
+    if (!proxy) { setSfError("Källhämtning kräver CORS-proxyn – fyll i proxy-URL och uppdatera workern med nya worker.js."); return; }
+    if (!/^https?:\/\//.test(proxy)) proxy = "https://" + proxy;
+    set((x) => ({ ...x, _srcBusy: true }));
+    try {
+      const res = await fetch(`${proxy}/fetch?url=${encodeURIComponent(p.brandUrl)}`);
+      if (!res.ok) throw new Error(`Workern svarade ${res.status} – är den uppdaterad med /fetch-stödet?`);
+      const html = await res.text();
+      const text = html
+        .replace(/<script[\s\S]*?<\/script>/gi, " ")
+        .replace(/<style[\s\S]*?<\/style>/gi, " ")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/\s+/g, " ")
+        .trim().slice(0, 4000);
+      set((x) => ({ ...x, sourceText: text, _srcBusy: false }));
+      setSfError("");
+    } catch (e) {
+      console.error(e);
+      set((x) => ({ ...x, _srcBusy: false }));
+      setSfError(`Kunde inte hämta källsidan: ${e.message}`);
+    }
+  };
+
+  const fetchToQueue = async () => {
+    const ids = queueIds.split(/[\n,;]+/).map((x) => x.trim()).filter(Boolean);
+    if (!sfReady || !ids.length) { setSfError("Fyll i butik, token och minst ett produkt-ID."); return; }
+    setSfError(""); setSfBusy("queue");
+    for (let i = 0; i < ids.length; i++) {
+      setQueueProgress(`Hämtar produkt ${i + 1}/${ids.length} från Shopify...`);
+      try {
+        const patch = await fetchFromShopify(settings, ids[i]);
+        setQueue((q) => [...q, { ...emptyProduct(), ...patch, status: "väntar" }]);
+      } catch (e) { setSfError(`ID ${ids[i]}: ${e.message}`); }
+    }
+    setQueueProgress(""); setQueueIds(""); setSfBusy("");
+  };
+
+  const publish = async (p, source) => {
+    if (!sfReady) { setSfError("Fyll i Shopify-inställningarna först."); return; }
+    setSfError("");
+    setPublishState((s) => ({ ...s, [p.id]: "Publicerar..." }));
+    try {
+      const result = await publishProduct(settings, p, (step) => setPublishState((s) => ({ ...s, [p.id]: step })));
+      setPublishLog((s) => ({ ...s, [p.id]: result.log }));
+      const errCount = result.log.filter((l) => l.status === "fel").length;
+      let msg = result.handleChanged ? "✓ Publicerad + 301-redirect skapad" : "✓ Publicerad";
+      if (errCount) msg = `⚠ Publicerad, men ${errCount} fält nekades – se loggen nedan`;
+      setPublishState((s) => ({ ...s, [p.id]: msg }));
+      if (source === "queue") updateQueueItem(p.id, { currentHandle: p.handle });
+      else setForm((f) => ({ ...f, currentHandle: f.handle }));
+    } catch (e) {
+      setPublishState((s) => ({ ...s, [p.id]: `✕ ${e.message}` }));
+    }
+  };
+
+  const setField = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+  const updateQueueItem = (id, patch) =>
+    setQueue((q) => q.map((p) => (p.id === id ? { ...p, ...(typeof patch === "function" ? patch(p) : patch) } : p)));
+
+  const doCopy = async (key, txt) => {
+    try { await navigator.clipboard.writeText(txt); setCopied(key); setTimeout(() => setCopied(""), 1500); } catch {}
+  };
+
+  /* ── Enskilt läge ── */
+  const generateField = async (field) => {
+    if (!form.productName) { setError("Fyll i produktnamn först."); return; }
+    if (!settings.anthropicKey) { setError("Lägg in din Anthropic API-nyckel under Inställningar."); setShowSettings(true); return; }
+    setError("");
+    setGenerating((g) => ({ ...g, [field]: true }));
+    try {
+      const patch = await genField(form, field, storeProfile, false, settings.anthropicKey);
+      setForm((f) => ({ ...f, ...patch }));
+    } catch (e) { console.error(e); setError(`Kunde inte generera ${field}. Försök igen.`); }
+    setGenerating((g) => ({ ...g, [field]: false }));
+  };
+
+  const generateAllSingle = async () => {
+    if (!form.productName) { setError("Fyll i produktnamn först."); return; }
+    if (!settings.anthropicKey) { setError("Lägg in din Anthropic API-nyckel under Inställningar."); setShowSettings(true); return; }
+    setError("");
+    let cur = { ...form };
+    const failed = [];
+    for (const [field, label] of PIPELINE) {
+      if (field === "keywords" && cur.primaryKeyword) continue;
+      if (field === "productNames") continue; // manuellt val i enskilt läge
+      setAllProgress(label + "...");
+      try {
+        const patch = await genField(cur, field, storeProfile, false, settings.anthropicKey);
+        cur = { ...cur, ...patch };
+        setForm((f) => ({ ...f, ...patch }));
+      } catch (e) { console.error(e); failed.push(label); }
+    }
+    if (failed.length) {
+      setError(`Kunde inte generera: ${failed.join(", ")}. Tryck Generera på respektive fält för att försöka igen.`);
+      setAllProgress("");
+      return;
+    }
+    setAllProgress("✓ Klart");
+    setTimeout(() => setAllProgress(""), 3000);
+  };
+
+  const generateImageMeta = async (idx) => {
+    setGenerating((g) => ({ ...g, [`img_${idx}`]: true }));
+    try {
+      const img = form.images[idx] || {};
+      let imageBlock = null;
+      if (img.url) {
+        try {
+          const u = img.url + (img.url.includes("?") ? "&" : "?") + "width=800";
+          const blob = await (await fetch(u)).blob();
+          const b64 = await new Promise((resolve, reject) => {
+            const r = new FileReader();
+            r.onload = () => resolve(r.result.split(",")[1]);
+            r.onerror = reject;
+            r.readAsDataURL(blob);
+          });
+          imageBlock = { type: "image", source: { type: "base64", media_type: blob.type || "image/jpeg", data: b64 } };
+        } catch (e) { console.error("Kunde inte hämta bilden – genererar utan bildanalys", e); }
+      }
+      const promptText = `${buildCtx(form, storeProfile)}\n\nFör produktbild ${idx + 1}${imageBlock ? " (bilden bifogas – titta på den och beskriv vad som FAKTISKT syns: produkt/förpackning, händer, hudtextur, miljö, färger osv.)" : ""}, nuvarande filnamn: "${img.filename || ""}". Generera:\n1. SEO-filnamn på svenska (lowercase, bindestreck, .jpg, max 60 tecken, primärt sökord eller produkttyp + det bilden visar)\n2. Alt-text på svenska (max 125 tecken) som beskriver bildens faktiska innehåll + produktnamnet\nSvara BARA med JSON: {"suggestedFilename":"...","altText":"..."}`;
+      const content = imageBlock ? [imageBlock, { type: "text", text: promptText }] : promptText;
+      const j = safeParse(stripFences(await callClaude(content, settings.anthropicKey)));
+      setForm((f) => {
+        const imgs = [...f.images];
+        imgs[idx] = { ...imgs[idx], suggestedFilename: j.suggestedFilename, altText: j.altText };
+        return { ...f, images: imgs };
+      });
+    } catch (e) { console.error(e); }
+    setGenerating((g) => ({ ...g, [`img_${idx}`]: false }));
+  };
+
+  /* ── Köläge ── */
+  const runQueue = async () => {
+    if (!settings.anthropicKey) { setSfError("Lägg in din Anthropic API-nyckel under Inställningar."); setShowSettings(true); return; }
+    setQueueRunning(true);
+    const items = queue.filter((p) => p.status === "väntar" || p.status === "fel");
+    for (let i = 0; i < items.length; i++) {
+      let cur = { ...items[i], status: "genererar" };
+      updateQueueItem(cur.id, { status: "genererar" });
+      const failed = [];
+      // Hämta källtext från varumärkeslänken automatiskt om den saknas
+      if (cur.brandUrl && !cur.sourceText && settings.proxyUrl) {
+        setQueueProgress(`Produkt ${i + 1}/${items.length} · ${cur.productName.slice(0, 28)} · Hämtar källtext...`);
+        try {
+          let proxy = settings.proxyUrl.trim().replace(/\/$/, "");
+          if (!/^https?:\/\//.test(proxy)) proxy = "https://" + proxy;
+          const res = await fetch(`${proxy}/fetch?url=${encodeURIComponent(cur.brandUrl)}`);
+          if (res.ok) {
+            const html = await res.text();
+            const text = html
+              .replace(/<script[\s\S]*?<\/script>/gi, " ")
+              .replace(/<style[\s\S]*?<\/style>/gi, " ")
+              .replace(/<[^>]+>/g, " ")
+              .replace(/\s+/g, " ")
+              .trim().slice(0, 4000);
+            cur = { ...cur, sourceText: text };
+            updateQueueItem(cur.id, { sourceText: text });
+          }
+        } catch (e) { console.error("Källtext kunde inte hämtas, fortsätter utan", e); }
+      }
+      for (const [field, label] of PIPELINE) {
+        if (field === "keywords" && cur.primaryKeyword) continue;
+        setQueueProgress(`Produkt ${i + 1}/${items.length} · ${cur.productName.slice(0, 28)} · ${label}...`);
+        try {
+          const patch = await genField(cur, field, storeProfile, true, settings.anthropicKey);
+          cur = { ...cur, ...patch };
+          updateQueueItem(cur.id, patch);
+        } catch (e) { console.error(e); failed.push(label); }
+      }
+      updateQueueItem(cur.id, { status: failed.length ? "fel" : "klar" });
+      if (failed.length) setQueueProgress(`${cur.productName.slice(0, 28)}: kunde inte generera ${failed.join(", ")} – kör kön igen för nytt försök.`);
+    }
+    setQueueProgress("✓ Kön klar – dags att granska");
+    setQueueRunning(false);
+  };
+
+  /* ── Stilar ── */
+  /* ── Delade fältblock för produktfakta (används av singel + kö-utkast) ── */
+  const TITLE_STRATEGIES = ["Sökord först", "Varumärke + sökord", "Behov först"];
+
+  const ShopifyCard = () => (
+    <div style={S.card}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <h2 style={{ ...S.h2, margin: 0 }}>Inställningar {settings.anthropicKey ? "✓ AI" : ""} {sfReady ? "✓ Shopify" : ""}</h2>
+        <button style={S.btnGhost} onClick={() => setShowSettings(!showSettings)}>{showSettings ? "Dölj" : sfReady ? "Ändra" : "Anslut"}</button>
+      </div>
+      {showSettings && (
+        <div style={{ marginTop: 10 }}>
+          <div style={S.row}>
+            <div style={S.col}>
+              <label style={S.label}>Butik (xxx.myshopify.com)</label>
+              <input style={S.input} value={settings.shopifyStore} onChange={(e) => setSettings((s) => ({ ...s, shopifyStore: e.target.value }))} placeholder="eclore.myshopify.com" />
+            </div>
+            <div style={S.col}>
+              <label style={S.label}>Shopify Admin API access token</label>
+              <input style={S.input} type="password" value={settings.shopifyToken} onChange={(e) => setSettings((s) => ({ ...s, shopifyToken: e.target.value }))} placeholder="shpat_..." />
+            </div>
+            <div style={S.col}>
+              <label style={S.label}>Anthropic API-nyckel</label>
+              <input style={S.input} type="password" value={settings.anthropicKey} onChange={(e) => setSettings((s) => ({ ...s, anthropicKey: e.target.value }))} placeholder="sk-ant-..." />
+            </div>
+          </div>
+          <div style={{ marginBottom: 10 }}>
+            <label style={S.label}>CORS-proxy URL (valfritt – behövs om Shopify blockerar direktanrop)</label>
+            <input style={S.input} value={settings.proxyUrl} onChange={(e) => setSettings((s) => ({ ...s, proxyUrl: e.target.value }))} placeholder="https://eclore-proxy.dittkonto.workers.dev" />
+          </div>
+          <p style={S.small}>Nycklarna sparas lokalt i din webbläsare på den här enheten – du slipper fylla i dem igen. Shopify-token kräver read_products + write_products (+ write_content för redirects).</p>
+        </div>
+      )}
+      {sfError && <p style={{ color: "#9B3B2E", fontSize: 13, marginTop: 8 }}>{sfError}</p>}
+    </div>
+  );
+
+  /* ───────────── Granskningsvy (kö) ───────────── */
+  const ReviewView = () => {
+    const p = queue[reviewIdx];
+    if (!p) return null;
+    const set = (patch) => updateQueueItem(p.id, patch);
+    const doneCount = queue.filter((x) => x.approved).length;
+    return (
+      <div>
+        <div style={{ ...S.card, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+          <div>
+            <strong style={{ fontSize: 15 }}>Granskar {reviewIdx + 1} av {queue.length}</strong>
+            <div style={S.small}>{doneCount} godkända · {p.approved ? "✓ denna är godkänd" : "ej godkänd ännu"}</div>
+          </div>
+          <div style={{ display: "flex", gap: 6 }}>
+            <button style={S.btnGhost} onClick={() => setReviewIdx(-1)}>← Kölista</button>
+            <button style={S.btnGhost} disabled={reviewIdx === 0} onClick={() => setReviewIdx(reviewIdx - 1)}>Föregående</button>
+            <button style={S.btn} onClick={() => {
+              set({ approved: true });
+              const next = queue.findIndex((x, i) => i > reviewIdx && x.status === "klar" && !x.approved);
+              setReviewIdx(next !== -1 ? next : -1);
+            }}>Godkänn & nästa</button>
+          </div>
+        </div>
+
+        <div style={S.card}>
+          <h2 style={S.h2}>Produktnamn</h2>
+          <input style={{ ...S.input, fontWeight: 700 }} value={p.productName} onChange={(e) => set({ productName: e.target.value })} />
+          {p.originalName && <p style={S.small}>Original: {p.originalName}</p>}
+          <VariantPicker label="Alternativ (texterna är skrivna utifrån det valda namnet):" variants={p.nameVariants} current={p.productName}
+            onPick={(t) => set({ productName: t })} />
+        </div>
+
+        <div style={S.card}>
+          <h2 style={S.h2}>Title-tagg & URL</h2>
+          <input style={S.input} value={p.seoTitle} onChange={(e) => set({ seoTitle: e.target.value })} />
+          <span style={{ ...S.small, color: p.seoTitle.length > 60 ? "#9B3B2E" : "#7A8468" }}>{p.seoTitle.length}/60 tecken</span>
+          <VariantPicker label="Tre strategier – klicka för att byta:" variants={p.titleVariants} current={p.seoTitle} why={p.titleWhy}
+            onPick={(t) => set({ seoTitle: t })} strategies={TITLE_STRATEGIES} />
+          <div style={{ marginTop: 14 }}>
+            <UrlBlock p={p} set={set} />
+          </div>
+        </div>
+
+        <div style={S.card}>
+          <h2 style={S.h2}>Meta & ingress</h2>
+          <label style={S.label}>Meta-beskrivning</label>
+          <textarea style={{ ...S.ta, minHeight: 54 }} value={p.seoDescription} onChange={(e) => set({ seoDescription: e.target.value })} />
+          <span style={{ ...S.small, color: p.seoDescription.length > 155 ? "#9B3B2E" : "#7A8468" }}>{p.seoDescription.length}/155 tecken</span>
+          <label style={{ ...S.label, marginTop: 10 }}>Ingress</label>
+          <textarea style={{ ...S.ta, minHeight: 80 }} value={p.shortDescription} onChange={(e) => set({ shortDescription: e.target.value })} />
+        </div>
+
+        <div style={S.card}>
+          <h2 style={S.h2}>Övrigt innehåll</h2>
+          <details style={{ marginBottom: 8 }}>
+            <summary style={{ cursor: "pointer", fontWeight: 600, fontSize: 13 }}>Bullet points ({(p.bulletPoints || []).filter(Boolean).length})</summary>
+            <div style={{ ...S.out, marginTop: 6 }}>{(p.bulletPoints || []).filter(Boolean).map((b, i) => <div key={i}>• {b}</div>)}</div>
+          </details>
+          <details style={{ marginBottom: 8 }}>
+            <summary style={{ cursor: "pointer", fontWeight: 600, fontSize: 13 }}>Produktbeskrivning</summary>
+            <div style={{ ...S.out, marginTop: 6 }} dangerouslySetInnerHTML={{ __html: p.description }} />
+          </details>
+          <details style={{ marginBottom: 8 }}>
+            <summary style={{ cursor: "pointer", fontWeight: 600, fontSize: 13 }}>FAQ ({(p.faq || []).length})</summary>
+            <div style={{ ...S.out, marginTop: 6 }}>
+              {(p.faq || []).map((f, i) => (
+                <div key={i} style={{ marginBottom: 8 }}>
+                  <strong>{f.q}</strong>
+                  <div dangerouslySetInnerHTML={{ __html: f.a }} />
+                </div>
+              ))}
+            </div>
+          </details>
+          <details style={{ marginBottom: 8 }}>
+            <summary style={{ cursor: "pointer", fontWeight: 600, fontSize: 13 }}>Användning, ingredienser & taggar</summary>
+            <div style={{ ...S.out, marginTop: 6 }}>
+              {p.usage && (<><p style={{ marginTop: 0 }}>{p.usage.intro}</p><ol style={{ margin: "0 0 10px", paddingLeft: 18 }}>{(p.usage.steps || []).map((s, i) => <li key={i}>{s}</li>)}</ol></>)}
+              {(p.keyIngredients || []).map((k, i) => <div key={i}><strong>{k.name}</strong> – {k.effect}</div>)}
+              <div style={{ marginTop: 8 }}>{(p.tags || []).join(", ")}</div>
+            </div>
+          </details>
+          {(p.images || []).length > 0 && (
+            <details style={{ marginBottom: 8 }}>
+              <summary style={{ cursor: "pointer", fontWeight: 600, fontSize: 13 }}>Bilder & alt-texter ({p.images.length})</summary>
+              <div style={{ ...S.out, marginTop: 6 }}>
+                {p.images.map((img, i) => (
+                  <div key={i} style={{ marginBottom: 8 }}>
+                    <div style={S.small}>{img.filename}</div>
+                    <input style={{ ...S.input, marginTop: 4 }} value={img.altText} placeholder="Alt-text"
+                      onChange={(e) => { const arr = [...p.images]; arr[i] = { ...arr[i], altText: e.target.value }; set({ images: arr }); }} />
+                  </div>
+                ))}
+              </div>
+            </details>
+          )}
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {p.shopifyId && (
+              <button style={{ ...S.btn, background: "#33401E" }} onClick={() => publish(p, "queue")} disabled={!sfReady}>
+                Publicera till Shopify
+              </button>
+            )}
+            <button style={S.btn} onClick={() => doCopy(`dump_${p.id}`, dumpProduct(p))}>{copied === `dump_${p.id}` ? "✓ Kopierad" : "Kopiera allt"}</button>
+            <button style={S.btnGhost} onClick={() => doCopy(`title_${p.id}`, p.seoTitle)}>{copied === `title_${p.id}` ? "✓" : "Kopiera title"}</button>
+            <button style={S.btnGhost} onClick={() => doCopy(`desc_${p.id}`, p.description)}>{copied === `desc_${p.id}` ? "✓" : "Kopiera beskrivning (HTML)"}</button>
+          </div>
+          {publishState[p.id] && <p style={{ fontSize: 13, marginTop: 8, color: publishState[p.id].startsWith("✕") ? "#9B3B2E" : "#46522F" }}>{publishState[p.id]}</p>}
+          <PubLog log={publishLog[p.id]} />
+        </div>
+
+        <ChecksPanel p={p} />
+      </div>
+    );
+  };
+
+  /* ───────────── Kölista ───────────── */
+  const QueueView = () => (
+    <div>
+      {ShopifyCard()}
+      <div style={S.card}>
+        <h2 style={S.h2}>Hämta produkter från Shopify till kön</h2>
+        <textarea style={{ ...S.ta, minHeight: 60 }} value={queueIds} onChange={(e) => setQueueIds(e.target.value)} placeholder={"Produkt-ID:n, ett per rad eller kommaseparerade\n8123456789\n8123456790"} />
+        <button style={{ ...S.btn, marginTop: 8 }} onClick={fetchToQueue} disabled={sfBusy === "queue"}>
+          {sfBusy === "queue" ? "Hämtar..." : "Hämta & lägg till i kön"}
+        </button>
+        <p style={{ ...S.small, marginTop: 6 }}>Tips: bocka i certifieringar och varumärke per produkt innan du kör kön – öppna produkten via Granska eller redigera i utkastet.</p>
+      </div>
+      <div style={S.card}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+          <h2 style={{ ...S.h2, margin: 0 }}>Produktkö ({queue.length})</h2>
+          <div style={{ display: "flex", gap: 6 }}>
+            {!draft && <button style={S.btnGhost} onClick={() => setDraft(emptyProduct())}>+ Lägg till produkt</button>}
+            <button style={S.btn} onClick={runQueue} disabled={queueRunning || queue.every((p) => p.status !== "väntar" && p.status !== "fel")}>
+              {queueRunning ? "Kör..." : "⚡ Kör kön"}
+            </button>
+          </div>
+        </div>
+        {queueProgress && <p style={{ fontSize: 13, color: "#46522F", marginTop: 8 }}>{queueProgress}</p>}
+
+        {queue.length === 0 && !draft && (
+          <p style={{ ...S.small, marginTop: 10 }}>Kön är tom. Lägg till produkter med namn, INCI och certifieringar – kör sedan allt i ett svep och granska efteråt.</p>
+        )}
+
+        {queue.map((p, i) => (
+          <div key={p.id} style={{ ...S.out, marginTop: 10 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <div style={{ minWidth: 0 }}>
+                <strong style={{ fontSize: 13 }}>{p.productName || "(namnlös)"}</strong>
+                <div style={S.small}>{[p.brand, p.productType, p.certs.length ? `${p.certs.length} cert` : ""].filter(Boolean).join(" · ") || "—"}</div>
+              </div>
+              <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+                <span style={S.status(p.status)}>{p.approved ? "✓ godkänd" : p.status}</span>
+                {(p.status === "väntar" || p.status === "fel") && !queueRunning && (
+                  <button style={S.btnGhost} onClick={() => setEditId(editId === p.id ? null : p.id)}>{editId === p.id ? "Stäng" : "Redigera fakta"}</button>
+                )}
+                {p.status === "klar" && <button style={S.btnGhost} onClick={() => setReviewIdx(i)}>Granska</button>}
+                {!queueRunning && <button style={{ ...S.btnGhost, color: "#9B3B2E", borderColor: "#D8B4AC" }} onClick={() => setQueue((q) => q.filter((x) => x.id !== p.id))}>Ta bort</button>}
+              </div>
+            </div>
+            {editId === p.id && (
+              <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid #E2E6D8" }}>
+                <FactFields p={p} set={(fn) => updateQueueItem(p.id, fn)} onFetchSource={() => fetchSourceText(p, (fn) => updateQueueItem(p.id, fn))} />
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {draft && (
+        <div style={{ ...S.card, borderLeft: "4px solid #46522F" }}>
+          <h2 style={S.h2}>Ny produkt till kön</h2>
+          <FactFields p={draft} set={setDraft} onFetchSource={() => fetchSourceText(draft, setDraft)} />
+          <div style={{ display: "flex", gap: 6 }}>
+            <button style={S.btn} disabled={!draft.productName}
+              onClick={() => { setQueue((q) => [...q, { ...draft, originalName: draft.productName }]); setDraft(emptyProduct()); }}>
+              Lägg till i kön
+            </button>
+            <button style={S.btn} disabled={!draft.productName}
+              onClick={() => { setQueue((q) => [...q, { ...draft, originalName: draft.productName }]); setDraft(null); }}>
+              Lägg till & stäng
+            </button>
+            <button style={S.btnGhost} onClick={() => setDraft(null)}>Avbryt</button>
+          </div>
+        </div>
+      )}
+
+      {queue.some((p) => p.approved) && (
+        <div style={S.card}>
+          <button style={S.btn} onClick={() => doCopy("dump_all", queue.filter((p) => p.approved).map(dumpProduct).join("\n\n══════════════════\n\n"))}>
+            {copied === "dump_all" ? "✓ Kopierad" : `Kopiera alla godkända (${queue.filter((p) => p.approved).length})`}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
+  /* ───────────── Enskilt läge ───────────── */
+  const SingleView = () => {
+    const ti = typeInfoOf(form);
+    const ui = { generating, generateField, doCopy, copied };
+    return (
+      <div>
+        {ShopifyCard()}
+        <section style={S.card}>
+          <h2 style={S.h2}>Hämta från Shopify</h2>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <input style={{ ...S.input, flex: "1 1 160px" }} value={singleId} onChange={(e) => setSingleId(e.target.value)} placeholder="Produkt-ID" />
+            <button style={S.btn} onClick={fetchSingle} disabled={sfBusy === "single"}>
+              {sfBusy === "single" ? "Hämtar..." : "Hämta produkt"}
+            </button>
+          </div>
+          <p style={{ ...S.small, marginTop: 6 }}>Fyller i namn, beskrivning, INCI, befintliga metafält, URL och bilder. Bocka sedan i certifieringar och välj varumärke manuellt.</p>
+          {form._mfKeys && (
+            <p style={{ ...S.small, marginTop: 4 }}>Metafält på produkten: {form._mfKeys.length ? form._mfKeys.join(", ") : "inga"}</p>
+          )}
+        </section>
+        <section style={S.card}>
+          <h2 style={S.h2}>1 · Produktfakta</h2>
+          <FactFields p={form} set={setForm} onFetchSource={() => fetchSourceText(form, setForm)} />
+          <div style={{ marginTop: 4 }}>
+            <button style={S.btnGhost} onClick={() => generateField("productNames")} disabled={!!generating.productNames}>
+              {generating.productNames ? "Föreslår..." : "Föreslå svenskt produktnamn"}
+            </button>
+            <VariantPicker label="Klicka för att använda som produktnamn:" variants={form.nameVariants} current={form.productName}
+              onPick={(t) => setForm((f) => ({ ...f, originalName: f.originalName || f.productName, productName: t }))} />
+          </div>
+          {form.brandNote ? (
+            <div style={{ marginTop: 10 }}>
+              <label style={S.label}>Varumärkesprofil (redigerbar – styr tonen)</label>
+              <textarea style={{ ...S.ta, minHeight: 54 }} value={form.brandNote} onChange={(e) => setField("brandNote", e.target.value)} />
+            </div>
+          ) : null}
+          <button style={{ ...S.btnGhost, marginTop: 10 }} onClick={() => setShowProfile(!showProfile)}>
+            {showProfile ? "Dölj butiksprofil" : "Visa/redigera butiksprofil"}
+          </button>
+          {showProfile && <textarea style={{ ...S.ta, minHeight: 140, marginTop: 8 }} value={storeProfile} onChange={(e) => setStoreProfile(e.target.value)} />}
+        </section>
+
+        <section style={S.card}>
+          <h2 style={S.h2}>2 · Sökord</h2>
+          <div style={S.row}>
+            <div style={S.col}>
+              <label style={S.label}>Primärt sökord</label>
+              <input style={S.input} value={form.primaryKeyword} onChange={(e) => setField("primaryKeyword", e.target.value)} placeholder="t.ex. naturlig deodorant utan aluminium" />
+            </div>
+            <div style={{ ...S.col, flexBasis: "100%" }}>
+              <label style={S.label}>Sekundära sökord (kommaseparerade)</label>
+              <input style={S.input} value={form.secondaryKeywords} onChange={(e) => setField("secondaryKeywords", e.target.value)} />
+            </div>
+          </div>
+          <button style={S.btn} onClick={() => generateField("keywords")} disabled={!!generating.keywords}>
+            {generating.keywords ? "Föreslår..." : "Föreslå sökord från produktfakta"}
+          </button>
+          {ti.kw.length > 0 && <p style={{ ...S.small, marginTop: 8 }}>Typiska sökningar för {form.productType}: {ti.kw.join(" · ")}</p>}
+        </section>
+
+        <section style={S.card}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+            <h2 style={{ ...S.h2, margin: 0 }}>3 · Innehåll</h2>
+            <button style={{ ...S.btn, background: "#33401E" }} onClick={generateAllSingle} disabled={!!allProgress && allProgress !== "✓ Klart"}>
+              {allProgress && allProgress !== "✓ Klart" ? allProgress : "⚡ Generera allt"}
+            </button>
+          </div>
+          {error && <p style={{ color: "#9B3B2E", fontSize: 13, marginTop: 8 }}>{error}</p>}
+          {allProgress === "✓ Klart" && <p style={{ color: "#46522F", fontSize: 13, marginTop: 8 }}>✓ Allt genererat – granska och kopiera nedan.</p>}
+
+          <div style={{ marginTop: 14 }}>
+            <OutBlock ui={ui} title="Title-tagg" field="seoTitle" copyValue={form.seoTitle}>
+              <input style={S.input} value={form.seoTitle} onChange={(e) => setField("seoTitle", e.target.value)} />
+              <span style={{ ...S.small, color: form.seoTitle.length > 60 ? "#9B3B2E" : "#7A8468" }}>{form.seoTitle.length}/60 tecken</span>
+              <VariantPicker label="Tre strategier – klicka för att välja:" variants={form.titleVariants} current={form.seoTitle} why={form.titleWhy}
+                onPick={(t) => setField("seoTitle", t)} strategies={TITLE_STRATEGIES} />
+            </OutBlock>
+
+            <UrlBlock p={form} set={(patch) => setForm((f) => ({ ...f, ...patch }))}
+              onGenerate={() => generateField("urlHandle")} busy={!!generating.urlHandle} />
+
+            <OutBlock ui={ui} title="Meta-beskrivning" field="seoDescription" copyValue={form.seoDescription}>
+              <textarea style={{ ...S.ta, minHeight: 54 }} value={form.seoDescription} onChange={(e) => setField("seoDescription", e.target.value)} />
+              <span style={{ ...S.small, color: form.seoDescription.length > 155 ? "#9B3B2E" : "#7A8468" }}>{form.seoDescription.length}/155 tecken</span>
+            </OutBlock>
+
+            <OutBlock ui={ui} title="Ingress (above the fold)" field="shortDescription" copyValue={form.shortDescription}>
+              <textarea style={{ ...S.ta, minHeight: 80 }} value={form.shortDescription} onChange={(e) => setField("shortDescription", e.target.value)} />
+            </OutBlock>
+
+            <OutBlock ui={ui} title="Bullet points" field="bulletPoints" copyValue={form.bulletPoints.filter(Boolean).join("\n")}>
+              {form.bulletPoints.map((b, i) => (
+                <input key={i} style={{ ...S.input, marginBottom: 6 }} value={b}
+                  onChange={(e) => { const arr = [...form.bulletPoints]; arr[i] = e.target.value; setField("bulletPoints", arr); }} />
+              ))}
+            </OutBlock>
+
+            <OutBlock ui={ui} title="Produktbeskrivning (HTML)" field="description" copyValue={form.description}>
+              <textarea style={{ ...S.ta, minHeight: 180, fontFamily: "ui-monospace,monospace", fontSize: 12 }} value={form.description} onChange={(e) => setField("description", e.target.value)} />
+              {form.description && (
+                <details style={{ marginTop: 6 }}>
+                  <summary style={{ ...S.small, cursor: "pointer" }}>Förhandsgranska</summary>
+                  <div style={{ ...S.out, marginTop: 6 }} dangerouslySetInnerHTML={{ __html: form.description }} />
+                </details>
+              )}
+            </OutBlock>
+
+            <OutBlock ui={ui} title="FAQ (5 st)" field="faq" copyValue={form.faq.map((f) => `${f.q}\n${f.a}`).join("\n\n")}>
+              {form.faq.length === 0 ? <div style={S.out}>Inte genererad ännu.</div> :
+                form.faq.map((f, i) => (
+                  <div key={i} style={{ marginBottom: 8 }}>
+                    <input style={{ ...S.input, fontWeight: 600, marginBottom: 4 }} value={f.q}
+                      onChange={(e) => { const arr = [...form.faq]; arr[i] = { ...arr[i], q: e.target.value }; setField("faq", arr); }} />
+                    <textarea style={{ ...S.ta, minHeight: 60, fontSize: 12 }} value={f.a}
+                      onChange={(e) => { const arr = [...form.faq]; arr[i] = { ...arr[i], a: e.target.value }; setField("faq", arr); }} />
+                  </div>
+                ))}
+            </OutBlock>
+
+            <OutBlock ui={ui} title="Användningsinstruktioner" field="usage"
+              copyValue={form.usage ? `${form.usage.intro}\n\n${(form.usage.steps || []).map((s, i) => `${i + 1}. ${s}`).join("\n")}` : ""}>
+              {form.usage ? (
+                <div style={S.out}>
+                  <p style={{ marginTop: 0 }}>{form.usage.intro}</p>
+                  <ol style={{ margin: 0, paddingLeft: 18 }}>{(form.usage.steps || []).map((s, i) => <li key={i}>{s}</li>)}</ol>
+                </div>
+              ) : <div style={S.out}>Inte genererad ännu.</div>}
+            </OutBlock>
+
+            <OutBlock ui={ui} title={form.productType === "Accessoar / Necessär" ? "Funktioner & material" : "Nyckelingredienser"} field="keyIngredients" copyValue={form.keyIngredients.map((k) => `${k.name} – ${k.effect}`).join("\n")}>
+              {form.keyIngredients.length === 0 ? <div style={S.out}>Inte genererade ännu.</div> : (
+                <div style={S.out}>{form.keyIngredients.map((k, i) => <div key={i} style={{ marginBottom: 4 }}><strong>{k.name}</strong> – {k.effect}</div>)}</div>
+              )}
+            </OutBlock>
+
+            <OutBlock ui={ui} title="Produkttaggar" field="tags" copyValue={form.tags.join(", ")}>
+              {form.tags.length === 0 ? <div style={S.out}>Inte genererade ännu.</div> : (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{form.tags.map((t, i) => <span key={i} style={S.chip(true)}>{t}</span>)}</div>
+              )}
+            </OutBlock>
+          </div>
+        </section>
+
+        <section style={S.card}>
+          <h2 style={S.h2}>4 · Bilder (filnamn + alt-text)</h2>
+          {form.images.map((img, i) => (
+            <div key={i} style={{ ...S.out, marginBottom: 8 }}>
+              <label style={S.label}>Nuvarande filnamn</label>
+              <input style={S.input} value={img.filename}
+                onChange={(e) => { const arr = [...form.images]; arr[i] = { ...arr[i], filename: e.target.value }; setField("images", arr); }} />
+              {img.suggestedFilename && <p style={{ margin: "4px 0", fontSize: 12 }}><strong>Förslag:</strong> {img.suggestedFilename}</p>}
+              {img.altText && <p style={{ margin: "4px 0", fontSize: 12 }}><strong>Alt-text:</strong> {img.altText}</p>}
+              <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
+                <button style={S.btnGhost} onClick={() => generateImageMeta(i)} disabled={!!generating[`img_${i}`]}>
+                  {generating[`img_${i}`] ? "Genererar..." : "Generera"}
+                </button>
+                {(img.suggestedFilename || img.filename) && <button style={S.btnGhost} onClick={() => doCopy(`imgf_${i}`, img.suggestedFilename || img.filename)}>{copied === `imgf_${i}` ? "✓" : "Kopiera filnamn"}</button>}
+                {img.altText && <button style={S.btnGhost} onClick={() => doCopy(`imga_${i}`, img.altText)}>{copied === `imga_${i}` ? "✓" : "Kopiera alt-text"}</button>}
+                <button style={{ ...S.btnGhost, color: "#9B3B2E", borderColor: "#D8B4AC" }} onClick={() => setField("images", form.images.filter((_, x) => x !== i))}>Ta bort</button>
+              </div>
+            </div>
+          ))}
+          <button style={S.btnGhost} onClick={() => setField("images", [...form.images, { filename: "", suggestedFilename: "", altText: "" }])}>+ Lägg till bild</button>
+        </section>
+
+        <ChecksPanel p={form} />
+
+        {form.shopifyId && (
+          <section style={{ ...S.card, borderLeft: "4px solid #46522F" }}>
+            <h2 style={S.h2}>Publicera till Shopify</h2>
+            <p style={S.small}>Uppdaterar produktnamn, beskrivning, taggar, URL, SEO-metafält, ingress, bullets, FAQ, användning, nyckelingredienser och alt-texter.</p>
+            <button style={{ ...S.btn, marginTop: 8 }} onClick={() => publish(form, "single")} disabled={!sfReady}>
+              Publicera till Shopify
+            </button>
+            {publishState[form.id] && <p style={{ fontSize: 13, marginTop: 8, color: publishState[form.id].startsWith("✕") ? "#9B3B2E" : "#46522F" }}>{publishState[form.id]}</p>}
+            <PubLog log={publishLog[form.id]} />
+          </section>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div style={S.page}>
+      <div style={S.wrap}>
+        <header style={{ marginBottom: 14 }}>
+          <h1 style={{ fontFamily: "Georgia,serif", fontSize: 26, fontWeight: 600, margin: 0, color: "#2C351C" }}>
+            éclore <span style={{ fontStyle: "italic", fontWeight: 400 }}>produktstudio</span>
+          </h1>
+          <p style={{ ...S.small, marginTop: 4 }}>Produktanpassade texter med rätt sökord, certifieringar och USP:ar – enligt éclores SEO-regler.</p>
+        </header>
+
+        <div style={{ display: "flex", gap: 4, background: "#E4E8DB", borderRadius: 10, padding: 4, marginBottom: 14, width: "fit-content" }}>
+          <button style={S.tab(mode === "single")} onClick={() => { setMode("single"); setReviewIdx(-1); }}>Enskild produkt</button>
+          <button style={S.tab(mode === "queue")} onClick={() => setMode("queue")}>
+            Kö {queue.length > 0 ? `(${queue.length})` : ""}
+          </button>
+        </div>
+
+        {mode === "single" ? SingleView() : (reviewIdx >= 0 ? ReviewView() : QueueView())}
+      </div>
+    </div>
+  );
+}
+
+
+ReactDOM.createRoot(document.getElementById("root")).render(<EcloreProduktstudio />);
+
+</script>
+</body>
+</html>
