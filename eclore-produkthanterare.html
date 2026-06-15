@@ -104,6 +104,12 @@ FÖRBJUDNA ORD OCH FRASER – använd aldrig dessa:
 - "portabilitet" → skriv "lätt att ta med" eller omformulera
 - "optimal förvaring" → beskriv konkret vad som ryms och hur det organiseras
 - "säkerställer" → undvik, låter företag-kliché
+- "optimal organisation", "optimal förvaring", "optimalt" → skriv konkret vad som gör det praktiskt
+- "noggrant utvalt material" → skriv vad materialet faktiskt är och vad det gör
+- exakta produktantal utan källa ("rymmer 15-20 produkter") → skriv istället vad som faktiskt ryms (t.ex. "läppstift, mascara, concealer och fuktkräm")
+- "kreativ europeisk tradition", "hantverkstradition" utan substans → skriv konkret var och hur produkten är tillverkad
+- "perfekt överblick" → floskel, utelämna eller beskriv konkret
+- "blir vackrare med åren" (om bomull) → påhittad egenskap om det inte anges i källmaterialet
 
 UPPREPNING: Använd aldrig samma fras eller mening i både ingress och beskrivning. Om ingressen nämner "örtkunnig expertis" får beskrivningen inte upprepa det – välj en annan vinkel.
 
@@ -217,7 +223,7 @@ const buildPrompts = (p, storeProfile) => {
 
     faq: `${ctx}\n\nSkriv exakt 5 FAQ på svenska som matchar VERKLIGA köparfrågor för produkttypen (se listan ovan) – inte generiska hudvårdsfrågor. Minst en fråga om ${acc ? "material och skötsel" : "produktens nyckelingrediens(er)"}, och en om ursprung/certifiering/utmärkelse (endast angivna fakta). Svar 40–70 ord i HTML med <p>, och i ETT av svaren en intern länk: <a href="${ti.coll}">relevant ankartext</a>. Svara BARA med JSON: {"faq_q1":"...","faq_a1":"<p>...</p>","faq_q2":"...","faq_a2":"<p>...</p>","faq_q3":"...","faq_a3":"<p>...</p>","faq_q4":"...","faq_a4":"<p>...</p>","faq_q5":"...","faq_a5":"<p>...</p>"}`,
 
-    usage: acc ? `${ctx}\n\nDetta är en accessoar – INTE en hudvårdsprodukt. Skriv ALDRIG som om det vore ett serum eller en kräm, och börja ALDRIG med ett konstruerat scenario ("När dina produkter förtjänar..."). Beskriv direkt: vad väskan är, material, storlek och motiv. Skriv SKÖTSELRÅD istället för användningsinstruktionerör användningsinstruktioner (rengöring, torkning, förvaring – endast utifrån angivet material). Svara BARA med JSON: {"intro":"2–3 meningar om skötsel så accessoaren håller länge","steps":["Steg som börjar med verb","...","..."]}` : `${ctx}\n\nSkriv användningsinstruktioner anpassade till produkttypen ${p.productType || ""} (t.ex. brun utan sol: skrubb först, applicering, väntetid; schampo: mängd, massera, övergångsperiod). Svara BARA med JSON: {"intro":"2–3 meningar om när och hur produkten används","steps":["Steg som börjar med verb","...","..."]}`,
+    usage: acc ? `${ctx}\n\nDetta är en accessoar – INTE en hudvårdsprodukt. Skriv ALDRIG som om det vore ett serum eller en kräm, och börja ALDRIG med ett konstruerat scenario ("När dina produkter förtjänar..."). Beskriv direkt: vad väskan är, material, storlek och motiv. Lyft gärna presentvinkeln – handgjorda väskor med illustrerade motiv är starka presentprodukter. Skriv SKÖTSELRÅD istället för användningsinstruktionerör användningsinstruktioner (rengöring, torkning, förvaring – endast utifrån angivet material). Svara BARA med JSON: {"intro":"2–3 meningar om skötsel så accessoaren håller länge","steps":["Steg som börjar med verb","...","..."]}` : `${ctx}\n\nSkriv användningsinstruktioner anpassade till produkttypen ${p.productType || ""} (t.ex. brun utan sol: skrubb först, applicering, väntetid; schampo: mängd, massera, övergångsperiod). Svara BARA med JSON: {"intro":"2–3 meningar om när och hur produkten används","steps":["Steg som börjar med verb","...","..."]}`,
 
     keyIngredients: acc ? `${ctx}\n\nDetta är en accessoar – inga ingredienser. Välj istället 3–5 FUNKTIONER OCH MATERIAL ur produktfakta/källmaterial (t.ex. "100 % bomull", "Vattenavvisande foder", "Rymligt huvudfack", "Handsytt mönster") och beskriv varje med konkret nytta på 8–15 ord. Hitta aldrig på material som inte anges. Svara BARA med JSON-array: [{"name":"...","effect":"..."}]` : `${ctx}\n\nVälj 3–5 nyckelingredienser ur INCI-listan (eller produktfakta om INCI saknas) och beskriv varje med konkret effekt på 8–15 ord. Använd svenska namn (t.ex. "Havtornsolja" istället för "Hippophae Rhamnoides"). Svara BARA med JSON-array: [{"name":"...","effect":"..."}]`,
 
