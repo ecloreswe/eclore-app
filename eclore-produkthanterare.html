@@ -165,7 +165,7 @@ const buildCtx = (p, storeProfile) => {
 ${storeProfile}
 
 PRODUKTFAKTA – använd ENDAST dessa fakta. Hitta ALDRIG på certifieringar, utmärkelser, ingredienser eller egenskaper som inte anges här:
-- Produktnamn: ${p.productName || "(saknas)"}${p.originalName && p.originalName !== p.productName ? ` (originalnamn: ${p.originalName})` : ""}
+- Produktnamn (REFERENS ENDAST – styr inte vinkeln, källmaterialet nedan styr): ${p.productName || "(saknas)"}${p.originalName && p.originalName !== p.productName ? ` (originalnamn: ${p.originalName})` : ""}
 - Varumärke: ${p.brand || "(ej angivet)"}${p.brandNote ? `. Om varumärket: ${p.brandNote}` : ""}
 - Produkttyp: ${p.productType || "(ej angiven)"}
 - Målgrupp / hud- eller hårtyp: ${p.audience || "alla"}
@@ -174,8 +174,8 @@ PRODUKTFAKTA – använd ENDAST dessa fakta. Hitta ALDRIG på certifieringar, ut
 - Utmärkelser: ${p.awards || (p.sourceText ? "Inga angivna i fältet – MEN om källmaterialet ovan UTTRYCKLIGEN nämner utmärkelser eller priser ska du lyfta dem tidigt (ange namnet exakt som i källan – hitta aldrig på)" : "Inga – nämn inga utmärkelser")}
 - ${p.productType === "Accessoar / Necessär" ? "Material och detaljer" : "INCI / ingredienser"}: ${p.inci || (p.sourceText ? "(ej angivet manuellt – leta efter ingredienslista i källmaterialet)" : "(ej angiven)")}
 - Övrig USP/info: ${p.usp || "—"}
-- Källmaterial från varumärkets egen produktsida (verifiera fakta här, leta efter utmärkelser, effekter, positionering OCH ingredienslista/INCI om INCI-fältet är tomt): ${String(p.sourceText || "").slice(0, 3500) || "(ej hämtat)"}
-- Leverantörens originalbeskrivning (KÄLLMATERIAL – hämta fakta, vinklar och USP:ar härifrån, t.ex. effekter, utmärkelser, positionering. Skriv om på svenska, kopiera ALDRIG rakt av): ${String((p._orig && p._orig.body) || p.description || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 1500) || "(saknas)"}
+- PRIMÄR KÄLLA – Källmaterial från varumärkets egen produktsida (använd detta som huvudkälla för fokus, vinklar och USP. Låt detta styra primärt sökord och H2-rubriker, inte produktnamnet ovan): ${String(p.sourceText || "").slice(0, 3500) || "(ej hämtat)"}
+- PRIMÄR KÄLLA 2 – Leverantörens originalbeskrivning (hämta fakta, vinklar och USP:ar härifrån. Denna text + källmaterialet ovan styr vinkeln. Skriv om på svenska, kopiera ALDRIG rakt av): ${String((p._orig && p._orig.body) || p.description || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 1500) || "(saknas)"}
 
 SÖKORD:
 - Primärt sökord: ${p.primaryKeyword || "(ej valt – utgå från produkttypen)"}
