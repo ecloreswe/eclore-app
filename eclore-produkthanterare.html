@@ -1064,11 +1064,31 @@ function EcloreProduktstudio() {
       for (const [field, label] of PIPELINE) {
         if (field === "keywords" && cur.primaryKeyword) continue;
         setQueueProgress(`Produkt ${i + 1}/${items.length} · ${cur.productName.slice(0, 28)} · ${label}...`);
-        try {
-          const patch = await genField(cur, field, storeProfile, true, settings.anthropicKey);
+        // Kort paus mellan anrop för att undvika rate limiting
+        await new Promise(r => setTimeout(r, 800));
+        let patch = null;
+        for (let attempt = 0; attempt < 2; attempt++) {
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 45000);
+            patch = await genField(cur, field, storeProfile, true, settings.anthropicKey);
+            clearTimeout(timeoutId);
+            break; // success - exit retry loop
+          } catch (e) {
+            clearTimeout(timeoutId);
+            if (attempt === 0) {
+              console.warn(`Retry ${field} after error:`, e);
+              await new Promise(r => setTimeout(r, 2000)); // wait before retry
+            } else {
+              console.error(`Failed ${field} after retry:`, e);
+              failed.push(label);
+            }
+          }
+        } // end retry loop
+        if (patch) {
           cur = { ...cur, ...patch };
           updateQueueItem(cur.id, patch);
-        } catch (e) { console.error(e); failed.push(label); }
+        }
       }
       updateQueueItem(cur.id, { status: failed.length ? "fel" : "klar" });
       if (failed.length) setQueueProgress(`${cur.productName.slice(0, 28)}: kunde inte generera ${failed.join(", ")} – kör kön igen för nytt försök.`);
@@ -1519,4 +1539,4 @@ ReactDOM.createRoot(document.getElementById("root")).render(<EcloreProduktstudio
 
 </script>
 </body>
-</html>
+</html>Tankstreck \"–\" som avskiljare, aldrig bindestreck \"-\"\\n- MAX ETT tankstreck per produktnamn – storlek läggs med komma: \"Barnschampo Tårfri – COSMOS organic, 200 ml\" (INTE \"Barnschampo – COSMOS – 200 ml\")\\n- Behåll
