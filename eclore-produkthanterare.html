@@ -26,13 +26,12 @@ const PRODUCT_TYPES = {
   "Ansiktsmask": { kw: ["ansiktsmask", "naturlig ansiktsmask", "återfuktande mask"], concerns: "hur ofta, hur länge ska den sitta, sköljs den av, passar känslig hud", coll: "https://www.eclore.se/collections/ansiktsvard" },
   "Ögonkräm": { kw: ["ögonkräm", "naturlig ögonkräm", "ögonkräm mot påsar"], concerns: "hjälper den mot mörka ringar och påsar, morgon eller kväll, hur appliceras den", coll: "https://www.eclore.se/collections/ansiktsvard" },
   "Läppbalsam": { kw: ["läppbalsam", "naturligt läppbalsam", "veganskt läppbalsam"], concerns: "hur länge håller effekten, innehåller den bivax (veganskt?), smak och doft", coll: "https://www.eclore.se/collections/ansiktsvard" },
-  "Schampo": { kw: ["naturligt schampo", "schampo utan sulfater", "veganskt schampo", "schampo torrt hår", "schampo fett hår"], concerns: "löddrar det utan sulfater, passar färgat hår, övergångsperiod från vanligt schampo, hur ofta man tvättar, silikonfritt", coll: "https://www.eclore.se/collections/schampo-balsam" },
-  "Balsam": { kw: ["naturligt balsam", "balsam utan silikoner", "balsam torrt hår"], concerns: "tynger det håret, passar fint hår, balsammetoden, färgat hår", coll: "https://www.eclore.se/collections/schampo-balsam" },
+  "Schampo": { kw: ["naturligt schampo", "schampo utan sulfater", "veganskt schampo", "schampo torrt hår", "schampo fett hår"], concerns: "löddrar det utan sulfater, passar färgat hår, övergångsperiod från vanligt schampo, hur ofta man tvättar, silikonfritt", coll: "https://www.eclore.se/collections/schampo-och-balsam" },
+  "Balsam": { kw: ["naturligt balsam", "balsam utan silikoner", "balsam torrt hår"], concerns: "tynger det håret, passar fint hår, balsammetoden, färgat hår", coll: "https://www.eclore.se/collections/schampo-och-balsam" },
   "Hårmask": { kw: ["hårmask", "naturlig hårmask", "hårinpackning torrt hår"], concerns: "hur ofta, hur länge ska den verka, ersätter den balsam", coll: "https://www.eclore.se/collections/harvard" },
   "Hårolja": { kw: ["hårolja", "naturlig hårolja", "hårolja torra toppar"], concerns: "i torrt eller fuktigt hår, blir håret flottigt, hur mycket man använder", coll: "https://www.eclore.se/collections/harvard" },
   "Brun utan sol": { kw: ["brun utan sol", "brun utan sol mousse", "naturlig brun utan sol", "self tan", "streckfri brun utan sol"], concerns: "blir det streck eller fläckar, hur länge håller färgen, hur länge innan dusch, luktar den self tan, förberedelse med skrubb, applicering med handske", coll: "https://www.eclore.se/collections/brun-utan-sol" },
   "Kroppsskrubb": { kw: ["kroppsskrubb", "body scrub", "naturlig kroppsskrubb", "sockerskrubb", "saltskrubb"], concerns: "hur ofta man skrubbar, före brun utan sol, känslig hud, skillnad socker och salt", coll: "https://www.eclore.se/collections/kroppsvard" },
-  "Body Cream": { kw: ["kroppskräm", "naturlig kroppskräm", "kroppskräm torr hud", "bodylotion torr hud", "återfuktande kroppskräm"], concerns: "hur rik konsistensen är, hur snabbt den absorberas, kladdar den, skillnad mot lotion, passar känslig hud, doft, räckvidd", coll: "https://www.eclore.se/collections/kroppsvard" },
   "Kroppslotion": { kw: ["kroppslotion", "naturlig kroppslotion", "kroppslotion torr hud"], concerns: "drar den in snabbt, kladdar den, doft, mycket torr hud", coll: "https://www.eclore.se/collections/kroppsvard" },
   "Kroppsolja": { kw: ["kroppsolja", "naturlig kroppsolja", "kroppsolja torr hud"], concerns: "på fuktig eller torr hud, kladdar den, bristningar och ärr", coll: "https://www.eclore.se/collections/kroppsvard" },
   "Duschtvål / Tvål": { kw: ["naturlig tvål", "handgjord tvål", "duschtvål naturlig", "fast tvål"], concerns: "torkar den ut huden, hur länge räcker en fast tvål, förvaring, ansikte och kropp", coll: "https://www.eclore.se/collections/kroppsvard" },
@@ -43,14 +42,14 @@ const PRODUCT_TYPES = {
 };
 
 const BRANDS = {
-  "LUUV": "Naturlig hår- och kroppsvård samt brun utan sol från Estland. Produktnamn: produkttyp + ingrediens/doft – egenskaper – storlek. Havtorn är signaturingrediens. Doft är citrusfrisk – ALDRIG 'mediterran' eller 'sydeuropeisk'. Hitta ALDRIG på påståenden utan källa. FÖR BRUN UTAN SOL: lyft aktiva ämnen (DHA, erytrulos), nyans, utvecklingstid. Ange INTE 'ekologisk' om det inte finns i produktfakta.",
-  "BONOBO": "Naturlig hudvård från Estland, tillverkad i små batcher. Fokusera på konkreta ingredienser och deras effekt. Använd INTE ursprungsland som säljargument. ALDRIG följande fraser i löptext: 'traditionell europeisk örtkunskap', 'tillverkad med örtkunnig expertis', 'örtkunnig expertis', 'small-batch-hantverk', 'noggrant utvalt hantverk'. Skriv istället konkret vad produkten innehåller och gör.",
-  "Tilk!": "Estniskt naturkosmetikavarumärke med ingrediensfokus. Aktiva ingredienser: probiotika/laktobacillus, hyaluronsyra, AHA, Q10, rödalger (Furcellaria lumbricalis). Lyft konkret effekt av aktiv ingrediens och utmärkelser. ALDRIG: 'arbetar i symbios', tidsangivelser utan källa, 'Nikotanamid' (rätt: 'niacinamid').",
-  "Magrada": "Lettiskt ekologiskt kosmetikavarumärke. Handgjord hår- och hudvård av färska råvaror för känslig och allergisk hud. Lyft den faktiska procentandelen naturliga ingredienser om den anges. ALDRIG: kliniska påståenden med exakta procenttal utan källa.",
-  "Nurme": "Estniskt naturkosmetikavarumärke. Färre och renare ingredienser. Ofta 2–5 ingredienser, ekologiskt certifierat. Lyft: antal ingredienser om det är få, certifiering. ALDRIG: kliniska tidsangivelser utan källa, 'djupgående', 'synbart mjukare hud redan efter första användningen'.",
-  "Garbanota": "Litauiskt varumärke – INGEN hudvård. Handgjorda väskor med personlig kreativ touch. Signum: suede-liknande tyg, lockigt innerfoder (curly lining), illustrerade motiv. Presentvinkeln är stark. ALDRIG: hudvårdsargument, 'garanterar', 'maximerar förvaringskapaciteten'.",
-  "HOIA": "Estniskt naturkosmetikavarumärke med hem-spa-filosofi. Handgjort i små batcher med botaniska formler. Kreativa produktnamn (t.ex. 'Kleopatra SUPERCHARGED') – använd alltid produktnamnet tidigt. ALDRIG: kliniska påståenden med tidsangivelser utan källa, 'Nikotanamid' (rätt: 'niacinamid').",
-  "Moi Mili": "Handgjorda sminkväskor och necessärer i bomullstyg med illustrerade mönster från Polen. Fokusera på: mått, material, fickantal, dragkedja, färg/mönster. Presentvinkeln är stark. ALDRIG: 'sofistikerad', 'optimal förvaring', 'portabilitet'.",
+  "LUUV": "Naturlig hår- och kroppsvård samt brun utan sol. Produktnamn följer formatet: produkttyp + ingrediens/doft – egenskaper – storlek (t.ex. '50 ml' med mellanslag). Lyft naturliga ingredienser och resultat.",
+  "BONOBO": "Naturlig hudvård i små batcher, framtagen i samarbete med örtkunnig expertis. Lyft grundarhistorien, hantverket och small-batch-produktionen. Använd INTE ursprungsland som säljargument – fokusera på hantverk och europeisk kvalitet.",
+  "Tilk!": "Naturlig hudvård med ovanliga aktiva ingredienser, tillverkad med hantverkstradition. Flera produkter är prisbelönta – ange ev. utmärkelser i fältet Utmärkelser så vävs de in i texterna.",
+  "Magrada": "Naturlig hudvård med växtbaserade aktiva ingredienser och hög andel ekologiskt. Lyft ingredienserna och deras konkreta effekt.",
+  "Nurme": "Handgjorda naturliga tvålar och kroppsvård. Lyft hantverket, de rena ingredienslistorna och plastfri/minimal förpackning om det stämmer.",
+  "Garbanota": "Naturlig hår- och kroppsvård i små batcher med växtbaserade ingredienser.",
+  "HOIA": "Handgjord naturlig hudvård i små batcher. Lyft hantverk och noggrant utvalda ingredienser.",
+  "Moi Mili": "Handgjorda accessoarer och textilier med illustrerade mönster. Lyft design, hantverk och material – inte hudvårdsargument.",
   "Zelma Kraft": "Handgjorda produkter med fokus på hantverk och naturliga material.",
   "Annat": "",
 };
@@ -70,54 +69,11 @@ const CERT_SCAN = [
   { word: /aluminiumfri|utan aluminium/i, cert: ["Aluminiumfri"] },
 ];
 
-const DEFAULT_PROFILE = `TONALITET: Varm auktoritet – som en kunnig vän som ger råd. Undvik hype, superlativ utan substans och ungdomligt slang.
+const DEFAULT_PROFILE = `TONALITET: Varm auktoritet – som en kunnig vän som ger råd. Undvik hype, superlativ utan substans och ungdomligt slang. Använd gärna: "hantverk", "naturliga ingredienser", "tillverkat i Europa", "genuint", "noggrant utvalt".
 
-KONVERTERING: Lyft ursprung och hantverk tidigt. Nämn konkreta ingredienser och deras effekt. Bullet points = konkret nytta, inte floskler.
+KONVERTERING: Lyft ursprung och hantverk tidigt. Nämn konkreta ingredienser och deras effekt. Avsluta beskrivningen med en tydlig användningssituation. Bullet points = konkret nytta, inte floskler.
 
-SEO: Primärt sökord naturligt i första meningen. Long-tail-fokus. Ingen keyword stuffing.
-
-FÖRBJUDNA ORD OCH FRASER:
-- "matterar" → "ger mattare hy" eller "reglerar glansen"
-- "boostas", "boosta" → "stärker", "ökar", "ger"
-- "traditionell europeisk örtkunskap" → konkret: "örtkunnig expertis"
-- "specialutvecklad" → skriv vad produkten faktiskt gör
-- "revolutioner ande", "banbrytande", "unik formula" → utelämna
-- "exklusiv", "lyxig" utan substans → beskriv vad som motiverar premiumkänslan
-- "magin", "hemligheten bakom" → utelämna
-- "hitta din perfekta match", "din nya favorit" → utelämna
-- "investering för livet" → utelämna
-- "idealisk" → max en gång per text
-- "Perfekt för dig som..." → variera: "Passar dig med...", "För dig med..."
-- "friss", "frizz" → "krusigt hår" eller "krull"
-- "djupgående" → anglicism, skriv "djup"
-- "ett måste" → utelämna
-- "som verkligen fungerar" → utelämna
-- "färgkosmetik" → "smink" i löptext och meta
-- "sofistikerad" → skriv konkret vad som gör det värdefullt
-- "portabilitet" → "lätt att ta med"
-- "optimal organisation/förvaring" → beskriv konkret
-- exakta produktantal utan källa ("rymmer 15-20 produkter") → skriv vad som ryms
-- "kreativ europeisk tradition" → konkret var och hur
-- "perfekt överblick" → utelämna
-- "blir vackrare med åren", "blir mjukare för varje användning", "utvecklas naturligt med tiden" → påhittade egenskaper
-- "genomtänkt hantverk/konstruktion/design" → beskriv konkret vad som är genomtänkt
-- "säkerställer" → undvik
-- "levererar synliga resultat" → skriv konkret vad som sker
-- "respekterar hudens naturliga rytm" / "genomtänkt formel" → floskler
-- "redan första användningen" / "från första tvätten" → bara om explicit stöds av källmaterialet
-- "omedelbar lindring", "lindrar omedelbart" → samma regel
-- "arbetar aktivt för att återställa balansen" → beskriv vad ingrediensen gör
-- "arbetar i symbios" → pseudovetenskapligt
-- "vitalitet", "styrka och vitalitet" → abstrakt
-- Scenario-intro ("När din hud behöver X...") → börja direkt med vad produkten är och gör
-- "örtkunnig expertis", "tillverkad med örtkunnig expertis" → ALDRIG använda i löptext – det är en intern varumärkesbeskrivning, inte en säljande fras
-- "small-batch", "små batcher" utan konkret kontext → använd bara om det är ett faktiskt USP för produkten, inte som generisk floskel
-
-UPPREPNING: Använd aldrig samma fras i både ingress och beskrivning.
-
-ANGLICISMER: Testa: skulle en svensk hudvårdsexpert säga detta naturligt? Om inte – omformulera.
-
-PÅHITTADE PÅSTÅENDEN: Skriv ALDRIG saker som inte framgår av produktfakta eller källmaterialet. Förbjudet: kliniska påståenden med exakta siffror utan källa. Förbjudet: geografiska fantasier om doft. Förbjudet: påståenden om vad produkten gör "nattetid" om det inte är angivet som nattprodukt.`;
+SEO: Primärt sökord naturligt i första meningen, i title och i meta. Long-tail-fokus (produkttyp + naturlig/vegansk + behov). Ingen keyword stuffing. H2-rubriker fokuserar på sökord och nytta – stapla inte varumärkesnamn i rubriker.`;
 
 /* ───────────────────────── Hjälpfunktioner ───────────────────────── */
 
@@ -132,7 +88,6 @@ const detectType = (name) => {
     ["schampo", "Schampo"], ["shampoo", "Schampo"], ["balsam", "Balsam"], ["conditioner", "Balsam"],
     ["hårmask", "Hårmask"], ["hair mask", "Hårmask"], ["hårolja", "Hårolja"], ["hair oil", "Hårolja"],
     ["skrubb", "Kroppsskrubb"], ["scrub", "Kroppsskrubb"],
-    ["body cream", "Body Cream"], ["kroppskräm", "Body Cream"],
     ["kroppslotion", "Kroppslotion"], ["body lotion", "Kroppslotion"], ["kroppsolja", "Kroppsolja"], ["body oil", "Kroppsolja"],
     ["tvål", "Duschtvål / Tvål"], ["soap", "Duschtvål / Tvål"], ["deo", "Deodorant"],
     ["handkräm", "Handkräm"], ["hand cream", "Handkräm"], ["necessär", "Accessoar / Necessär"], ["väska", "Accessoar / Necessär"], ["bag", "Accessoar / Necessär"],
@@ -141,7 +96,7 @@ const detectType = (name) => {
   return "";
 };
 
-const stripFences = (s) => s.replace(/```html|```json|```/g, "").trim();
+const stripFences = (s) => s.replace(/```json|```/g, "").trim();
 const typeInfoOf = (p) => PRODUCT_TYPES[p.productType] || PRODUCT_TYPES["Annan produkt"];
 
 const emptyProduct = () => ({
@@ -167,17 +122,17 @@ const buildCtx = (p, storeProfile) => {
 ${storeProfile}
 
 PRODUKTFAKTA – använd ENDAST dessa fakta. Hitta ALDRIG på certifieringar, utmärkelser, ingredienser eller egenskaper som inte anges här:
-- Produktnamn (REFERENS ENDAST – styr inte vinkeln, källmaterialet nedan styr): ${p.productName || "(saknas)"}${p.originalName && p.originalName !== p.productName ? ` (originalnamn: ${p.originalName})` : ""}
+- Produktnamn: ${p.productName || "(saknas)"}${p.originalName && p.originalName !== p.productName ? ` (originalnamn: ${p.originalName})` : ""}
 - Varumärke: ${p.brand || "(ej angivet)"}${p.brandNote ? `. Om varumärket: ${p.brandNote}` : ""}
 - Produkttyp: ${p.productType || "(ej angiven)"}
 - Målgrupp / hud- eller hårtyp: ${p.audience || "alla"}
 - Storlek: ${p.size || "(ej angiven)"}${p.price ? `, Pris: ${p.price} kr` : ""}
 - Certifieringar och egenskaper (de ENDA som får nämnas): ${certs}
 - Utmärkelser: ${p.awards || (p.sourceText ? "Inga angivna i fältet – MEN om källmaterialet ovan UTTRYCKLIGEN nämner utmärkelser eller priser ska du lyfta dem tidigt (ange namnet exakt som i källan – hitta aldrig på)" : "Inga – nämn inga utmärkelser")}
-- ${p.productType === "Accessoar / Necessär" ? "Material och detaljer" : "INCI / ingredienser"}: ${p.inci || (p.sourceText ? "(ej angivet manuellt – leta efter ingredienslista i källmaterialet)" : "(ej angiven)")}
+- ${p.productType === "Accessoar / Necessär" ? "Material och detaljer" : "INCI / ingredienser"}: ${p.inci || "(ej angiven)"}
 - Övrig USP/info: ${p.usp || "—"}
-- PRIMÄR KÄLLA – Källmaterial från varumärkets egen produktsida (använd detta som huvudkälla för fokus, vinklar och USP. Låt detta styra primärt sökord och H2-rubriker, inte produktnamnet ovan): ${String(p.sourceText || "").slice(0, 3500) || "(ej hämtat)"}
-- PRIMÄR KÄLLA 2 – Leverantörens originalbeskrivning (hämta fakta, vinklar och USP:ar härifrån. Denna text + källmaterialet ovan styr vinkeln. Skriv om på svenska, kopiera ALDRIG rakt av): ${String((p._orig && p._orig.body) || p.description || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 1500) || "(saknas)"}
+- Källmaterial från varumärkets egen produktsida (verifiera fakta här och leta efter utmärkelser, effekter och positionering): ${String(p.sourceText || "").slice(0, 2500) || "(ej hämtat)"}
+- Leverantörens originalbeskrivning (KÄLLMATERIAL – hämta fakta, vinklar och USP:ar härifrån, t.ex. effekter, utmärkelser, positionering. Skriv om på svenska, kopiera ALDRIG rakt av): ${String((p._orig && p._orig.body) || p.description || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 1500) || "(saknas)"}
 
 SÖKORD:
 - Primärt sökord: ${p.primaryKeyword || "(ej valt – utgå från produkttypen)"}
@@ -188,7 +143,6 @@ KÖPARENS VANLIGASTE FRÅGOR för denna produkttyp: ${ti.concerns}
 
 HÅRDA REGLER:
 1. Svenska. Naturligt språk, ingen keyword stuffing.
-1b. Källmaterialet och leverantörsbeskrivningen är PRIMÄR källa – låt dem styra vinkeln, inte produktnamnet. Om produktnamnet lyfter en egenskap som källmaterialet inte fokuserar på, välj källmaterialets fokus.
 2. Primärt sökord ska finnas i första meningen av beskrivning och ingress – men det FÅR böjas och kompletteras med småord (med, och, för) så att meningen blir korrekt svenska. Grammatik går ALLTID före exakt ordföljd.
 3. Nämn certifieringar/egenskaper ENDAST om de står i listan ovan. Skriv aldrig "ekologisk", "COSMOS", "parfymfri" etc. om det inte är angivet.
 4. Nämn utmärkelser endast om de anges – och då gärna tidigt.
@@ -196,10 +150,7 @@ HÅRDA REGLER:
 6. Påstå inget medicinskt (botar, läker, behandlar eksem etc.) – skriv "kan lugna", "återfuktar", "stödjer".
 7. Fetstil skrivs ALLTID som <strong>...</strong> i HTML – ALDRIG markdown-asterisker (**ord**).
 8. Om "Ekologiska ingredienser" anges: skriv "med ekologiska ingredienser" eller nämn specifika ekologiska ingredienser (t.ex. "ekologisk arganolja") – påstå ALDRIG att hela produkten är ekologisk eller certifierad om inte COSMOS/Ecocert anges.
-9. Korrekturläs all text: korrekt svensk stavning och grammatik. Ingrediensnamn som ofta stavas fel: "niacinamid" (ALDRIG "nikotanamid"), "hyaluronsyra" (ett ord), "ricinolja".
-11. Var KONSEKVENT med fakta. Utelämna hellre än att gissa.
-12. Upprepa ALDRIG samma fras från ingressen i beskrivningen.
-13. Se butiksprofilen ovan för fullständig lista på förbjudna ord.
+9. Korrekturläs all text: korrekt svensk stavning och grammatik. Var extra noga med sammansatta ord och ingrediensnamn (t.ex. "plommonkärnolja", aldrig "plommenkärnolja") och adjektivböjning ("detta naturliga schampo", aldrig "detta naturligt schampo").
 10. Som AVSKILJARE i titlar, produktnamn och rubriker används alltid tankstreck "–", aldrig bindestreck "-". Bindestreck endast i riktiga sammansättningar (cruelty-free, latte-färg).
 11. Var KONSEKVENT med fakta genom alla fält – samma antal fickor, dragkedjor, mått osv. överallt. Är en detalj inte angiven i produktfakta eller källmaterial: utelämna den hellre än att gissa. Undvik floskelavslut som "en investering för livet".`;
 };
@@ -209,25 +160,25 @@ const buildPrompts = (p, storeProfile) => {
   const ti = typeInfoOf(p);
   const acc = p.productType === "Accessoar / Necessär";
   return {
-    keywords: `${ctx}\n\nFöreslå sökord för denna produkt.\n\nVIKTIGT FÖR PRIMÄRT SÖKORD: Om butiken säljer flera produkter i samma kategori (t.ex. flera schampon från samma varumärke) måste primärt sökord särskilja JUST DENNA produkt. Använd då den mest distinkta egenskapen: unik ingrediens (t.ex. "plommonolja"), funktion (t.ex. "värmeskydd"), format (t.ex. "mousse") eller målgrupp (t.ex. "känslig hårbotten"). Generiska sökord som "naturligt schampo" är bara OK om produkten verkligen saknar tydliga särdrag.\n\nPRIMÄRT SÖKORD – välj ETT:\n1. Produktspecifikt behöv/funktion + produkttyp (t.ex. "schampo värmeskydd", "schampo känslig hårbotten") – prioritera om produkten har en tydlig funktion\n2. Hudtyp/hårtyp + produkttyp (t.ex. "schampo torrt hår") – om målgrupp är tydlig\n3. Naturlig/vegansk + produkttyp – DEFAULT-VAL när inga tydliga särdrag finns\n4. Produkttyp + distinkt ingrediens – SISTA UTVÄG\n\nPrimärt sökord: 2–4 ord, korrekt svenska, realistisk sökvolym. Typiska sökord: ${ti.kw.join(", ")}\n\nSEKUNDÄRA SÖKORD – exakt 5 st som varierar:\n- En variant med distinkt ingrediens\n- En variant med certifiering om relevant\n- En engelsk variant\n- En long-tail med frågeformulering\n- En generisk variant utan ingrediens\n\nKorrekt stavad, naturlig svenska. Svara BARA med JSON: {\"primary\":\"...\",\"secondary\":[\"...\",\"...\",\"...\",\"...\",\"...\"]}`,
+    keywords: `${ctx}\n\nFöreslå sökord för denna produkt baserat på produkttyp, ingredienser och målgrupp. Primärt sökord = mest köpnära long-tail (2–4 ord, svenska, realistisk sökvolym). Sökorden ska vara korrekt stavad, naturlig svenska – kontrollera särskilt sammansatta ord (t.ex. "plommonolja", aldrig "plommolja"). 5 sekundära sökord som varierar behov/egenskap. Svara BARA med JSON: {"primary":"...","secondary":["...","...","...","...","..."]}`,
 
     productNames: `${ctx}\n\nProduktens nuvarande (ofta engelska) namn: "${p.originalName || p.productName}".\n\nFöreslå 3 svenska produktnamn enligt éclores namnkonvention:\n[Produkttyp] [Ingrediens/Doft] – [Viktigaste egenskap] – [Storlek]\nExempel: "Deodorant Lavendel – Aluminiumfri – 50 ml", "Ansiktsserum Svart Vitlök – Anti-age – 30 ml".\n\nRegler:\n- Inget varumärkesnamn först (namnet blir H1 och ska vara sökordsfokuserat)\n- Storlek med mellanslag: "50 ml", "100 g"\n- Tankstreck "–" som avskiljare, aldrig bindestreck "-"\n- Behåll ev. känt produktnamn som mellandel ENDAST om det tillför sökvärde\n- Variera: 1 = ingrediens/doft-fokus, 2 = behov/egenskap-fokus, 3 = enklast möjliga\nVälj också den bästa (pick = 1, 2 eller 3) utifrån sökbarhet och tydlighet.\nSvara BARA med JSON: {"names":["...","...","..."],"pick":1}`,
 
-    seoTitle: `${ctx}\n\nSkriv 3 title-taggar:\n\n1. SÖKORD FÖRST: Produkttyp + funktion/ingrediens + kortaste differentiator.\n   Exempel: \"Schampo värmeskydd – plommonolja alla hårtyper | éclore\"\n   Exempel: \"Dagkräm vitamin C – lyster & återfuktning | éclore\"\n2. HUDTYP/BEHOV FÖRST: Målgrupp eller problem + produkttyp + ingrediens.\n   Exempel: \"Torrt hår – schampo värmeskydd & plommonolja | éclore\"\n   Exempel: \"Känslig hud – dagkräm vitamin C COSMOS organic | éclore\"\n3. VERB FÖRST: Vad produkten gör (konkret verb) + produkttyp + ingrediens.\n   Exempel: \"Ger lyster & återfuktar – dagkräm vitamin C | éclore\"\n   Exempel: \"Återfuktar & skyddar – schampo plommonolja | éclore\"\n   OBS: Verb-öppning är OK och stark – det som är FÖRBJUDET är adjektiv-klichéer\n   som \"Mjukt vårdat hår\" eller \"Silkeslen hud\" utan sökvolym.\n\nCOSMOS/certifiering: Om produkten har COSMOS Organic/Ecocert-certifiering, lyft det gärna\ni titeln – det är ett starkt differentiator med sökvolym. Exempel: \"dagkräm vitamin C COSMOS organic\"\n\nVarumärken: Inkludera ALDRIG varumärkesnamn (LUUV, BONOBO, Nurme etc.) i titeln\n– de har ingen sökvolym i Sverige och tar upp värdefulla tecken.\n\nPrioritet för val:\n- Produkten har tydlig funktion (värmeskydd, anti-age, känslig hårbotten) → välj 1\n- Produkten har tydlig målgrupp/hudtyp (torrt hår, oljig hy, känslig hud) → välj 2\n- Produkten har stark verb-beskrivning eller COSMOS-certifiering → välj 3 eller 1+certifiering\n- Annars → välj 1\n\nRegler för ALLA tre:\n- Max 60 tecken TOTALT inkl " | éclore" (9 tecken = 51 tecken kvar)\n- Räkna tecken noga – skriv ut antalet i why-fältet\n- Naturlig svensk versalisering\n- Tankstreck \"–\" som avskiljare, aldrig bindestreck \"-\"\n- Inga utfyllnadsord (\"köp\", \"bästa\", \"online\", \"naturligt\"/ \"naturlig\" om produkten redan är certifierad eller har naturliga ingredienser i titeln – det tar plats utan att tillföra sökvolym)\n- Ingredienser MAX ett-två ord i differentiator\nSvara BARA med JSON: {\"variants\":[\"...\",\"...\",\"...\"],\"pick\":1,\"why\":\"max 15 ord inkl teckenantal\"}`,
+    seoTitle: `${ctx}\n\nSkriv 3 olika title-taggar med olika strategier:\n1. SÖKORD FÖRST: primärt sökord + mest särskiljande detalj (doft, variant eller certifiering).\n2. VARUMÄRKE + SÖKORD: varumärke/produktnamn + produkttyp eller sökord.\n3. BEHOV FÖRST: målgruppens problem/behov + lösning, t.ex. "Schampo för torrt hår – naturligt & sulfatfritt".\n\nVälj sedan den bästa enligt regeln:\n- Varumärket har egen sökvolym ELLER produkten har en utmärkelse → välj 2\n- Tydligt problem/målgrupp angiven → välj 3\n- Annars → välj 1\n\nRegler för ALLA tre:\n- Max 60 tecken TOTALT, ska sluta med " | éclore"\n- Naturlig svensk versalisering (inte Stor Bokstav På Varje Ord)\n- Tankstreck "–" som avskiljare, aldrig bindestreck "-"\n- Inga utfyllnadsord ("köp", "bästa", "online") och inget pris\nSvara BARA med JSON: {"variants":["...","...","..."],"pick":1,"why":"max 12 ord om varför"}`,
 
-    seoDescription: `${ctx}\n\nTitle-taggen: "${p.seoTitle || "(ej genererad än)"}"\n\nSkriv en meta-beskrivning på EXAKT 140–150 tecken. Under 140 tecken är oacceptabelt.\n\nSTRUKTUR – prioritetsordning (börja med det starkaste):\n1. UTMÄRKELSE (högst prioritet!) – om produkten har en utmärkelse angiven: börja alltid med den. Format: "[Utmärkelse] [Year]." t.ex. "Silver – Universal Beauty Awards 2025." eller "Editors Choice – Beauty Shortlist 2022."\n2. Primär effekt + nyckelingrediens (som INTE är i titeln)\n3. Certifieringar: vegansk / cruelty-free / COSMOS / sulfatfri / utan parabener\n4. Hårtyp eller hudtyp om relevant\n5. Tillverkningsland (t.ex. från Estland)\n6. Storlek (t.ex. 250 ml)\n7. Fri frakt över 599 kr om priset är under 599 kr (priset är ${p.price || "okänt"} kr)\n\nKONKRET EXEMPEL MED UTMÄRKELSE (148 tecken):\nSilver – Universal Beauty Awards 2025. Rosmarin och svart spiskummin stimulerar hårtillväxten. Vegansk, handgjord i Estland. 30 ml. Fri frakt över 599 kr.\n\nRÄKNA TECKEN: inkl mellanslag och punkt. Justera tills du når 140+.\nMAX 155 tecken. ALDRIG: generiska avslut, vaga adjektiv, upprepning av titeln.\nReturnera ENDAST meta-beskrivningen som EN enda rad text.`,
+    seoDescription: `${ctx}\n\nSkriv en meta-beskrivning på max 150 tecken. Primärt sökord tidigt + en konkret nytta. Avsluta med det STARKASTE återstående säljargumentet, i prioritetsordning: 1) utmärkelse, 2) konkret resultat (t.ex. effekt eller tidsaspekt), 3) certifiering/egenskap från listan, 4) "Fri frakt över 599 kr" (passar särskilt när priset är under 599 kr). ALDRIG generiska avslut som "Upptäck hos éclore" – varje produkt ska få en unik, konkret avslutning. Returnera ENDAST meta-beskrivningen som EN enda rad text – ingen rubrik, ingen produktbeskrivning, ingen övrig text före eller efter.`,
 
     urlHandle: `${ctx}\n\nNuvarande URL-handle: "${p.currentHandle || "(ny produkt)"}".\nFöreslå 3 URL-handles (slug) för produktsidan. Regler: lowercase, endast a-z, 0-9 och bindestreck (å/ä→a, ö→o, é→e), max 60 tecken, primärt sökord eller produkttyp först, inget varumärke om det inte tillför sökvärde, inga stoppord (och, med, för i onödan). Variera: 1 = sökord + variant/doft, 2 = produkttyp + behov, 3 = kortast möjliga. Svara BARA med JSON-array: ["...","...","..."]`,
 
-    shortDescription: `${ctx}\n\nSkriv en ingress (above the fold, under priset) i HTML med exakt denna struktur:\n<h2>RESULTAT/NYTTA-rubrik: vad kunden får ut av produkten (känsla, effekt, förbättring) – ALDRIG produkttyp + ingrediens. Exempel: \"Mjukt och välvårdat hår med skydd mot värme\" eller \"Lugn hårbotten och friskt hår från rot till topp\". Max 70 tecken.</h2>\n<p>50–70 ord. Primärt sökord i första meningen. Lyft den starkaste USP:n (utmärkelse > certifiering > nyckelingrediens). Avsluta med vad kunden får ut av produkten.</p>\nRubriken får INTE vara identisk med produktnamn, H1 eller title-tagg. Returnera BARA HTML utan kodfence, utan "html", utan markdown.`,
+    shortDescription: `${ctx}\n\nSkriv en ingress (above the fold, under priset) i HTML med exakt denna struktur:\n<h2>Sökordsrik rubrik med en ANNAN vinkel än produktnamnet – t.ex. nytta, resultat eller tidsaspekt (max 70 tecken)</h2>\n<p>50–70 ord. Primärt sökord i första meningen. Lyft den starkaste USP:n (utmärkelse > certifiering > nyckelingrediens). Avsluta med vad kunden får ut av produkten.</p>\nRubriken får INTE vara identisk med produktnamn, H1 eller title-tagg. Returnera BARA HTML.`,
 
     bulletPoints: `${ctx}\n\nSkriv exakt 5 bullet points (max 9 ord vardera) för produktsidan. Ordning: ${acc ? "1) viktigaste funktionen/designen, 2) material, 3) storlek/vad som ryms, 4) hantverk/ursprung, 5) skötsel eller presentvinkel" : "1) viktigaste effekten/resultatet, 2) nyckelingrediens + effekt, 3) certifiering/egenskap från listan ELLER andra effekt, 4) passar-för (hudtyp/behov), 5) ursprung/hantverk eller storlek/räckvidd"}. Inga punkter i slutet. Svara BARA med JSON-array: ["...","...","...","...","..."]`,
 
-    description: acc ? `${ctx}\n\nSkriv en strukturerad produktbeskrivning (max 300 ord) i HTML med exakt denna struktur:\n<h2>[Primärt sökord/produkttyp] – [kort säljfras]</h2>\n<p>2–3 meningar: vad accessoaren är, primärt sökord i första meningen, design och hantverk, ev. utmärkelse.</p>\n<h2>Material & funktioner</h2>\n<p>Material, sömnad, foder, dragkedja och praktiska detaljer – materialnamn i <strong>fetstil</strong>. Endast fakta som anges i produktfakta/källmaterial.</p>\n<h2>Storlek & vad som ryms</h2>\n<ul><li>3–4 punkter om mått (om angivna), fack och vad som får plats</li></ul>\n<h2>För vem passar ${p.productType ? p.productType.toLowerCase() : "accessoaren"}?</h2>\n<p>Användningssituationer (resa, handväskan, badrumshyllan) och gärna present-vinkeln.</p>\n\nLägg in EN intern länk naturligt i löptexten till ${ti.coll} med beskrivande ankartext. Använd en ANNAN ankartext än FAQ:ns länk.\n\nReturnera BARA HTML utan kodfence, utan "html", utan markdown. OBS: Beskrivningens H2 MÅSTE skilja sig från ingressens H2 – välj annan vinkel..` : `${ctx}\n\nSkriv en strukturerad produktbeskrivning (max 350 ord) i HTML med exakt denna struktur:\n<h2>VAD/HUR-rubrik: produkttyp + distinkt ingrediens eller målgrupp – ALDRIG känsla eller effektpromise (det är ingressens område). Exempel: \"Schampo plommonkärnolja – återfuktar alla hårtyper\" eller \"Naturlig kroppskräm kakao & mangosmör\". Max 70 tecken.</h2>\n<p>2–3 meningar: vad produkten är, primärt sökord i första meningen, ursprung/hantverk om relevant, ev. utmärkelse.</p>\n<h2>Ingredienser & effekter</h2>\n<p>3–4 nyckelingredienser ur INCI med konkret effekt, ingrediensnamn i <strong>fetstil</strong>.</p>\n<h2>Resultat & fördelar</h2>\n<ul><li>3–4 konkreta fördelar kopplade till köparens frågor ovan</li></ul>\n<h2>För vem passar ${p.productType ? p.productType.toLowerCase() : "produkten"}?</h2>\n<p>Målgrupp/hudtyp + avsluta med en konkret användningssituation.</p>\n\nLägg in EN intern länk naturligt i löptexten till ${ti.coll} med beskrivande ankartext (kategori/produkttyp – aldrig "klicka här"), gärna i sista stycket. Använd en ANNAN ankartext än FAQ:ns länk.\n\nReturnera BARA HTML utan kodfence, utan "html", utan markdown. OBS: Beskrivningens H2 MÅSTE skilja sig från ingressens H2 – välj annan vinkel..`,
+    description: acc ? `${ctx}\n\nSkriv en strukturerad produktbeskrivning (max 300 ord) i HTML med exakt denna struktur:\n<h2>[Primärt sökord/produkttyp] – [kort säljfras]</h2>\n<p>2–3 meningar: vad accessoaren är, primärt sökord i första meningen, design och hantverk, ev. utmärkelse.</p>\n<h2>Material & funktioner</h2>\n<p>Material, sömnad, foder, dragkedja och praktiska detaljer – materialnamn i <strong>fetstil</strong>. Endast fakta som anges i produktfakta/källmaterial.</p>\n<h2>Storlek & vad som ryms</h2>\n<ul><li>3–4 punkter om mått (om angivna), fack och vad som får plats</li></ul>\n<h2>För vem passar ${p.productType ? p.productType.toLowerCase() : "accessoaren"}?</h2>\n<p>Användningssituationer (resa, handväskan, badrumshyllan) och gärna present-vinkeln.</p>\n\nLägg in EN intern länk naturligt i löptexten till ${ti.coll} med beskrivande ankartext. Använd en ANNAN ankartext än FAQ:ns länk.\n\nReturnera BARA HTML.` : `${ctx}\n\nSkriv en strukturerad produktbeskrivning (max 350 ord) i HTML med exakt denna struktur:\n<h2>[Primärt sökord/produkttyp] – [kort nyttofras]</h2>\n<p>2–3 meningar: vad produkten är, primärt sökord i första meningen, ursprung/hantverk om relevant, ev. utmärkelse.</p>\n${["Brun utan sol","Ansiktskräm","Ansiktsserum","Serum","Dagkräm","Nattkräm","Kroppsolja","Ansiktsolja","Kroppskräm","Kroppslotion"].some(t => (p.productType || "").includes(t)) ? `<h2>Därför väljer många ${(p.productType || "den här produkten").toLowerCase()} – fördelar och vad du bör veta</h2>\\n<p>150–200 ord som pedagogiskt förklarar: varför många väljer den här produkttypen, vad som särskiljer den här produkten från alternativ, vem den passar bäst och hur man använder den optimalt. Använd naturliga varianter av primärt sökord genomgående (t.ex. "naturlig brun utan sol", "återfuktande brun utan sol", "gradvis brun utan sol"). Inga ingredienslistor här – fokus på köpbeslutet och användarsituationen.</p>\\n` : ""}\\n<h2>Ingredienser & effekter</h2>\n<p>3–4 nyckelingredienser ur INCI med konkret effekt, ingrediensnamn i <strong>fetstil</strong>.</p>\n<h2>Resultat & fördelar</h2>\n<ul><li>3–4 konkreta fördelar kopplade till köparens frågor ovan</li></ul>\n<h2>För vem passar ${p.productType ? p.productType.toLowerCase() : "produkten"}?</h2>\n<p>Målgrupp/hudtyp + avsluta med en konkret användningssituation.</p>\n\nLägg in EN intern länk naturligt i löptexten till ${ti.coll} med beskrivande ankartext (kategori/produkttyp – aldrig "klicka här"), gärna i sista stycket. Använd en ANNAN ankartext än FAQ:ns länk.\n\nReturnera BARA HTML.`,
 
     faq: `${ctx}\n\nSkriv exakt 5 FAQ på svenska som matchar VERKLIGA köparfrågor för produkttypen (se listan ovan) – inte generiska hudvårdsfrågor. Minst en fråga om ${acc ? "material och skötsel" : "produktens nyckelingrediens(er)"}, och en om ursprung/certifiering/utmärkelse (endast angivna fakta). Svar 40–70 ord i HTML med <p>, och i ETT av svaren en intern länk: <a href="${ti.coll}">relevant ankartext</a>. Svara BARA med JSON: {"faq_q1":"...","faq_a1":"<p>...</p>","faq_q2":"...","faq_a2":"<p>...</p>","faq_q3":"...","faq_a3":"<p>...</p>","faq_q4":"...","faq_a4":"<p>...</p>","faq_q5":"...","faq_a5":"<p>...</p>"}`,
 
-    usage: acc ? `${ctx}\n\nDetta är en accessoar – INTE en hudvårdsprodukt. Börja ALDRIG med ett konstruerat scenario. Beskriv direkt: vad väskan är, material, storlek och motiv. Lyft gärna presentvinkeln. Skriv SKÖTSELRÅD istället för användningsinstruktioner (rengöring, torkning, förvaring – endast utifrån angivet material). Svara BARA med JSON: {"intro":"2–3 meningar om skötsel så accessoaren håller länge","steps":["Steg som börjar med verb","...","..."]}` : `${ctx}\n\nSkriv användningsinstruktioner anpassade till produkttypen ${p.productType || ""} (t.ex. brun utan sol: skrubb först, applicering, väntetid; schampo: mängd, massera, övergångsperiod). Svara BARA med JSON: {"intro":"2–3 meningar om när och hur produkten används","steps":["Steg som börjar med verb","...","..."]}`,
+    usage: acc ? `${ctx}\n\nDetta är en accessoar. Skriv SKÖTSELRÅD istället för användningsinstruktioner (rengöring, torkning, förvaring – endast utifrån angivet material). Svara BARA med JSON: {"intro":"2–3 meningar om skötsel så accessoaren håller länge","steps":["Steg som börjar med verb","...","..."]}` : `${ctx}\n\nSkriv användningsinstruktioner anpassade till produkttypen ${p.productType || ""} (t.ex. brun utan sol: skrubb först, applicering, väntetid; schampo: mängd, massera, övergångsperiod). Svara BARA med JSON: {"intro":"2–3 meningar om när och hur produkten används","steps":["Steg som börjar med verb","...","..."]}`,
 
     keyIngredients: acc ? `${ctx}\n\nDetta är en accessoar – inga ingredienser. Välj istället 3–5 FUNKTIONER OCH MATERIAL ur produktfakta/källmaterial (t.ex. "100 % bomull", "Vattenavvisande foder", "Rymligt huvudfack", "Handsytt mönster") och beskriv varje med konkret nytta på 8–15 ord. Hitta aldrig på material som inte anges. Svara BARA med JSON-array: [{"name":"...","effect":"..."}]` : `${ctx}\n\nVälj 3–5 nyckelingredienser ur INCI-listan (eller produktfakta om INCI saknas) och beskriv varje med konkret effekt på 8–15 ord. Använd svenska namn (t.ex. "Havtornsolja" istället för "Hippophae Rhamnoides"). Svara BARA med JSON-array: [{"name":"...","effect":"..."}]`,
 
@@ -246,7 +197,7 @@ const callClaude = async (prompt, apiKey) => {
         "anthropic-dangerous-direct-browser-access": "true",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-6",
+        model: "claude-sonnet-4-20250514",
         max_tokens: 1000,
         messages: [{ role: "user", content: prompt }],
       }),
@@ -302,8 +253,7 @@ const genField = async (p, field, storeProfile, autoPick, apiKey) => {
     }
     case "seoDescription": {
       const firstLine = mdToHtml(raw).split("\n").map((l) => l.trim()).filter(Boolean)[0] || "";
-      const cleaned = firstLine.replace(/^#+\s*/, "");
-      return { seoDescription: cleaned.length > 155 ? cleaned.slice(0, 152) + "..." : cleaned };
+      return { seoDescription: firstLine.replace(/^#+\s*/, "") };
     }
     case "urlHandle": {
       const v = safeParse(raw);
@@ -897,18 +847,12 @@ function EcloreProduktstudio() {
       const res = await fetch(`${proxy}/fetch?url=${encodeURIComponent(p.brandUrl)}`);
       if (!res.ok) throw new Error(`Workern svarade ${res.status} – är den uppdaterad med /fetch-stödet?`);
       const html = await res.text();
-      const rawText = html
+      const text = html
         .replace(/<script[\s\S]*?<\/script>/gi, " ")
         .replace(/<style[\s\S]*?<\/style>/gi, " ")
-        .replace(/<nav[\s\S]*?<\/nav>/gi, " ")
-        .replace(/<header[\s\S]*?<\/header>/gi, " ")
-        .replace(/<footer[\s\S]*?<\/footer>/gi, " ")
         .replace(/<[^>]+>/g, " ")
-        .replace(/&amp;/g, "&").replace(/&nbsp;/g, " ").replace(/&#[0-9]+;/g, " ")
-        .replace(/\s+/g, " ").trim();
-      const sentences = rawText.split(/(?<=[.!?])\s+|\s{2,}/);
-      const meaningful = sentences.map(s => s.trim()).filter(s => s.length > 50).join(" ");
-      const text = (meaningful || rawText).slice(0, 6000);
+        .replace(/\s+/g, " ")
+        .trim().slice(0, 4000);
       set((x) => ({ ...x, sourceText: text, _srcBusy: false }));
       setSfError("");
     } catch (e) {
@@ -1044,18 +988,12 @@ function EcloreProduktstudio() {
           const res = await fetch(`${proxy}/fetch?url=${encodeURIComponent(cur.brandUrl)}`);
           if (res.ok) {
             const html = await res.text();
-            const rawText = html
+            const text = html
               .replace(/<script[\s\S]*?<\/script>/gi, " ")
               .replace(/<style[\s\S]*?<\/style>/gi, " ")
-              .replace(/<nav[\s\S]*?<\/nav>/gi, " ")
-              .replace(/<header[\s\S]*?<\/header>/gi, " ")
-              .replace(/<footer[\s\S]*?<\/footer>/gi, " ")
               .replace(/<[^>]+>/g, " ")
-              .replace(/&amp;/g, "&").replace(/&nbsp;/g, " ").replace(/&#[0-9]+;/g, " ")
-              .replace(/\s+/g, " ").trim();
-            const sentences2 = rawText.split(/(?<=[.!?])\s+|\s{2,}/);
-            const meaningful2 = sentences2.map(s => s.trim()).filter(s => s.length > 50).join(" ");
-            const text = (meaningful2 || rawText).slice(0, 6000);
+              .replace(/\s+/g, " ")
+              .trim().slice(0, 4000);
             cur = { ...cur, sourceText: text };
             updateQueueItem(cur.id, { sourceText: text });
           }
@@ -1064,31 +1002,11 @@ function EcloreProduktstudio() {
       for (const [field, label] of PIPELINE) {
         if (field === "keywords" && cur.primaryKeyword) continue;
         setQueueProgress(`Produkt ${i + 1}/${items.length} · ${cur.productName.slice(0, 28)} · ${label}...`);
-        // Kort paus mellan anrop för att undvika rate limiting
-        await new Promise(r => setTimeout(r, 800));
-        let patch = null;
-        for (let attempt = 0; attempt < 2; attempt++) {
-          try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 45000);
-            patch = await genField(cur, field, storeProfile, true, settings.anthropicKey);
-            clearTimeout(timeoutId);
-            break; // success - exit retry loop
-          } catch (e) {
-            clearTimeout(timeoutId);
-            if (attempt === 0) {
-              console.warn(`Retry ${field} after error:`, e);
-              await new Promise(r => setTimeout(r, 2000)); // wait before retry
-            } else {
-              console.error(`Failed ${field} after retry:`, e);
-              failed.push(label);
-            }
-          }
-        } // end retry loop
-        if (patch) {
+        try {
+          const patch = await genField(cur, field, storeProfile, true, settings.anthropicKey);
           cur = { ...cur, ...patch };
           updateQueueItem(cur.id, patch);
-        }
+        } catch (e) { console.error(e); failed.push(label); }
       }
       updateQueueItem(cur.id, { status: failed.length ? "fel" : "klar" });
       if (failed.length) setQueueProgress(`${cur.productName.slice(0, 28)}: kunde inte generera ${failed.join(", ")} – kör kön igen för nytt försök.`);
@@ -1539,4 +1457,4 @@ ReactDOM.createRoot(document.getElementById("root")).render(<EcloreProduktstudio
 
 </script>
 </body>
-</html>Tankstreck \"–\" som avskiljare, aldrig bindestreck \"-\"\\n- MAX ETT tankstreck per produktnamn – storlek läggs med komma: \"Barnschampo Tårfri – COSMOS organic, 200 ml\" (INTE \"Barnschampo – COSMOS – 200 ml\")\\n- Behåll
+</html>
