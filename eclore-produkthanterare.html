@@ -117,6 +117,15 @@ const emptyProduct = () => ({
 const buildCtx = (p, storeProfile) => {
   const ti = typeInfoOf(p);
   const certs = p.certs.length ? p.certs.join(", ") : "Inga angivna";
+  const stripTags = (s) => String(s || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  const prevParts = [];
+  if (p.seoTitle) prevParts.push(`- Title-tagg: ${p.seoTitle}`);
+  if (p.seoDescription) prevParts.push(`- Meta-beskrivning: ${p.seoDescription}`);
+  if (p.shortDescription) prevParts.push(`- Ingress: ${stripTags(p.shortDescription)}`);
+  if ((p.bulletPoints || []).filter(Boolean).length) prevParts.push(`- Bullet points: ${p.bulletPoints.filter(Boolean).join(" | ")}`);
+  if (p.description && (!p._orig || p.description !== p._orig.body)) prevParts.push(`- Produktbeskrivning (utdrag): ${stripTags(p.description).slice(0, 900)}`);
+  if ((p.faq || []).some((f) => f.q)) prevParts.push(`- FAQ-frågor: ${p.faq.filter((f) => f.q).map((f) => f.q).join(" | ")}`);
+  const prevBlock = prevParts.length ? `\n\nREDAN GENERERAD TEXT för denna produkt (för kännedom – skriv INTE om dessa fält nu):\n${prevParts.join("\n")}\nVIKTIGT: Läs texten ovan och notera vilka sökordsfraser som redan dominerar. Välj i det NYA fältet i första hand ANDRA naturliga synonymer och närliggande sökord (från sekundära sökord eller "Typiska svenska sökningar"), så att helheten täcker fler sökvarianter utan upprepning. Håll fakta (mått, effekter, certifieringar) konsekventa med texten ovan.\n` : "";
   return `Du skriver produkttexter för éclore (eclore.se) – svensk e-handel för naturlig och vegansk hudvård, hårvård och kroppsvård, tillverkad i Europa.
 
 ${storeProfile}
@@ -138,12 +147,13 @@ SÖKORD:
 - Primärt sökord: ${p.primaryKeyword || "(ej valt – utgå från produkttypen)"}
 - Sekundära sökord: ${p.secondaryKeywords || "—"}
 - Typiska svenska sökningar för produkttypen: ${ti.kw.join(", ") || "—"}
-
+${prevBlock}
 KÖPARENS VANLIGASTE FRÅGOR för denna produkttyp: ${ti.concerns}
 
 HÅRDA REGLER:
 1. Svenska. Naturligt språk, ingen keyword stuffing.
 2. Primärt sökord ska finnas i första meningen av beskrivning och ingress – men det FÅR böjas och kompletteras med småord (med, och, för) så att meningen blir korrekt svenska. Grammatik går ALLTID före exakt ordföljd.
+2b. Upprepa ALDRIG exakt samma sökordsfras rakt av flera gånger genom texten – det ser onaturligt ut och tappar SEO-värde för besläktade sökningar. Efter första nämningen: variera med naturliga synonymer och närliggande sökord (t.ex. sekundära sökord ovan eller "Typiska svenska sökningar" – för en självbrunande produkt kan det växla mellan "självbrunande", "brun utan sol" och "solfri brun"). Sprid ut varianterna över hela texten (ingress, beskrivning, bullets, FAQ) istället för att klumpa samma ord i varje stycke.
 3. Nämn certifieringar/egenskaper ENDAST om de står i listan ovan. Skriv aldrig "ekologisk", "COSMOS", "parfymfri" etc. om det inte är angivet.
 4. Nämn utmärkelser endast om de anges – och då gärna tidigt.
 5. H2-rubriker = sökord och kundnytta, inte varumärkesupprepning.
@@ -164,9 +174,9 @@ const buildPrompts = (p, storeProfile) => {
 
     productNames: `${ctx}\n\nProduktens nuvarande (ofta engelska) namn: "${p.originalName || p.productName}".\n\nFöreslå 3 svenska produktnamn enligt éclores namnkonvention:\n[Produkttyp] [Ingrediens/Doft] – [Viktigaste egenskap] – [Storlek]\nExempel: "Deodorant Lavendel – Aluminiumfri – 50 ml", "Ansiktsserum Svart Vitlök – Anti-age – 30 ml".\n\nRegler:\n- Inget varumärkesnamn först (namnet blir H1 och ska vara sökordsfokuserat)\n- Storlek med mellanslag: "50 ml", "100 g"\n- Tankstreck "–" som avskiljare, aldrig bindestreck "-"\n- Behåll ev. känt produktnamn som mellandel ENDAST om det tillför sökvärde\n- Variera: 1 = ingrediens/doft-fokus, 2 = behov/egenskap-fokus, 3 = enklast möjliga\nVälj också den bästa (pick = 1, 2 eller 3) utifrån sökbarhet och tydlighet.\nSvara BARA med JSON: {"names":["...","...","..."],"pick":1}`,
 
-    seoTitle: `${ctx}\n\nSkriv 3 olika title-taggar med olika strategier:\n1. SÖKORD FÖRST: primärt sökord + mest särskiljande detalj (doft, variant eller certifiering).\n2. VARUMÄRKE + SÖKORD: varumärke/produktnamn + produkttyp eller sökord.\n3. BEHOV FÖRST: målgruppens problem/behov + lösning, t.ex. "Schampo för torrt hår – naturligt & sulfatfritt".\n\nVälj sedan den bästa enligt regeln:\n- Varumärket har egen sökvolym ELLER produkten har en utmärkelse → välj 2\n- Tydligt problem/målgrupp angiven → välj 3\n- Annars → välj 1\n\nRegler för ALLA tre:\n- Max 60 tecken TOTALT, ska sluta med " | éclore"\n- Naturlig svensk versalisering (inte Stor Bokstav På Varje Ord)\n- Tankstreck "–" som avskiljare, aldrig bindestreck "-"\n- Inga utfyllnadsord ("köp", "bästa", "online") och inget pris\nSvara BARA med JSON: {"variants":["...","...","..."],"pick":1,"why":"max 12 ord om varför"}`,
+    seoTitle: `${ctx}\n\nSkriv 3 olika title-taggar med olika strategier:\n1. SÖKORD FÖRST: primärt sökord + mest särskiljande detalj (doft, variant eller certifiering).\n2. VARUMÄRKE + SÖKORD: varumärke/produktnamn + produkttyp eller sökord.\n3. BEHOV FÖRST: målgruppens problem/behov + lösning, t.ex. "Schampo för torrt hår – naturligt & sulfatfritt".\n\nVälj sedan den bästa enligt regeln:\n- Varumärket har egen sökvolym ELLER produkten har en utmärkelse → välj 2\n- Tydligt problem/målgrupp angiven → välj 3\n- Annars → välj 1\n\nRegler för ALLA tre:\n- HÅRT KRAV: max 60 tecken TOTALT, inklusive mellanslag och avslutningen " | éclore" (9 tecken). Räkna tecknen i hela strängen innan du svarar – är den för lång, korta ner sökordsfrasen eller detaljen. Gå ALDRIG över 60 tecken.\n- Naturlig svensk versalisering (inte Stor Bokstav På Varje Ord)\n- Tankstreck "–" som avskiljare, aldrig bindestreck "-"\n- Inga utfyllnadsord ("köp", "bästa", "online") och inget pris\nSvara BARA med JSON: {"variants":["...","...","..."],"pick":1,"why":"max 12 ord om varför"}`,
 
-    seoDescription: `${ctx}\n\nSkriv en meta-beskrivning på max 150 tecken. Primärt sökord tidigt + en konkret nytta. Avsluta med det STARKASTE återstående säljargumentet, i prioritetsordning: 1) utmärkelse, 2) konkret resultat (t.ex. effekt eller tidsaspekt), 3) certifiering/egenskap från listan, 4) "Fri frakt över 599 kr" (passar särskilt när priset är under 599 kr). ALDRIG generiska avslut som "Upptäck hos éclore" – varje produkt ska få en unik, konkret avslutning. Returnera ENDAST meta-beskrivningen som EN enda rad text – ingen rubrik, ingen produktbeskrivning, ingen övrig text före eller efter.`,
+    seoDescription: `${ctx}\n\nSkriv en meta-beskrivning på MELLAN 140 och 155 tecken (max 155) – utnyttja utrymmet fullt ut, en för kort meta-beskrivning slösar bort synligt utrymme i sökresultatet. Primärt sökord tidigt + en konkret nytta. Bygg ut med fler konkreta detaljer (användning, resultat, för vem) om du närmar dig 140 tecken innan avslutningen. Avsluta med det STARKASTE återstående säljargumentet, i prioritetsordning: 1) utmärkelse, 2) konkret resultat (t.ex. effekt eller tidsaspekt), 3) certifiering/egenskap från listan, 4) "Fri frakt över 599 kr" (passar särskilt när priset är under 599 kr). ALDRIG generiska avslut som "Upptäck hos éclore" – varje produkt ska få en unik, konkret avslutning. Returnera ENDAST meta-beskrivningen som EN enda rad text – ingen rubrik, ingen produktbeskrivning, ingen övrig text före eller efter.`,
 
     urlHandle: `${ctx}\n\nNuvarande URL-handle: "${p.currentHandle || "(ny produkt)"}".\nFöreslå 3 URL-handles (slug) för produktsidan. Regler: lowercase, endast a-z, 0-9 och bindestreck (å/ä→a, ö→o, é→e), max 60 tecken, primärt sökord eller produkttyp först, inget varumärke om det inte tillför sökvärde, inga stoppord (och, med, för i onödan). Variera: 1 = sökord + variant/doft, 2 = produkttyp + behov, 3 = kortast möjliga. Svara BARA med JSON-array: ["...","...","..."]`,
 
