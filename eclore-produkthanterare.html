@@ -125,7 +125,7 @@ const buildCtx = (p, storeProfile) => {
   if ((p.bulletPoints || []).filter(Boolean).length) prevParts.push(`- Bullet points: ${p.bulletPoints.filter(Boolean).join(" | ")}`);
   if (p.description && (!p._orig || p.description !== p._orig.body)) prevParts.push(`- Produktbeskrivning (utdrag): ${stripTags(p.description).slice(0, 900)}`);
   if ((p.faq || []).some((f) => f.q)) prevParts.push(`- FAQ-frågor: ${p.faq.filter((f) => f.q).map((f) => f.q).join(" | ")}`);
-  const prevBlock = prevParts.length ? `\n\nREDAN GENERERAD TEXT för denna produkt (för kännedom – skriv INTE om dessa fält nu):\n${prevParts.join("\n")}\nVIKTIGT: Läs texten ovan och notera vilka sökordsfraser som redan dominerar. Välj i det NYA fältet i första hand ANDRA naturliga synonymer och närliggande sökord (från sekundära sökord eller "Typiska svenska sökningar"), så att helheten täcker fler sökvarianter utan upprepning. Håll fakta (mått, effekter, certifieringar) konsekventa med texten ovan.\n` : "";
+  const prevBlock = prevParts.length ? `\n\nREDAN GENERERAD TEXT för denna produkt (för kännedom – skriv INTE om dessa fält nu):\n${prevParts.join("\n")}\nVIKTIGT: Läs texten ovan och notera vilka sökordsfraser som redan dominerar. Väv GÄRNA in en annan naturlig synonym eller ett närliggande sökord (från sekundära sökord eller "Typiska svenska sökningar") istället för att upprepa exakt samma fras – men bara när synonymen är ett riktigt, vedertaget uttryck. Korrekt, naturlig svenska väger alltid tyngre än variation; hitta aldrig på konstruerade ord. Håll fakta (mått, effekter, certifieringar) konsekventa med texten ovan.\n` : "";
   return `Du skriver produkttexter för éclore (eclore.se) – svensk e-handel för naturlig och vegansk hudvård, hårvård och kroppsvård, tillverkad i Europa.
 
 ${storeProfile}
@@ -153,7 +153,7 @@ KÖPARENS VANLIGASTE FRÅGOR för denna produkttyp: ${ti.concerns}
 HÅRDA REGLER:
 1. Svenska. Naturligt språk, ingen keyword stuffing.
 2. Primärt sökord ska finnas i första meningen av beskrivning och ingress – men det FÅR böjas och kompletteras med småord (med, och, för) så att meningen blir korrekt svenska. Grammatik går ALLTID före exakt ordföljd.
-2b. Upprepa ALDRIG exakt samma sökordsfras rakt av flera gånger genom texten – det ser onaturligt ut och tappar SEO-värde för besläktade sökningar. Efter första nämningen: variera med naturliga synonymer och närliggande sökord (t.ex. sekundära sökord ovan eller "Typiska svenska sökningar" – för en självbrunande produkt kan det växla mellan "självbrunande", "brun utan sol" och "solfri brun"). Sprid ut varianterna över hela texten (ingress, beskrivning, bullets, FAQ) istället för att klumpa samma ord i varje stycke.
+2b. Undvik att upprepa exakt samma sökordsfras rakt av i varje stycke genom texten – variera GÄRNA med naturliga synonymer och närliggande sökord (t.ex. sekundära sökord ovan eller "Typiska svenska sökningar") när det finns en riktig, vedertagen synonym att växla till. Men naturlig, korrekt svenska går ALLTID före variation: hitta ALDRIG på nya sammansatta ord eller ovanliga böjningar bara för att undvika upprepning (t.ex. skriv inte "solfri bränna" – "bränna" används inte som substantiv för resultatet av självbruning). Är du osäker på om en synonym låter naturligt: använd hellre originalordet igen än ett konstruerat alternativ. Måttlig, naturlig upprepning är bättre än krystad variation.
 3. Nämn certifieringar/egenskaper ENDAST om de står i listan ovan. Skriv aldrig "ekologisk", "COSMOS", "parfymfri" etc. om det inte är angivet.
 4. Nämn utmärkelser endast om de anges – och då gärna tidigt.
 5. H2-rubriker = sökord och kundnytta, inte varumärkesupprepning.
@@ -207,7 +207,7 @@ const callClaude = async (prompt, apiKey) => {
         "anthropic-dangerous-direct-browser-access": "true",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-6",
+        model: "claude-sonnet-5",
         max_tokens: 1000,
         messages: [{ role: "user", content: prompt }],
       }),
