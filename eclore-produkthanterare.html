@@ -190,7 +190,7 @@ const buildPrompts = (p, storeProfile) => {
 
     faq: `${ctx}\n\nSkriv exakt 5 FAQ på svenska som matchar VERKLIGA köparfrågor för produkttypen (se listan ovan) – inte generiska hudvårdsfrågor. Minst en fråga om ${acc ? "material och skötsel" : "produktens nyckelingrediens(er)"}, och en om ursprung/certifiering/utmärkelse (endast angivna fakta). VIKTIGT: hitta ALDRIG på specifika siffror (tvättgrader, exakta mått, procentsatser etc.) som inte uttryckligen finns i produktfakta/källmaterial ovan – inte ens vad som brukar vara "vanlig branschstandard", eftersom det kan vara fel för just den här produkten. Ge generella svar HELT UTAN påhittade siffror istället. Svar 40–70 ord i HTML med <p>. OBLIGATORISKT: i ETT (och endast ett) av de fem svaren, inkludera en intern länk: <a href="${ti.coll}">relevant ankartext</a>. Detta får INTE utelämnas. Svara BARA med JSON: {"faq_q1":"...","faq_a1":"<p>...</p>","faq_q2":"...","faq_a2":"<p>...</p>","faq_q3":"...","faq_a3":"<p>...</p>","faq_q4":"...","faq_a4":"<p>...</p>","faq_q5":"...","faq_a5":"<p>...</p>"}`,
 
-    usage: acc ? `${ctx}\n\nDetta är en accessoar eller textilprodukt. Skriv SKÖTSELRÅD istället för användningsinstruktioner (rengöring, torkning, förvaring – endast utifrån angivet material). VIKTIGT: hitta ALDRIG på specifika siffror (tvättgrader, strykgrader, torktider etc.) om de inte uttryckligen finns i produktfakta/källmaterial ovan – inte ens vad som brukar vara "vanlig branschstandard" för materialet, eftersom det kan vara fel för just den här produkten. Saknas exakta siffror i källmaterialet, ge generella råd HELT UTAN siffror (t.ex. "tvätta i maskin på skonsamt program", "undvik hög värme och torktumling", "stryk vid behov på låg till medelvärme") istället för att gissa exakta gradtal. Svara BARA med JSON: {"intro":"2–3 meningar om skötsel så produkten håller länge","steps":["Steg som börjar med verb","...","..."]}` : `${ctx}\n\nSkriv användningsinstruktioner anpassade till produkttypen ${p.productType || ""} (t.ex. brun utan sol: skrubb först, applicering, väntetid; schampo: mängd, massera, övergångsperiod). Svara BARA med JSON: {"intro":"2–3 meningar om när och hur produkten används","steps":["Steg som börjar med verb","...","..."]}`,
+    usage: acc ? `${ctx}\n\nDetta är en accessoar eller textilprodukt. Skriv SKÖTSELRÅD istället för användningsinstruktioner (rengöring, torkning, förvaring – endast utifrån angivet material). VIKTIGT – LÄS NOGA: du får ALDRIG skriva ut några gradtal eller sifferangivelser för tvätt, strykning eller torkning om de inte ordagrant står i produktfakta/källmaterial ovan. Det spelar ingen roll om siffran känns som "vanlig branschstandard" för materialet – skriv den ändå INTE, eftersom den kan vara fel för just den här produkten.\n\nFELAKTIGA exempel (skriv ALDRIG såhär om källmaterialet inte anger det): "tvätta i 40°C", "tvätta på 30 grader", "stryk vid 110°C", "torktumla på låg värme".\nKORREKTA exempel (skriv såhär istället): "tvätta i maskin på skonsamt program", "undvik hög värme vid tvätt och torktumling", "stryk vid behov på låg till medelvärme utan att ange exakt gradtal", "låt torka på tork- eller klädhängare".\n\nInnan du svarar: läs igenom ditt eget svar och ta bort varje siffra följt av "°", "grader" eller "C" som inte kommer direkt från källmaterialet ovan.\n\nSvara BARA med JSON: {"intro":"2–3 meningar om skötsel så produkten håller länge","steps":["Steg som börjar med verb","...","..."]}` : `${ctx}\n\nSkriv användningsinstruktioner anpassade till produkttypen ${p.productType || ""} (t.ex. brun utan sol: skrubb först, applicering, väntetid; schampo: mängd, massera, övergångsperiod). Svara BARA med JSON: {"intro":"2–3 meningar om när och hur produkten används","steps":["Steg som börjar med verb","...","..."]}`,
 
     keyIngredients: acc ? `${ctx}\n\nDetta är en accessoar eller textilprodukt – inga ingredienser. Välj istället 3–5 FUNKTIONER OCH MATERIAL ur produktfakta/källmaterial (t.ex. "100 % bomull", "Vaffelvävd", "OEKO-TEX-certifierat tyg", "Vattenavvisande foder", "Handsytt mönster") och beskriv varje med konkret nytta på 8–15 ord. Hitta aldrig på material som inte anges. Svara BARA med JSON-array: [{"name":"...","effect":"..."}]` : `${ctx}\n\nVälj 3–5 nyckelingredienser ur INCI-listan (eller produktfakta om INCI saknas) och beskriv varje med konkret effekt på 8–15 ord. Använd svenska namn (t.ex. "Havtornsolja" istället för "Hippophae Rhamnoides"). Svara BARA med JSON-array: [{"name":"...","effect":"..."}]`,
 
@@ -238,6 +238,28 @@ const safeParse = (raw) => {
 
 const mdToHtml = (s) => String(s || "").replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>").replace(/\*\*/g, "");
 
+// Tar bort påhittade gradtal (t.ex. "40°C", "110 grader") ur text om siffran inte finns i källmaterialet (INCI/material-fältet).
+// Skyddar mot att modellen fyller i "branschstandard"-temperaturer som kan vara fel för den specifika produkten.
+const scrubFabricatedDegrees = (text, sourceMaterial) => {
+  if (!text) return text;
+  const src = String(sourceMaterial || "");
+  const degreeRe = /\b\d{1,3}\s*(?:°\s*c\b|grader?\b|°)/gi;
+  return text.replace(degreeRe, (match) => {
+    const num = match.match(/\d{1,3}/)[0];
+    return src.includes(num) ? match : "";
+  }).replace(/\s{2,}/g, " ").replace(/\s+([.,;])/g, "$1").trim();
+};
+const scrubDegreesDeep = (val, sourceMaterial) => {
+  if (typeof val === "string") return scrubFabricatedDegrees(val, sourceMaterial);
+  if (Array.isArray(val)) return val.map((v) => scrubDegreesDeep(v, sourceMaterial));
+  if (val && typeof val === "object") {
+    const out = {};
+    for (const k in val) out[k] = scrubDegreesDeep(val[k], sourceMaterial);
+    return out;
+  }
+  return val;
+};
+
 const genField = async (p, field, storeProfile, autoPick, apiKey) => {
   const raw = stripFences(await callClaude(buildPrompts(p, storeProfile)[field], apiKey));
   switch (field) {
@@ -274,16 +296,28 @@ const genField = async (p, field, storeProfile, autoPick, apiKey) => {
       if (!p.currentHandle && autoPick && v[0]) out.handle = v[0]; // byt aldrig befintlig URL automatiskt
       return out;
     }
-    case "bulletPoints": case "tags": case "keyIngredients":
+    case "bulletPoints": {
+      const arr = safeParse(raw);
+      const acc = p.productType === "Accessoar / Necessär" || p.productType === "Textil / Hemprodukt";
+      return { bulletPoints: acc ? scrubDegreesDeep(arr, p.inci) : arr };
+    }
+    case "tags": case "keyIngredients":
       return { [field]: safeParse(raw) };
-    case "usage":
-      return { usage: safeParse(raw) };
+    case "usage": {
+      const j = safeParse(raw);
+      const acc = p.productType === "Accessoar / Necessär" || p.productType === "Textil / Hemprodukt";
+      return { usage: acc ? scrubDegreesDeep(j, p.inci) : j };
+    }
     case "faq": {
       const j = safeParse(raw);
-      return { faq: [1, 2, 3, 4, 5].map((i) => ({ q: j[`faq_q${i}`] || "", a: mdToHtml(j[`faq_a${i}`] || "") })) };
+      const acc = p.productType === "Accessoar / Necessär" || p.productType === "Textil / Hemprodukt";
+      return { faq: [1, 2, 3, 4, 5].map((i) => ({ q: j[`faq_q${i}`] || "", a: acc ? scrubFabricatedDegrees(mdToHtml(j[`faq_a${i}`] || ""), p.inci) : mdToHtml(j[`faq_a${i}`] || "") })) };
     }
-    default:
-      return { [field]: mdToHtml(raw) };
+    default: {
+      const acc = p.productType === "Accessoar / Necessär" || p.productType === "Textil / Hemprodukt";
+      const html = mdToHtml(raw);
+      return { [field]: (acc && (field === "description" || field === "shortDescription")) ? scrubFabricatedDegrees(html, p.inci) : html };
+    }
   }
 };
 
