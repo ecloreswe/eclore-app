@@ -137,7 +137,7 @@ PRODUKTFAKTA – använd ENDAST dessa fakta. Hitta ALDRIG på certifieringar, ut
 - Produktnamn: ${p.productName || "(saknas)"}${p.originalName && p.originalName !== p.productName ? ` (originalnamn: ${p.originalName})` : ""}
 - Varumärke: ${p.brand || "(ej angivet)"}${p.brandNote ? `. Om varumärket: ${p.brandNote}` : ""}
 - Produkttyp: ${p.productType || "(ej angiven)"}
-- Målgrupp / hud- eller hårtyp: ${p.audience || "alla"}
+- Målgrupp / hud- eller hårtyp: ${p.audience || "(ej angiven av användaren – härled en rimlig målgrupp från INCI/källmaterial/produktnamn om möjligt, t.ex. torr hud vid rika oljor eller fet/oren hud vid rengörande ingredienser. Går det inte att härleda: undvik hudtyp-specifika påståenden helt och skriv ALDRIG \"passar alla hudtyper\" som slentrianmässig fyllnadsfras)"}
 - Storlek: ${p.size || "(ej angiven)"}${p.price ? `, Pris: ${p.price} kr` : ""}
 - Certifieringar och egenskaper (de ENDA som får nämnas): ${certs}
 - Utmärkelser: ${p.awards || (p.sourceText ? "Inga angivna i fältet – MEN om källmaterialet ovan UTTRYCKLIGEN nämner utmärkelser eller priser ska du lyfta dem tidigt (ange namnet exakt som i källan – hitta aldrig på)" : "Inga – nämn inga utmärkelser")}
