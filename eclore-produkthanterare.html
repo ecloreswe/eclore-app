@@ -39,6 +39,7 @@ const PRODUCT_TYPES = {
   "Handkräm": { kw: ["handkräm", "naturlig handkräm", "handkräm torra händer"], concerns: "drar den in snabbt, kladdar den vid tangentbord, nariga händer vinter", coll: "https://www.eclore.se/collections/kroppsvard" },
   "Accessoar / Necessär": { kw: ["necessär", "sminkväska", "handgjord necessär", "kosmetikväska"], concerns: "material och skötsel, storlek och vad som får plats, handgjort hantverk, tål den fukt", coll: "https://www.eclore.se/collections/sminkvaskor" },
   "Textil / Hemprodukt": { kw: ["linnehandduk", "bomullshandduk", "handduk naturmaterial", "vaffelhandduk"], concerns: "material och kvalitet (linne/bomull), tvättråd och krympning, storlek och vikt, hantverk och ursprung", coll: "https://www.eclore.se/produktserier/handdukar" },
+  "Doftljus / Hemdoft": { kw: ["doftljus naturligt", "sojaljus", "doftljus lavendel", "doftljus utan paraffin"], concerns: "brinntid, doft och intensitet, vaxtyp (soja/paraffin), storlek och burk/förpackning, hantverk och ursprung", coll: "https://www.eclore.se/collections/doftljus" },
   "Annan produkt": { kw: [], concerns: "ingredienser, användning, hudtyp, ursprung, förvaring", coll: "https://www.eclore.se" },
 };
 
@@ -119,7 +120,7 @@ const emptyProduct = () => ({
 const buildCtx = (p, storeProfile) => {
   const ti = typeInfoOf(p);
   const certs = p.certs.length ? p.certs.join(", ") : "Inga angivna";
-  const accGlobal = p.productType === "Accessoar / Necessär" || p.productType === "Textil / Hemprodukt";
+  const accGlobal = p.productType === "Accessoar / Necessär" || p.productType === "Textil / Hemprodukt" || p.productType === "Doftljus / Hemdoft";
   const stripTags = (s) => String(s || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
   const prevParts = [];
   if (p.seoTitle) prevParts.push(`- Title-tagg: ${p.seoTitle}`);
@@ -141,7 +142,7 @@ PRODUKTFAKTA – använd ENDAST dessa fakta. Hitta ALDRIG på certifieringar, ut
 - Storlek: ${p.size || "(ej angiven)"}${p.price ? `, Pris: ${p.price} kr` : ""}
 - Certifieringar och egenskaper (de ENDA som får nämnas): ${certs}
 - Utmärkelser: ${p.awards || (p.sourceText ? "Inga angivna i fältet – MEN om källmaterialet ovan UTTRYCKLIGEN nämner utmärkelser eller priser ska du lyfta dem tidigt (ange namnet exakt som i källan – hitta aldrig på)" : "Inga – nämn inga utmärkelser")}
-- ${(p.productType === "Accessoar / Necessär" || p.productType === "Textil / Hemprodukt") ? "Material och detaljer" : "INCI / ingredienser"}: ${p.inci || "(ej angiven)"}
+- ${(p.productType === "Accessoar / Necessär" || p.productType === "Textil / Hemprodukt" || p.productType === "Doftljus / Hemdoft") ? "Material och detaljer" : "INCI / ingredienser"}: ${p.inci || "(ej angiven)"}
 - Övrig USP/info: ${p.usp || "—"}
 - Källmaterial från varumärkets egen produktsida (verifiera fakta här och leta efter utmärkelser, effekter och positionering): ${String(p.sourceText || "").slice(0, 2500) || "(ej hämtat)"}
 - Leverantörens originalbeskrivning (KÄLLMATERIAL – hämta fakta, vinklar och USP:ar härifrån, t.ex. effekter, utmärkelser, positionering. Skriv om på svenska, kopiera ALDRIG rakt av): ${String((p._orig && p._orig.body) || p.description || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 1500) || "(saknas)"}
@@ -177,7 +178,7 @@ HÅRDA REGLER:
 const buildPrompts = (p, storeProfile) => {
   const ctx = buildCtx(p, storeProfile);
   const ti = typeInfoOf(p);
-  const acc = p.productType === "Accessoar / Necessär" || p.productType === "Textil / Hemprodukt";
+  const acc = p.productType === "Accessoar / Necessär" || p.productType === "Textil / Hemprodukt" || p.productType === "Doftljus / Hemdoft";
   return {
     keywords: `${ctx}\n\nFöreslå sökord för denna produkt baserat på produkttyp, ingredienser och målgrupp. Primärt sökord = mest köpnära long-tail (2–4 ord, svenska, realistisk sökvolym). Sökorden ska vara korrekt stavad, naturlig svenska – kontrollera särskilt sammansatta ord (t.ex. "plommonolja", aldrig "plommolja"). 5 sekundära sökord som varierar behov/egenskap. Svara BARA med JSON: {"primary":"...","secondary":["...","...","...","...","..."]}`,
 
@@ -305,23 +306,23 @@ const genField = async (p, field, storeProfile, autoPick, apiKey) => {
     }
     case "bulletPoints": {
       const arr = safeParse(raw);
-      const acc = p.productType === "Accessoar / Necessär" || p.productType === "Textil / Hemprodukt";
+      const acc = p.productType === "Accessoar / Necessär" || p.productType === "Textil / Hemprodukt" || p.productType === "Doftljus / Hemdoft";
       return { bulletPoints: acc ? scrubDegreesDeep(arr, p.inci) : arr };
     }
     case "tags": case "keyIngredients":
       return { [field]: safeParse(raw) };
     case "usage": {
       const j = safeParse(raw);
-      const acc = p.productType === "Accessoar / Necessär" || p.productType === "Textil / Hemprodukt";
+      const acc = p.productType === "Accessoar / Necessär" || p.productType === "Textil / Hemprodukt" || p.productType === "Doftljus / Hemdoft";
       return { usage: acc ? scrubDegreesDeep(j, p.inci) : j };
     }
     case "faq": {
       const j = safeParse(raw);
-      const acc = p.productType === "Accessoar / Necessär" || p.productType === "Textil / Hemprodukt";
+      const acc = p.productType === "Accessoar / Necessär" || p.productType === "Textil / Hemprodukt" || p.productType === "Doftljus / Hemdoft";
       return { faq: [1, 2, 3, 4, 5].map((i) => ({ q: j[`faq_q${i}`] || "", a: acc ? scrubFabricatedDegrees(mdToHtml(j[`faq_a${i}`] || ""), p.inci) : mdToHtml(j[`faq_a${i}`] || "") })) };
     }
     default: {
-      const acc = p.productType === "Accessoar / Necessär" || p.productType === "Textil / Hemprodukt";
+      const acc = p.productType === "Accessoar / Necessär" || p.productType === "Textil / Hemprodukt" || p.productType === "Doftljus / Hemdoft";
       const html = mdToHtml(raw);
       return { [field]: (acc && (field === "description" || field === "shortDescription")) ? scrubFabricatedDegrees(html, p.inci) : html };
     }
@@ -721,8 +722,8 @@ const publishProduct = async (s, p, onStep) => {
         </div>
       </div>
       <div style={{ marginBottom: 10 }}>
-        <label style={S.label}>{(p.productType === "Accessoar / Necessär" || p.productType === "Textil / Hemprodukt") ? "Material & detaljer (t.ex. 100 % bomull, mått, fack)" : "INCI / ingredienslista"}</label>
-        <textarea style={{ ...S.ta, minHeight: 60 }} value={p.inci} onChange={(e) => set((x) => ({ ...x, inci: e.target.value }))} placeholder={(p.productType === "Accessoar / Necessär" || p.productType === "Textil / Hemprodukt") ? "t.ex. 100 % bomull, vaffelvävd, OEKO-TEX-certifierat, 30x30 cm" : "Klistra in INCI – styr nyckelingredienser, beskrivning och FAQ"} />
+        <label style={S.label}>{(p.productType === "Accessoar / Necessär" || p.productType === "Textil / Hemprodukt" || p.productType === "Doftljus / Hemdoft") ? "Material & detaljer (t.ex. 100 % bomull, mått, fack)" : "INCI / ingredienslista"}</label>
+        <textarea style={{ ...S.ta, minHeight: 60 }} value={p.inci} onChange={(e) => set((x) => ({ ...x, inci: e.target.value }))} placeholder={(p.productType === "Accessoar / Necessär" || p.productType === "Textil / Hemprodukt" || p.productType === "Doftljus / Hemdoft") ? "t.ex. 100 % bomull, vaffelvävd, OEKO-TEX-certifierat, 30x30 cm" : "Klistra in INCI – styr nyckelingredienser, beskrivning och FAQ"} />
       </div>
       <div style={{ marginBottom: 10 }}>
         <label style={S.label}>Certifieringar & egenskaper (endast ibockade får nämnas)</label>
